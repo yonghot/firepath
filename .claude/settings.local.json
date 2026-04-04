@@ -3,7 +3,14 @@
     "allow": [
       "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-pnpm --yes)",
       "mcp__Claude_Preview__preview_start",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Skill(design-consultation)",
+      "Skill(design-consultation:*)",
+      "mcp__ecfdc682-bd94-4550-b844-6496bdfd6959__execute_sql",
+      "mcp__ecfdc682-bd94-4550-b844-6496bdfd6959__get_project",
+      "mcp__ecfdc682-bd94-4550-b844-6496bdfd6959__restore_project",
+      "mcp__ecfdc682-bd94-4550-b844-6496bdfd6959__apply_migration",
+      "mcp__ecfdc682-bd94-4550-b844-6496bdfd6959__list_tables"
     ]
   }
 }

@@ -27,6 +27,7 @@ export async function createClient() {
   );
 }
 
+/** WARNING: This client BYPASSES Row Level Security. Use only for admin/webhook operations. */
 export async function createServiceClient() {
   const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
   return createSupabaseClient(

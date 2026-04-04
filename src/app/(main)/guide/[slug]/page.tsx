@@ -39,17 +39,20 @@ export default async function GuidePage({ params }: GuidePageProps) {
 
   const relatedGuides = allGuides.filter((g) => g.slug !== slug).slice(0, 3);
 
-  // Simple markdown-to-HTML (headers, paragraphs, tables)
+  // Sanitize text to prevent XSS
+  const esc = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
   const htmlContent = guide.content
     .split('\n')
     .map((line: string) => {
-      if (line.startsWith('### ')) return `<h3 class="text-lg font-semibold mt-6 mb-2">${line.slice(4)}</h3>`;
-      if (line.startsWith('## ')) return `<h2 class="text-xl font-bold mt-8 mb-3">${line.slice(3)}</h2>`;
-      if (line.startsWith('# ')) return `<h1 class="text-2xl font-bold mt-8 mb-4">${line.slice(2)}</h1>`;
-      if (line.startsWith('- ')) return `<li class="ml-4 text-muted-foreground">${line.slice(2)}</li>`;
-      if (line.startsWith('| ')) return `<div class="text-sm text-muted-foreground font-mono">${line}</div>`;
+      if (line.startsWith('### ')) return `<h3 class="text-lg font-semibold mt-6 mb-2">${esc(line.slice(4))}</h3>`;
+      if (line.startsWith('## ')) return `<h2 class="text-xl font-bold mt-8 mb-3">${esc(line.slice(3))}</h2>`;
+      if (line.startsWith('# ')) return `<h1 class="text-2xl font-bold mt-8 mb-4">${esc(line.slice(2))}</h1>`;
+      if (line.startsWith('- ')) return `<li class="ml-4 text-muted-foreground">${esc(line.slice(2))}</li>`;
+      if (line.startsWith('| ')) return `<div class="text-sm text-muted-foreground font-mono">${esc(line)}</div>`;
       if (line.trim() === '') return '<br />';
-      return `<p class="text-muted-foreground leading-relaxed">${line}</p>`;
+      return `<p class="text-muted-foreground leading-relaxed">${esc(line)}</p>`;
     })
     .join('\n');
 

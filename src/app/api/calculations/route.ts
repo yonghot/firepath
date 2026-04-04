@@ -35,8 +35,10 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const page = Math.max(1, Number(searchParams.get('page') || 1));
-    const limit = Math.min(50, Math.max(1, Number(searchParams.get('limit') || 10)));
+    const rawPage = parseInt(searchParams.get('page') || '1', 10);
+    const rawLimit = parseInt(searchParams.get('limit') || '10', 10);
+    const page = Math.max(1, isNaN(rawPage) ? 1 : rawPage);
+    const limit = Math.min(50, Math.max(1, isNaN(rawLimit) ? 10 : rawLimit));
 
     const service = new CalculationService(
       new CalculationRepository(supabase),
@@ -71,11 +73,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: { code: 'VALIDATION_ERROR', message: '잘못된 JSON 형식입니다' } },
+        { status: 400 }
+      );
+    }
     const parsed = CreateCalculationSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: { code: 'VALIDATION_ERROR', message: parsed.error.message } },
+        { success: false, error: { code: 'VALIDATION_ERROR', message: '입력값이 올바르지 않습니다' } },
         { status: 400 }
       );
     }
