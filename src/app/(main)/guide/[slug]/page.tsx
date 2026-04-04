@@ -46,9 +46,9 @@ export default async function GuidePage({ params }: GuidePageProps) {
   const htmlContent = guide.content
     .split('\n')
     .map((line: string) => {
-      if (line.startsWith('### ')) return `<h3 class="text-lg font-semibold mt-6 mb-2">${esc(line.slice(4))}</h3>`;
-      if (line.startsWith('## ')) return `<h2 class="text-xl font-bold mt-8 mb-3">${esc(line.slice(3))}</h2>`;
-      if (line.startsWith('# ')) return `<h1 class="text-2xl font-bold mt-8 mb-4">${esc(line.slice(2))}</h1>`;
+      if (line.startsWith('### ')) return `<h3 class="text-2xl font-semibold mt-6 mb-2">${esc(line.slice(4))}</h3>`;
+      if (line.startsWith('## ')) return `<h2 class="text-3xl font-bold mt-8 mb-3">${esc(line.slice(3))}</h2>`;
+      if (line.startsWith('# ')) return `<h1 class="text-4xl font-bold mt-8 mb-4">${esc(line.slice(2))}</h1>`;
       if (line.startsWith('- ')) return `<li class="ml-4 text-muted-foreground">${esc(line.slice(2))}</li>`;
       if (line.startsWith('| ')) return `<div class="text-sm text-muted-foreground font-mono">${esc(line)}</div>`;
       if (line.trim() === '') return '<br />';
@@ -71,7 +71,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
 
           {/* CTA */}
           <div className="mt-8 p-6 rounded-xl bg-primary/5 border border-primary/20 text-center">
-            <h3 className="font-semibold text-lg mb-2">Try the FIRE Calculator</h3>
+            <h3 className="text-2xl font-semibold mb-2">Try the FIRE Calculator</h3>
             <p className="text-sm text-muted-foreground mb-4">
               See your personalized {guide.fire_type} FIRE number instantly.
             </p>

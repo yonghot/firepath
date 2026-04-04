@@ -201,18 +201,18 @@ export function ScenarioComparison({ scenarios, onBack }: ScenarioComparisonProp
           <ArrowLeft className="h-4 w-4 mr-1" />
           Back
         </Button>
-        <h2 className="text-lg font-bold">
+        <h2 className="text-3xl font-bold">
           {scenarios[0].name} vs {scenarios[1].name}
         </h2>
       </div>
 
       <div className="rounded-xl border bg-card p-4 md:p-6">
-        <h3 className="text-sm font-bold mb-3">Net Worth Timeline</h3>
+        <h3 className="text-2xl font-semibold mb-3">Net Worth Timeline</h3>
         <ComparisonChart scenarios={scenarios} />
       </div>
 
       <div>
-        <h3 className="text-sm font-bold mb-3">FIRE Numbers Comparison</h3>
+        <h3 className="text-2xl font-semibold mb-3">FIRE Numbers Comparison</h3>
         <ComparisonTable scenarios={scenarios} />
       </div>
     </div>

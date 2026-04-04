@@ -34,7 +34,7 @@ export default function ResultPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Your FIRE Results</h1>
+        <h1 className="text-4xl font-bold">Your FIRE Results</h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={handleShare}>
             <Share2 className="h-4 w-4 mr-1" />

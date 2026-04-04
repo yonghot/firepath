@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Flame, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { ThemeToggle } from './theme-toggle';
 import { useState } from 'react';
 
 const NAV_ITEMS = [
@@ -36,6 +37,7 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+          <ThemeToggle />
           <Link href="/login">
             <Button variant="outline" size="sm">
               Sign In
@@ -60,11 +62,14 @@ export function Header() {
                   {item.label}
                 </Link>
               ))}
-              <Link href="/login" onClick={() => setOpen(false)}>
-                <Button variant="outline" className="w-full">
-                  Sign In
-                </Button>
-              </Link>
+              <div className="flex items-center justify-between">
+                <Link href="/login" onClick={() => setOpen(false)}>
+                  <Button variant="outline">
+                    Sign In
+                  </Button>
+                </Link>
+                <ThemeToggle />
+              </div>
             </nav>
           </SheetContent>
         </Sheet>

@@ -73,6 +73,9 @@ Page (CC)
 ├── FIREResultCards (CC)
 │   └── FIREResultCard × 5
 ├── ScenarioComparison (CC) — P1
+├── MonteCarloPanel (CC) — P2 premium
+│   ├── MonteCarloChart — fan chart (10-90 percentiles)
+│   └── MonteCarloResults — success rates per FIRE type
 └── DisclaimerBanner (SC)
 ```
 
@@ -90,6 +93,15 @@ Page (CC)
   - FIRE target = expenses × multiplier / SWR
   - Year simulation: netWorth = prev × (1 + realReturn) + annualSavings
   - CoastFIRE: target / (1 + realReturn)^(retirementAge - currentAge)
+
+## Monte Carlo Simulation Engine
+- Location: src/lib/engine/monte-carlo.ts
+- Pure function: runMonteCarlo(input, config) → MonteCarloResult
+- Client-side only, deterministic (seeded PRNG)
+- Uses Box-Muller transform for normal distribution of returns
+- Default: 1000 simulations, 15% annual volatility
+- Outputs: percentile bands (10/25/50/75/90), success rates, median reach ages
+- Premium-only feature (gated in MonteCarloPanel component)
 
 ## Security
 - RLS on all tables

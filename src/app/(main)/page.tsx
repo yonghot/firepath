@@ -9,6 +9,7 @@ import { FIRETimelineChart } from '@/components/features/calculator/fire-timelin
 import { FIREResultCards } from '@/components/features/calculator/fire-result-cards';
 import { ScenarioManager } from '@/components/features/scenario/scenario-manager';
 import { ScenarioComparison } from '@/components/features/scenario/scenario-comparison';
+import { MonteCarloPanel } from '@/components/features/monte-carlo/monte-carlo-panel';
 import { DisclaimerBanner } from '@/components/common/disclaimer-banner';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,7 @@ import type { FIREType, Scenario } from '@/types/fire.types';
 type ViewMode = 'calculator' | 'compare';
 
 export default function CalculatorPage() {
-  const { output } = useCalculatorStore();
+  const { input, output } = useCalculatorStore();
   const { scenarios, compareIds } = useScenarioStore();
   const [highlightedType, setHighlightedType] = useState<FIREType | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('calculator');
@@ -79,7 +80,7 @@ export default function CalculatorPage() {
             <>
               {/* Chart */}
               <div className="rounded-xl border bg-card p-4 md:p-6">
-                <h2 className="text-lg font-bold mb-4">FIRE Timeline</h2>
+                <h2 className="text-3xl font-bold mb-4">FIRE Timeline</h2>
                 <FIRETimelineChart
                   timeline={output.timeline}
                   results={output.results}
@@ -89,12 +90,19 @@ export default function CalculatorPage() {
 
               {/* Result cards */}
               <div>
-                <h2 className="text-lg font-bold mb-3">Your FIRE Numbers</h2>
+                <h2 className="text-3xl font-bold mb-3">Your FIRE Numbers</h2>
                 <FIREResultCards
                   results={output.results}
                   onHighlight={setHighlightedType}
                 />
               </div>
+
+              {/* Monte Carlo Simulation */}
+              <MonteCarloPanel
+                input={input}
+                results={output.results}
+                isPremium={false}
+              />
             </>
           )}
 

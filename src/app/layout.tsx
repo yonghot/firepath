@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
@@ -7,6 +7,10 @@ const inter = Inter({
   variable: '--font-sans',
   subsets: ['latin'],
 });
+
+export const viewport: Viewport = {
+  themeColor: '#065F53',
+};
 
 export const metadata: Metadata = {
   title: {
@@ -18,7 +22,6 @@ export const metadata: Metadata = {
   keywords: ['FIRE calculator', 'financial independence', 'early retirement', 'LeanFIRE', 'FatFIRE', 'CoastFIRE', 'BaristaFIRE'],
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   manifest: '/manifest.webmanifest',
-  themeColor: '#065F53',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -37,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col font-sans">
         <Providers>{children}</Providers>
       </body>

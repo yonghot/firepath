@@ -37,7 +37,7 @@ export default function PremiumPage() {
           <Crown className="h-3 w-3 mr-1" />
           Premium
         </Badge>
-        <h1 className="text-3xl font-bold">Unlock Your Full FIRE Potential</h1>
+        <h1 className="text-4xl font-bold">Unlock Your Full FIRE Potential</h1>
         <p className="text-muted-foreground mt-2">
           Advanced simulations and unlimited saves for serious FIRE planners.
         </p>
