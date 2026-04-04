@@ -49,13 +49,21 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
+  --fire-lean: #10B981;
+  --fire-regular: #2563EB;
+  --fire-fat: #7C3AED;
+  --fire-coast: #F59E0B;
+  --fire-barista: #EC4899;
+  --brand-primary: #065F53;
+  --brand-light: #0D9488;
+
+  --background: oklch(0.985 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.37 0.08 172);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);

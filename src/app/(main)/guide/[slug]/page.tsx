@@ -1,0 +1,105 @@
+import { notFound } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+import { GuideRepository } from '@/lib/repositories/guide.repository';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Calculator } from 'lucide-react';
+import Link from 'next/link';
+import type { Metadata } from 'next';
+
+interface GuidePageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: GuidePageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const repo = new GuideRepository(supabase);
+  const guide = await repo.findBySlug(slug);
+
+  if (!guide) return { title: 'Guide Not Found' };
+
+  return {
+    title: guide.title,
+    description: guide.description,
+  };
+}
+
+export default async function GuidePage({ params }: GuidePageProps) {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const repo = new GuideRepository(supabase);
+
+  const [guide, allGuides] = await Promise.all([
+    repo.findBySlug(slug),
+    repo.findAll(),
+  ]);
+
+  if (!guide) notFound();
+
+  const relatedGuides = allGuides.filter((g) => g.slug !== slug).slice(0, 3);
+
+  // Simple markdown-to-HTML (headers, paragraphs, tables)
+  const htmlContent = guide.content
+    .split('\n')
+    .map((line: string) => {
+      if (line.startsWith('### ')) return `<h3 class="text-lg font-semibold mt-6 mb-2">${line.slice(4)}</h3>`;
+      if (line.startsWith('## ')) return `<h2 class="text-xl font-bold mt-8 mb-3">${line.slice(3)}</h2>`;
+      if (line.startsWith('# ')) return `<h1 class="text-2xl font-bold mt-8 mb-4">${line.slice(2)}</h1>`;
+      if (line.startsWith('- ')) return `<li class="ml-4 text-muted-foreground">${line.slice(2)}</li>`;
+      if (line.startsWith('| ')) return `<div class="text-sm text-muted-foreground font-mono">${line}</div>`;
+      if (line.trim() === '') return '<br />';
+      return `<p class="text-muted-foreground leading-relaxed">${line}</p>`;
+    })
+    .join('\n');
+
+  return (
+    <div className="mx-auto max-w-4xl px-4 py-8">
+      <div className="flex flex-col lg:flex-row gap-8">
+        <article className="flex-1 min-w-0">
+          <Badge variant="secondary" className="mb-4 capitalize">
+            {guide.fire_type}
+          </Badge>
+
+          <div
+            className="prose prose-sm max-w-none"
+            dangerouslySetInnerHTML={{ __html: htmlContent }}
+          />
+
+          {/* CTA */}
+          <div className="mt-8 p-6 rounded-xl bg-primary/5 border border-primary/20 text-center">
+            <h3 className="font-semibold text-lg mb-2">Try the FIRE Calculator</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              See your personalized {guide.fire_type} FIRE number instantly.
+            </p>
+            <Link href="/">
+              <Button>
+                <Calculator className="h-4 w-4 mr-2" />
+                Open Calculator
+              </Button>
+            </Link>
+          </div>
+        </article>
+
+        {/* Sidebar */}
+        {relatedGuides.length > 0 && (
+          <aside className="lg:w-64 shrink-0">
+            <h3 className="font-semibold mb-3">Related Guides</h3>
+            <nav className="space-y-2">
+              {relatedGuides.map((g) => (
+                <Link
+                  key={g.slug}
+                  href={`/guide/${g.slug}`}
+                  className="block p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                >
+                  <p className="text-sm font-medium">{g.title}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{g.description}</p>
+                </Link>
+              ))}
+            </nav>
+          </aside>
+        )}
+      </div>
+    </div>
+  );
+}
