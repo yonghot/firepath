@@ -63,11 +63,12 @@
 - 빌드: PASS
 
 ### 배포
-- Git: (진행 중)
-- 프로덕션: (진행 중)
+- Git: commit ✅ (50df424), push ❌ (git remote 미설정)
+- 프로덕션: ❌ (Vercel 미설정, git remote 없음)
 
 ### 판단 필요
-- (없음)
+- git remote가 설정되어 있지 않습니다. GitHub 리포지토리를 생성하고 `git remote add origin <URL>` 실행 필요.
+- Vercel 배포 설정이 없습니다. `npx vercel` 초기 설정 또는 GitHub 연동 필요.
 
 ### 다음 세션 권장
 1. RESEARCH.md 리서치 수행 (쿨다운 경과 후)
