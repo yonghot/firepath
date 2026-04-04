@@ -1,0 +1,30 @@
+{
+  "hooks": {
+    "session-init": {
+      "command": "bash .claude/hooks/session-init.sh",
+      "description": "Initialize session: check env, show progress"
+    },
+    "pre-commit": {
+      "command": "bash .claude/hooks/pre-commit-gate.sh",
+      "description": "Pre-commit gate: lint + typecheck"
+    }
+  },
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "Bash(pnpm *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(git *)",
+      "Bash(node *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cat *)",
+      "Bash(cd *)"
+    ]
+  }
+}

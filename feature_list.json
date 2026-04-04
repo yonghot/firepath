@@ -1,0 +1,105 @@
+{
+  "project": "FIREPath",
+  "version": "0.1.0",
+  "lastUpdated": "2026-04-05",
+  "features": [
+    {
+      "id": "F001",
+      "name": "FIRE Calculation Engine",
+      "priority": "P0",
+      "status": "pending",
+      "description": "5가지 FIRE 유형 동시 계산 (Lean/Regular/Fat/Coast/Barista)"
+    },
+    {
+      "id": "F002",
+      "name": "Interactive Slider Panel",
+      "priority": "P0",
+      "status": "pending",
+      "description": "9개 파라미터 슬라이더 입력 패널"
+    },
+    {
+      "id": "F003",
+      "name": "Timeline Chart",
+      "priority": "P0",
+      "status": "pending",
+      "description": "Recharts 기반 실시간 타임라인 차트"
+    },
+    {
+      "id": "F004",
+      "name": "FIRE Result Cards",
+      "priority": "P0",
+      "status": "pending",
+      "description": "5가지 FIRE 유형 결과 카드"
+    },
+    {
+      "id": "F005",
+      "name": "URL Hash Sharing",
+      "priority": "P0",
+      "status": "pending",
+      "description": "URL 해시 기반 계산 결과 공유"
+    },
+    {
+      "id": "F006",
+      "name": "Responsive Layout",
+      "priority": "P0",
+      "status": "pending",
+      "description": "모바일/태블릿/데스크톱 반응형"
+    },
+    {
+      "id": "F007",
+      "name": "Authentication",
+      "priority": "P1",
+      "status": "pending",
+      "description": "이메일/OAuth(Google) 인증"
+    },
+    {
+      "id": "F008",
+      "name": "Save/Load Calculations",
+      "priority": "P1",
+      "status": "pending",
+      "description": "계산 저장/불러오기 (무료 5개 제한)"
+    },
+    {
+      "id": "F009",
+      "name": "OG Image Generation",
+      "priority": "P1",
+      "status": "pending",
+      "description": "동적 OG 이미지 생성 (@vercel/og)"
+    },
+    {
+      "id": "F010",
+      "name": "SEO Guide Content",
+      "priority": "P1",
+      "status": "pending",
+      "description": "FIRE 유형별 SEO 가이드 (SSG)"
+    },
+    {
+      "id": "F011",
+      "name": "Scenario Comparison",
+      "priority": "P1",
+      "status": "pending",
+      "description": "What-If 시나리오 비교 (무료 2개)"
+    },
+    {
+      "id": "F012",
+      "name": "Premium Subscription",
+      "priority": "P2",
+      "status": "pending",
+      "description": "Stripe 기반 $4.99/월 프리미엄 구독"
+    },
+    {
+      "id": "F013",
+      "name": "Monte Carlo Simulation",
+      "priority": "P2",
+      "status": "pending",
+      "description": "몬테카를로 시뮬레이션 (프리미엄)"
+    },
+    {
+      "id": "F014",
+      "name": "Portfolio Optimization",
+      "priority": "P2",
+      "status": "pending",
+      "description": "포트폴리오 최적화 (프리미엄)"
+    }
+  ]
+}
