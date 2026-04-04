@@ -1,6 +1,6 @@
 {
   "project": "FIREPath",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "lastUpdated": "2026-04-05",
   "evaluator": {
     "build": "PASS",
@@ -19,9 +19,10 @@
     { "id": "F008", "name": "Save/Load Calculations", "priority": "P1", "status": "pass", "verified": "3-layer API (Route→Service→Repo), 5-limit, soft delete" },
     { "id": "F009", "name": "OG Image Generation", "priority": "P1", "status": "pass", "verified": "Edge function, 1200x630 ImageResponse" },
     { "id": "F010", "name": "SEO Guide Content", "priority": "P1", "status": "pass", "verified": "5 guides seeded, SSR pages with metadata" },
-    { "id": "F011", "name": "Scenario Comparison", "priority": "P1", "status": "skip", "note": "Deferred to next iteration" },
+    { "id": "F011", "name": "Scenario Comparison", "priority": "P1", "status": "pass", "verified": "2-scenario limit, save current input, side-by-side chart + table comparison, diff display" },
     { "id": "F012", "name": "Premium Subscription", "priority": "P2", "status": "partial", "note": "UI complete, Stripe integration placeholder" },
     { "id": "F013", "name": "Monte Carlo Simulation", "priority": "P2", "status": "skip", "note": "Deferred" },
-    { "id": "F014", "name": "Portfolio Optimization", "priority": "P2", "status": "skip", "note": "Deferred" }
+    { "id": "F014", "name": "Portfolio Optimization", "priority": "P2", "status": "skip", "note": "Deferred" },
+    { "id": "F015", "name": "PWA Support", "priority": "P1", "status": "pass", "verified": "manifest.webmanifest, SVG icon, metadata in layout (theme-color, apple-web-app)" }
   ]
 }

@@ -25,7 +25,7 @@ export function FIREResultCard({
   return (
     <Card
       className={`relative overflow-hidden transition-all duration-200 cursor-pointer min-w-[180px] ${
-        isHighlighted ? 'shadow-md scale-[1.02]' : 'hover:shadow-sm'
+        isHighlighted ? 'shadow-md scale-[1.02]' : 'shadow-sm hover:shadow-md'
       }`}
       style={{ borderLeftWidth: '4px', borderLeftColor: color }}
       onMouseEnter={() => onHover(type)}

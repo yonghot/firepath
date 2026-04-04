@@ -25,7 +25,7 @@ export function CalculatorPanel() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Parameters</h2>
+        <h2 className="text-lg font-bold">Parameters</h2>
         <div className="flex gap-2">
           <Button variant="ghost" size="sm" onClick={resetToDefaults}>
             <RotateCcw className="h-4 w-4 mr-1" />

@@ -43,3 +43,11 @@ export interface SliderConfig {
   unit: 'dollar' | 'percent' | 'year';
   tooltip: string;
 }
+
+export interface Scenario {
+  id: string;
+  name: string;
+  input: FIREInput;
+  output: FIREOutput;
+  createdAt: number;
+}

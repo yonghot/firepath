@@ -1,0 +1,19 @@
+{
+  "name": "FIREPath — FIRE Calculator",
+  "short_name": "FIREPath",
+  "description": "Compare 5 FIRE types on one interactive timeline",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#065F53",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "utilities"]
+}

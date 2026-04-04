@@ -17,6 +17,13 @@ export const metadata: Metadata = {
     'Compare 5 FIRE types (Lean, Regular, Fat, Coast, Barista) on one interactive timeline. Free FIRE calculator with real-time charts.',
   keywords: ['FIRE calculator', 'financial independence', 'early retirement', 'LeanFIRE', 'FatFIRE', 'CoastFIRE', 'BaristaFIRE'],
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  manifest: '/manifest.webmanifest',
+  themeColor: '#065F53',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'FIREPath',
+  },
   openGraph: {
     title: 'FIREPath — All FIRE Types in One Beautiful Calculator',
     description: 'Compare 5 FIRE types on one interactive timeline.',

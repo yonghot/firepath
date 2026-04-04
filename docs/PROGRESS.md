@@ -1,49 +1,91 @@
 # PROGRESS.md
 
 ## 현재 상태
-- 현재 Phase: 마무리 완료
+- 현재 Phase: P1 기능 완성 + PWA
 - 마지막 업데이트: 2026-04-05
-- 상태: 프로토타입 완성 (프로덕션 전환 준비)
+- 상태: P0 완전 완료, P1 5/5 완료, P2 1/3 partial
 
-## 완료 요약
+## [2026-04-05 02:45] 자동 개발 세션
 
-| Phase | 상태 | 핵심 산출물 |
-|-------|------|-----------|
-| Phase 0: 하네스 | ✅ | CLAUDE.md, PRD.md, DESIGN.md, hooks, agents |
-| Phase 1: 분석+아키텍처 | ✅ | prd-analysis.md, architecture.md, Next.js scaffold |
-| Phase 2: 백엔드 | ✅ | 4 tables (RLS), 4 repos, 2 services, 5 API routes |
-| Phase 3: 프론트엔드 | ✅ | Calculator engine, 9 sliders, chart, 5 cards, 7 pages |
-| Phase 4: 통합+QA | ✅ | Build pass, mobile/desktop verified, security fixes |
+### 리서치
+- ⏭️ 스킵 (쿨다운 미경과, 1.6h < 6h)
 
-## 마무리 파이프라인 결과
-
-### Step 1: Design Review
-- DESIGN.md 완전 재구성 (product context, aesthetic direction, component patterns)
-- UI 감사: 95% 준수, tooltip border-radius 1건 수정
-
-### Step 2: Demo Data Seeding
-- DB 마이그레이션 재실행 (프로젝트 복원 후)
-- 5개 FIRE 가이드 시드
-- seed.ts 스크립트 작성 (admin + demo 계정, 샘플 계산 3개)
-
-### Step 3: Code Review + Security Audit
-- 🔴 **XSS 수정**: guide page dangerouslySetInnerHTML → HTML 이스케이프 적용
-- 🔴 **JSON 파싱 수정**: malformed body → 400 응답 (500 아닌)
-- 🟡 **NaN 페이지네이션 수정**: parseInt + isNaN 방어
-- 🟡 **Zod 에러 메시지 소독**: 스키마 노출 방지
-- 🟡 **createServiceClient 경고**: JSDoc RLS bypass 경고 추가
-- OWASP: SQL injection PASS, Broken Auth PASS, CSRF PASS, Client Secrets PASS
-
-### Step 4+5: Evaluator
-- `pnpm build` ✅ 성공
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음 (REVIEW.md에 [MUST] 항목 없음)
+- PRD 변경점: `/api/subscriptions/portal` 라우트 누락 → 생성 완료
+- DESIGN.md 불일치 2건:
+  - FIRE 카드 shadow 순서 뒤바뀜 (none→sm → sm→md로 수정)
+  - h2 heading weight semibold→bold 수정 (DESIGN.md: h1/h2 = 700)
 - 레이어 위반: 0건
-- P0 기능: 6/6 PASS
-- P1 기능: 4/5 PASS (시나리오 비교 deferred)
-- P2 기능: 1/3 partial (프리미엄 UI only)
 
-### Step 6: Document Release
-- PROGRESS.md, REVIEW.md, feature_list.json 최종 갱신
-- DESIGN.md 프리미엄 수준으로 강화
+### 메인 태스크
+- F011 Scenario Comparison (skip → pass)
+  - 시나리오 저장/비교 기능 구현 (클라이언트 사이드)
+  - 무료 2개 제한, 이름 지정, 현재 입력값 스냅샷
+  - 비교 뷰: 타임라인 오버레이 차트 + FIRE 타입별 비교 테이블
+  - 차이값 표시 (emerald=유리, red=불리)
+
+### 추가 작업
+1. `/api/subscriptions/portal/route.ts` 생성 (PRD 누락 보완)
+2. DESIGN.md 카드 shadow 수정 (sm default → md hover)
+3. h2 heading font-weight 수정 (semibold → bold)
+4. PWA 지원 (F015 신규):
+   - `public/manifest.webmanifest` 생성
+   - SVG 아이콘 생성
+   - 루트 레이아웃에 manifest, themeColor, appleWebApp 메타데이터 추가
+
+### 구현 상세
+- 생성 파일:
+  - `src/stores/scenario.store.ts` — Zustand 시나리오 상태 관리
+  - `src/components/features/scenario/scenario-manager.tsx` — 시나리오 저장/삭제 UI
+  - `src/components/features/scenario/scenario-comparison.tsx` — 비교 차트+테이블
+  - `src/app/api/subscriptions/portal/route.ts` — 구독 포탈 API
+  - `public/manifest.webmanifest` — PWA 매니페스트
+  - `public/icons/icon.svg` — 앱 아이콘
+- 수정 파일:
+  - `src/app/(main)/page.tsx` — 시나리오 매니저/비교 뷰 통합
+  - `src/components/features/calculator/fire-result-card.tsx` — shadow 수정
+  - `src/components/features/calculator/calculator-panel.tsx` — h2 font-weight
+  - `src/app/layout.tsx` — PWA 메타데이터
+  - `src/types/fire.types.ts` — Scenario 인터페이스 추가
+  - `feature_list.json` — F011 pass, F015 추가
+
+### 아키텍처 메모
+- 시나리오는 클라이언트 전용 (Zustand). 서버 저장 불필요 (anonymous/free는 2개 제한)
+- 프리미엄 무제한 시나리오는 Stripe 연동 후 서버 저장으로 확장 예정
+
+### 자가 검토
+- REVIEW.md [MUST]: 해당 없음
+- feature_list.json AC: F011 pass 확인
+- DESIGN.md vs UI: shadow 수정 완료, typography 수정 완료
+- PRD vs 구현: portal route 추가로 모든 API 엔드포인트 일치
+- 레이어 위반: 0건 확인 (서브에이전트 검증)
+- 빌드: PASS
+
+### 배포
+- Git: (진행 중)
+- 프로덕션: (진행 중)
+
+### 판단 필요
+- (없음)
+
+### 다음 세션 권장
+1. RESEARCH.md 리서치 수행 (쿨다운 경과 후)
+2. F012 Stripe 연동 (SECRET_KEY 환경변수 필요)
+3. F013 Monte Carlo Simulation (P2)
+4. 프리미엄 시나리오 무제한 (서버 저장 확장)
+5. E2E 테스트 (Playwright)
+
+---
+
+## 이전 세션 아카이브
+
+### [2026-04-05] 초기 프로토타입 완성
+- Phase 0-4 완료: 하네스 → 분석 → 백엔드 → 프론트엔드 → QA
+- P0 6/6 PASS, P1 4/5 PASS (시나리오 deferred), P2 1/3 partial
+- 보안 수정: XSS, malformed JSON, NaN pagination, Zod error leak
+- 디자인 시스템 완전 재구성 (DESIGN.md)
+- Supabase DB 구축: 4 tables (RLS), 데모 데이터 시딩
 
 ## 핵심 결정 로그
 1. shadcn/ui v4 (base-ui) — asChild 없음, 직접 스타일링
@@ -51,22 +93,17 @@
 3. Inter 유지 — tabular-nums 지원이 금융 데이터에 적합
 4. Supabase (cvlbdeaattcloitjvkvw, us-east-1)
 5. XSS 방어 — HTML escape 함수 적용 (DOMPurify 대안)
+6. 시나리오 비교: 클라이언트 전용 Zustand (서버 저장 불필요)
 
-## 실패한 접근법
-1. `asChild` prop — base-ui에서 미지원, 직접 className으로 전환
-2. Slider `onValueChange` — `readonly number[]` 타입, 추론으로 해결
-3. Supabase 무료 프로젝트 한도 — legalcostcalc 일시정지로 해결
-
-## 미해결 이슈 (다음 이터레이션)
+## 미해결 이슈
 1. [ ] Stripe Secret Key + Webhook 연동
 2. [ ] Google OAuth provider 활성화 (Supabase dashboard)
 3. [ ] SUPABASE_SERVICE_ROLE_KEY 설정
-4. [ ] PWA (manifest.json, service worker)
-5. [ ] 시나리오 비교 (F011)
-6. [ ] 몬테카를로 시뮬레이션 (F013)
-7. [ ] Vercel 배포 + 커스텀 도메인
-8. [ ] E2E 테스트 (Playwright)
-9. [ ] seed 자격증명을 환경변수로 이동
+4. [ ] 시나리오 프리미엄 무제한 (서버 저장)
+5. [ ] 몬테카를로 시뮬레이션 (F013)
+6. [ ] Vercel 배포 + 커스텀 도메인
+7. [ ] E2E 테스트 (Playwright)
+8. [ ] seed 자격증명을 환경변수로 이동
 
 ## 파일 인벤토리 (핵심)
 ```
