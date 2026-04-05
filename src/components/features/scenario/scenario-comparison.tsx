@@ -52,16 +52,16 @@ function mergeTimelines(a: Scenario, b: Scenario): MergedDataPoint[] {
 function ComparisonTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; name: string; color: string }>; label?: number }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-md border bg-background/95 backdrop-blur p-3 shadow-lg">
-      <p className="text-sm font-semibold mb-1">Age {label}</p>
+    <div className="rounded-md bg-neutral-900 p-3 shadow-lg">
+      <p className="text-sm font-semibold text-white mb-1">Age {label}</p>
       {payload.map((entry) => (
         <p key={entry.name} className="text-sm" style={{ color: entry.color }}>
           {entry.name}: <span className="font-mono font-medium">{formatCurrency(entry.value)}</span>
         </p>
       ))}
       {payload.length === 2 && (
-        <p className="text-xs text-muted-foreground mt-1 pt-1 border-t">
-          Diff: <span className="font-mono">{formatCurrency(Math.abs(payload[0].value - payload[1].value))}</span>
+        <p className="text-xs text-neutral-400 mt-1 pt-1 border-t border-neutral-700">
+          Diff: <span className="font-mono text-white">{formatCurrency(Math.abs(payload[0].value - payload[1].value))}</span>
         </p>
       )}
     </div>

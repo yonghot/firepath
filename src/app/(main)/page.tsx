@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { SlidersHorizontal } from 'lucide-react';
 import type { FIREType, Scenario } from '@/types/fire.types';
+import { Flame } from 'lucide-react';
 
 type ViewMode = 'calculator' | 'compare';
 
@@ -27,21 +28,26 @@ export default function CalculatorPage() {
 
   useUrlState();
 
-  const compareScenarios: [Scenario, Scenario] | null =
-    compareIds
-      ? ([
-          scenarios.find((s) => s.id === compareIds[0]),
-          scenarios.find((s) => s.id === compareIds[1]),
-        ].every(Boolean)
-          ? [
-              scenarios.find((s) => s.id === compareIds[0])!,
-              scenarios.find((s) => s.id === compareIds[1])!,
-            ]
-          : null)
-      : null;
+  const compareScenarios: [Scenario, Scenario] | null = (() => {
+    if (!compareIds) return null;
+    const first = scenarios.find((s) => s.id === compareIds[0]);
+    const second = scenarios.find((s) => s.id === compareIds[1]);
+    return first && second ? [first, second] : null;
+  })();
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
+      {/* Hero section */}
+      <div className="mb-8 text-center lg:text-left">
+        <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
+          <Flame className="h-7 w-7 text-[var(--fire-coast)]" />
+          <h1 className="text-4xl font-bold">FIREPath</h1>
+        </div>
+        <p className="text-muted-foreground max-w-xl mx-auto lg:mx-0">
+          Compare 5 FIRE types — Lean, Regular, Fat, Coast &amp; Barista — on one interactive timeline. Adjust the sliders and see your path to financial independence in real time.
+        </p>
+      </div>
+
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Desktop sidebar */}
         <aside className="hidden lg:block w-[320px] shrink-0">

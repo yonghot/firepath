@@ -35,23 +35,23 @@ function MCTooltip({
   if (!data) return null;
 
   return (
-    <div className="rounded-md border bg-background/95 backdrop-blur p-3 shadow-lg">
-      <p className="text-sm font-semibold mb-1">Age {label}</p>
+    <div className="rounded-md bg-neutral-900 p-3 shadow-lg">
+      <p className="text-sm font-semibold text-white mb-1">Age {label}</p>
       <div className="space-y-0.5 text-xs">
-        <p className="text-muted-foreground">
-          90th: <span className="font-mono font-medium text-foreground">{formatCurrency(data.p90)}</span>
+        <p className="text-neutral-300">
+          90th: <span className="font-mono font-medium text-white">{formatCurrency(data.p90)}</span>
         </p>
-        <p className="text-muted-foreground">
-          75th: <span className="font-mono font-medium text-foreground">{formatCurrency(data.p75)}</span>
+        <p className="text-neutral-300">
+          75th: <span className="font-mono font-medium text-white">{formatCurrency(data.p75)}</span>
         </p>
-        <p className="font-medium">
+        <p className="font-medium text-white">
           Median: <span className="font-mono font-bold">{formatCurrency(data.p50)}</span>
         </p>
-        <p className="text-muted-foreground">
-          25th: <span className="font-mono font-medium text-foreground">{formatCurrency(data.p25)}</span>
+        <p className="text-neutral-300">
+          25th: <span className="font-mono font-medium text-white">{formatCurrency(data.p25)}</span>
         </p>
-        <p className="text-muted-foreground">
-          10th: <span className="font-mono font-medium text-foreground">{formatCurrency(data.p10)}</span>
+        <p className="text-neutral-300">
+          10th: <span className="font-mono font-medium text-white">{formatCurrency(data.p10)}</span>
         </p>
       </div>
     </div>
@@ -109,7 +109,7 @@ export function MonteCarloChart({ percentiles, results }: MonteCarloChartProps) 
             type="monotone"
             dataKey="p10"
             stroke="none"
-            fill="#ffffff"
+            fill="var(--background, #ffffff)"
             fillOpacity={0}
             animationDuration={300}
           />
@@ -126,7 +126,7 @@ export function MonteCarloChart({ percentiles, results }: MonteCarloChartProps) 
             type="monotone"
             dataKey="p25"
             stroke="none"
-            fill="#ffffff"
+            fill="var(--background, #ffffff)"
             fillOpacity={0}
             animationDuration={300}
           />

@@ -3,7 +3,80 @@
 ## 현재 상태
 - 현재 Phase: P2 기능 구현 + 디자인 완성
 - 마지막 업데이트: 2026-04-05
-- 상태: P0 6/6, P1 7/7 (dark mode 추가), P2 2/3 (Monte Carlo 완료)
+- 상태: P0 6/6, P1 7/7, P2 2/3 (Monte Carlo 완료)
+- 프로덕션: https://firepath-e8vp53uit-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
+
+## [2026-04-05 11:00] 자동 개발 세션
+
+### 리서치
+- ✅ 수행 (쿨다운 9.8h > 6h)
+- [자동 반영] 5개: A-1 차트 툴팁 DESIGN.md 준수, A-2 Hero 섹션 추가, A-3 결과 카드 키보드 접근성, A-4 MC 차트 다크모드, B-2 시나리오 find() 중복
+- [오너 판단 필요] 1개: B-1 console.error 구조화 로깅 전환 (현재는 유지)
+- [C] 외부 조사: 신규 2개 (C-1 한국 FIRE 시장, C-2 수익화 벤치마크)
+- [C] 반영 추적: 첫 리서치이므로 기존 [C] 없음
+
+### 메인 태스크
+- DESIGN.md 정합성 + 접근성 + UX 개선 (리서치 [자동 반영] 일괄 구현)
+
+### 추가 작업
+1. GitHub 리포지토리 생성: https://github.com/yonghot/firepath
+2. Vercel 프로덕션 배포 설정 (GitHub 연동 완료)
+3. 시나리오 비교 차트 툴팁도 DESIGN.md 준수로 수정
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음 (REVIEW.md에 [MUST] 항목 없음)
+- PRD 변경점: 없음
+- DESIGN.md 불일치 4건 → 모두 수정:
+  1. 메인 차트 툴팁: bg-background → bg-neutral-900 (dark bg, white text)
+  2. MC 차트 툴팁: 동일 수정
+  3. 시나리오 비교 차트 툴팁: 동일 수정
+  4. MC 차트 fill="#ffffff" → fill="var(--background)" (다크모드 대응)
+- feature_list.json vs 코드: 불일치 0건
+
+### 구현 상세
+- 수정 파일:
+  - `src/components/features/calculator/fire-timeline-chart.tsx` — 툴팁 dark bg
+  - `src/components/features/monte-carlo/monte-carlo-chart.tsx` — 툴팁 dark bg + fill 다크모드 대응
+  - `src/components/features/scenario/scenario-comparison.tsx` — 툴팁 dark bg
+  - `src/app/(main)/page.tsx` — Hero 섹션 추가 + 시나리오 find() 중복 제거 + Flame import
+  - `src/components/features/calculator/fire-result-card.tsx` — tabIndex, role, aria-label, onFocus/onBlur
+  - `RESEARCH.md` — 첫 리서치 결과 작성
+
+### 아키텍처 메모
+- 차트 툴팁은 Recharts 커스텀 컴포넌트로, CSS 테마와 무관하게 항상 dark bg 사용 (DESIGN.md 명세)
+- 결과 카드 접근성: role="button" + aria-label로 스크린 리더 지원
+
+### 시도했으나 실패한 접근
+- 없음
+
+### 자가 검토
+- REVIEW.md [MUST]: 해당 없음
+- feature_list.json AC: 신규 기능 없음 (개선만)
+- DESIGN.md vs UI: 차트 툴팁 3건 수정, MC 다크모드 fill 수정
+- PRD vs 구현: 변경 없음
+- 레이어 위반: 0건
+- 빌드: PASS
+
+### 배포
+- Git: push ✅ (https://github.com/yonghot/firepath)
+- Vercel: ✅ 배포 완료 (https://firepath-e8vp53uit-sk1597530-3914s-projects.vercel.app)
+- 프로덕션 확인: ❌ HTTP 401 — Vercel SSO 보호 활성화 (팀 설정)
+
+### 판단 필요
+1. **Vercel SSO 보호 해제**: 프로덕션 URL이 401을 반환합니다. Vercel 대시보드 → Settings → Deployment Protection에서 "Standard Protection"으로 변경해야 합니다. 현재 팀 SSO가 활성화되어 외부 접근이 차단됩니다.
+2. **RESEARCH.md C-1**: 앱 UI가 100% 영어인데 PRD 타겟이 한국어 페르소나입니다. 글로벌 vs 한국어 타겟 결정이 필요합니다.
+3. **RESEARCH.md C-2**: $4.99/월 프리미엄 가격과 기능 구성의 적정성 검증이 필요합니다.
+4. **Supabase 환경변수**: SUPABASE_SERVICE_ROLE_KEY가 비어있습니다. Vercel에 환경변수 설정 필요합니다.
+5. **NEXT_PUBLIC_APP_URL**: Vercel 프로덕션 URL로 업데이트 필요 (현재 localhost:3000).
+
+### 다음 세션 권장
+1. Vercel SSO 해제 후 프로덕션 확인
+2. Vercel 환경변수 설정 (SUPABASE_*, NEXT_PUBLIC_APP_URL)
+3. F014 Portfolio Optimization (P2 마지막)
+4. F012 Stripe 연동 (SECRET_KEY 필요)
+5. RESEARCH.md C-1, C-2 심층 연구 수행
+
+---
 
 ## [2026-04-05 03:15] 자동 개발 세션
 

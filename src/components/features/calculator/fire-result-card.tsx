@@ -24,12 +24,17 @@ export function FIREResultCard({
 
   return (
     <Card
-      className={`relative overflow-hidden transition-all duration-200 cursor-pointer min-w-[180px] ${
+      className={`relative overflow-hidden transition-all duration-200 cursor-pointer min-w-[180px] outline-none focus-visible:ring-2 focus-visible:ring-ring ${
         isHighlighted ? 'shadow-md scale-[1.02]' : 'shadow-sm hover:shadow-md'
       }`}
       style={{ borderLeftWidth: '4px', borderLeftColor: color }}
+      tabIndex={0}
+      role="button"
+      aria-label={`${FIRE_LABELS[type]} FIRE — reach age ${reachAge ?? '80+'}, target ${formatCurrency(targetAmount)}`}
       onMouseEnter={() => onHover(type)}
       onMouseLeave={() => onHover(null)}
+      onFocus={() => onHover(type)}
+      onBlur={() => onHover(null)}
     >
       <CardContent className="p-4 space-y-2">
         <div className="flex items-center justify-between">
