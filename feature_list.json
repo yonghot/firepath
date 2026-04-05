@@ -22,7 +22,7 @@
     { "id": "F011", "name": "Scenario Comparison", "priority": "P1", "status": "pass", "verified": "2-scenario limit, save current input, side-by-side chart + table comparison, diff display" },
     { "id": "F012", "name": "Premium Subscription", "priority": "P2", "status": "partial", "note": "UI complete, Stripe integration placeholder" },
     { "id": "F013", "name": "Monte Carlo Simulation", "priority": "P2", "status": "pass", "verified": "1000 simulations with 15% volatility, fan chart (10-90 percentiles), success rates per FIRE type, premium gate" },
-    { "id": "F014", "name": "Portfolio Optimization", "priority": "P2", "status": "skip", "note": "Deferred" },
+    { "id": "F014", "name": "Portfolio Optimization", "priority": "P2", "status": "pass", "verified": "4 asset classes, 3 model portfolios (Conservative/Moderate/Aggressive), correlation matrix, Sharpe ratios, growth projection chart, premium gate" },
     { "id": "F015", "name": "PWA Support", "priority": "P1", "status": "pass", "verified": "manifest.webmanifest, SVG icon, metadata in layout (theme-color, apple-web-app)" },
     { "id": "F016", "name": "Dark Mode", "priority": "P1", "status": "pass", "verified": "next-themes ThemeProvider, system default, toggle in header/mobile, CSS variables in globals.css" }
   ]

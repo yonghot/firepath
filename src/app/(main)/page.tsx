@@ -10,6 +10,7 @@ import { FIREResultCards } from '@/components/features/calculator/fire-result-ca
 import { ScenarioManager } from '@/components/features/scenario/scenario-manager';
 import { ScenarioComparison } from '@/components/features/scenario/scenario-comparison';
 import { MonteCarloPanel } from '@/components/features/monte-carlo/monte-carlo-panel';
+import { PortfolioPanel } from '@/components/features/portfolio/portfolio-panel';
 import { DisclaimerBanner } from '@/components/common/disclaimer-banner';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -105,6 +106,13 @@ export default function CalculatorPage() {
 
               {/* Monte Carlo Simulation */}
               <MonteCarloPanel
+                input={input}
+                results={output.results}
+                isPremium={false}
+              />
+
+              {/* Portfolio Optimization */}
+              <PortfolioPanel
                 input={input}
                 results={output.results}
                 isPremium={false}

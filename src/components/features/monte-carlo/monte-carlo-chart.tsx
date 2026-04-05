@@ -109,7 +109,7 @@ export function MonteCarloChart({ percentiles, results }: MonteCarloChartProps) 
             type="monotone"
             dataKey="p10"
             stroke="none"
-            fill="var(--background, #ffffff)"
+            fill="var(--background)"
             fillOpacity={0}
             animationDuration={300}
           />
@@ -126,7 +126,7 @@ export function MonteCarloChart({ percentiles, results }: MonteCarloChartProps) 
             type="monotone"
             dataKey="p25"
             stroke="none"
-            fill="var(--background, #ffffff)"
+            fill="var(--background)"
             fillOpacity={0}
             animationDuration={300}
           />
@@ -142,12 +142,12 @@ export function MonteCarloChart({ percentiles, results }: MonteCarloChartProps) 
           />
 
           {/* FIRE target reference lines */}
-          {(['lean', 'regular', 'fat', 'barista'] as const).map((type) => (
+          {(['lean', 'regular', 'fat', 'coast', 'barista'] as const).map((type) => (
             <ReferenceLine
               key={type}
               y={results[type].targetAmount}
               stroke={FIRE_COLORS[type]}
-              strokeDasharray="5 5"
+              strokeDasharray={type === 'coast' ? '8 4' : '5 5'}
               strokeWidth={1}
             />
           ))}

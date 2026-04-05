@@ -14,7 +14,7 @@ function SuccessBar({ rate, color }: { rate: number; color: string }) {
     <div className="flex items-center gap-3">
       <div className="flex-1 h-2.5 rounded-full bg-muted overflow-hidden">
         <div
-          className="h-full rounded-full transition-all duration-500"
+          className="h-full rounded-full transition-all duration-200"
           style={{ width: `${pct}%`, backgroundColor: color }}
         />
       </div>

@@ -1,10 +1,88 @@
 # PROGRESS.md
 
 ## 현재 상태
-- 현재 Phase: P2 기능 구현 + 디자인 완성
+- 현재 Phase: P2 완료 + 디자인 완성
 - 마지막 업데이트: 2026-04-05
-- 상태: P0 6/6, P1 7/7, P2 2/3 (Monte Carlo 완료)
+- 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료)
 - 프로덕션: https://firepath-e8vp53uit-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
+
+## [2026-04-05 11:16] 자동 개발 세션
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미경과, ~12분 < 6h)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음
+- PRD 변경점: 없음
+- DESIGN.md 불일치 3건 → 모두 수정:
+  1. MC 차트: Coast FIRE strokeDasharray "5 5" → "8 4" (DESIGN.md 명세)
+  2. MC 차트: fill="var(--background, #ffffff)" → fill="var(--background)" (다크모드 대응)
+  3. MC 결과: transition duration-500 → duration-200 (DESIGN.md 200ms 기본값)
+- feature_list.json vs 코드: 불일치 0건
+
+### 메인 태스크
+- F014 Portfolio Optimization (skip → pass): P2 마지막 기능 구현
+
+### 추가 작업
+- 없음 (F014가 주요 작업)
+
+### 구현 상세
+- 생성 파일:
+  - `src/lib/engine/portfolio-optimizer.ts` — 포트폴리오 최적화 엔진
+    - 4 자산 클래스 (US Stocks, Int'l Stocks, Bonds, Cash/MM)
+    - 상관관계 매트릭스 기반 포트폴리오 분산 계산
+    - 3 모델 포트폴리오 (Conservative/Moderate/Aggressive)
+    - 시간 지평선 기반 자동 추천
+    - Sharpe Ratio, 실질수익률 계산
+  - `src/components/features/portfolio/portfolio-chart.tsx` — 자산 배분 파이 차트 + 범례
+  - `src/components/features/portfolio/portfolio-results.tsx` — 전략별 성장 비교 AreaChart
+  - `src/components/features/portfolio/portfolio-panel.tsx` — 통합 패널 (프리미엄 게이트)
+    - 3개 포트폴리오 선택 카드 + 추천 표시
+    - 자산 배분 도넛 차트
+    - 포트폴리오 메트릭 (Return, Volatility, Sharpe, Real Return)
+    - 성장 예측 차트 (3전략 비교)
+- 수정 파일:
+  - `src/components/features/monte-carlo/monte-carlo-chart.tsx` — DESIGN.md 불일치 수정 3건
+  - `src/components/features/monte-carlo/monte-carlo-results.tsx` — transition duration 수정
+  - `src/app/(main)/page.tsx` — PortfolioPanel 통합
+  - `docs/architecture.md` — Portfolio Optimization 섹션 추가
+  - `feature_list.json` — F014 pass
+
+### 아키텍처 메모
+- 포트폴리오 엔진은 클라이언트 전용 순수 함수 (서버 호출 없음)
+- Modern Portfolio Theory 간소화: 4 자산, 정적 상관 매트릭스, 3 모델 포트폴리오
+- 추천 알고리즘: years to FIRE + current age 기반 glide path 결정
+- MC 차트에 Coast FIRE 참조선 추가 (기존에 lean/regular/fat/barista만 있었음)
+
+### 자가 검토
+- REVIEW.md [MUST]: 해당 없음
+- feature_list.json AC: F014 pass (4 자산, 3 전략, 차트, 메트릭, 프리미엄 게이트)
+- DESIGN.md vs UI: 3건 수정 완료, 신규 코드 DESIGN.md 준수
+- PRD vs 구현: F014 프리미엄 전용 (PRD 2-9 준수)
+- 레이어 위반: 0건
+- 빌드: PASS
+
+### 배포
+- Git: push ✅/❌ (아래 결과)
+- 프로덕션: (아래 결과)
+
+### 판단 필요
+1. **Vercel SSO 보호 해제**: 이전 세션과 동일 — 프로덕션 URL이 401 반환
+2. **RESEARCH.md C-1**: 글로벌 vs 한국어 타겟 결정 미완
+3. **RESEARCH.md C-2**: $4.99/월 가격 적정성 검증 미완
+4. **Supabase 환경변수**: SUPABASE_SERVICE_ROLE_KEY 미설정
+5. **NEXT_PUBLIC_APP_URL**: 프로덕션 URL로 업데이트 필요
+
+### 다음 세션 권장
+1. P0-P2 전체 완료. 남은 작업:
+   - F012 Stripe 연동 (SECRET_KEY 필요)
+   - 환경변수 설정 (Vercel)
+   - Vercel SSO 해제
+2. RESEARCH.md C-1, C-2 심층 연구 수행
+3. 코드 품질 개선 (테스트, 리팩토링 — 핵심 기능 완료 후)
+4. SEO 최적화 + 가이드 콘텐츠 확장
+
+---
 
 ## [2026-04-05 11:00] 자동 개발 세션
 

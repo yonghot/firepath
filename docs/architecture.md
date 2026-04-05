@@ -76,6 +76,10 @@ Page (CC)
 ├── MonteCarloPanel (CC) — P2 premium
 │   ├── MonteCarloChart — fan chart (10-90 percentiles)
 │   └── MonteCarloResults — success rates per FIRE type
+├── PortfolioPanel (CC) — P2 premium
+│   ├── PortfolioChart — allocation pie chart
+│   ├── PortfolioLegend — asset class weights
+│   └── PortfolioGrowthChart — strategy comparison area chart
 └── DisclaimerBanner (SC)
 ```
 
@@ -102,6 +106,17 @@ Page (CC)
 - Default: 1000 simulations, 15% annual volatility
 - Outputs: percentile bands (10/25/50/75/90), success rates, median reach ages
 - Premium-only feature (gated in MonteCarloPanel component)
+
+## Portfolio Optimization Engine
+- Location: src/lib/engine/portfolio-optimizer.ts
+- Pure function: optimizePortfolio(input, fireResults) → PortfolioResult
+- Client-side only, synchronous
+- 4 asset classes: US Stocks, Int'l Stocks, Bonds, Cash/MM
+- Simplified correlation matrix for portfolio variance calculation
+- 3 model portfolios (Conservative/Moderate/Aggressive) adjusted by time horizon
+- Recommendation based on years to FIRE target and current age
+- Outputs: allocations, risk/return metrics, Sharpe ratios, projected growth
+- Premium-only feature (gated in PortfolioPanel component)
 
 ## Security
 - RLS on all tables
