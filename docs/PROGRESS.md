@@ -63,8 +63,9 @@
 - 빌드: PASS
 
 ### 배포
-- Git: push ✅/❌ (아래 결과)
-- 프로덕션: (아래 결과)
+- Git: push ✅ (https://github.com/yonghot/firepath)
+- Vercel: ✅ 배포 완료 (https://firepath-h1kas4zz6-sk1597530-3914s-projects.vercel.app)
+- 프로덕션 확인: ❌ HTTP 401 — Vercel SSO 보호 활성화 (이전 세션과 동일)
 
 ### 판단 필요
 1. **Vercel SSO 보호 해제**: 이전 세션과 동일 — 프로덕션 URL이 401 반환
