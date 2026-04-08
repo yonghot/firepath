@@ -11,6 +11,20 @@ interface GuidePageProps {
   params: Promise<{ slug: string }>;
 }
 
+export async function generateStaticParams() {
+  try {
+    const { createClient } = await import('@/lib/supabase/server');
+    const { GuideRepository } = await import('@/lib/repositories/guide.repository');
+    const supabase = await createClient();
+    const repo = new GuideRepository(supabase);
+    const guides = await repo.findAll();
+    return guides.map((g) => ({ slug: g.slug }));
+  } catch {
+    // Supabase unavailable at build time — fall back to dynamic rendering
+    return [];
+  }
+}
+
 export async function generateMetadata({ params }: GuidePageProps): Promise<Metadata> {
   const { slug } = await params;
   const supabase = await createClient();
@@ -93,7 +107,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
                 <Link
                   key={g.slug}
                   href={`/guide/${g.slug}`}
-                  className="block p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                  className="block p-3 rounded-xl border hover:bg-muted/50 transition-colors duration-200"
                 >
                   <p className="text-sm font-medium">{g.title}</p>
                   <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{g.description}</p>

@@ -23,10 +23,15 @@ Supabase
 
 ### API Route (Controller)
 - Parse request (query params, body)
-- Authenticate user (Supabase server client)
+- Authenticate user via `requireAuth()` (shared utility)
 - Validate input (Zod schemas)
 - Call service method
+- Error handling via `handleApiError()` (shared utility)
 - Format response { success, data/error }
+
+#### Shared API Utilities (`src/lib/utils/api-handler.ts`)
+- `requireAuth()`: Creates Supabase client, checks auth, returns `{ supabase, user }` or throws `AppError('AUTH_REQUIRED')`
+- `handleApiError(routeLabel, error)`: Maps `AppError` to typed JSON responses, logs and returns 500 for unknown errors
 
 ### Service Layer
 - Business logic (limits, permissions, workflows)

@@ -1,10 +1,104 @@
 # PROGRESS.md
 
 ## 현재 상태
-- 현재 Phase: P2 완료 + UX/SEO 개선
-- 마지막 업데이트: 2026-04-08
+- 현재 Phase: P2 완료 + 코드 품질 개선
+- 마지막 업데이트: 2026-04-09
 - 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료)
 - 프로덕션: https://firepath-2j7weljnc-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
+
+## [2026-04-09 04:15] 자동 개발 세션
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미경과, ~0h < 6h)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음 (REVIEW.md에 [MUST] 항목 없음)
+- PRD 변경점: 없음
+- DESIGN.md 불일치 4건 → 모두 수정:
+  1. guide/page.tsx CTA h2: text-2xl/600 → text-3xl/700 (DESIGN.md h2 스케일)
+  2. disclaimer-banner: rounded-lg → rounded-xl (DESIGN.md 카드 radius)
+  3. guide 카드, header nav, footer 링크: transition duration-200 누락 → 추가
+  4. guide/[slug] related links: rounded-lg → rounded-xl
+- feature_list.json vs 코드: 불일치 0건
+- 코드 품질 이슈 발견: API 라우트 에러 처리 중복, auth/callback 에러 핸들링 누락
+
+### 메인 태스크
+- API 에러 처리 리팩토링: requireAuth() + handleApiError() 공유 유틸리티 추출
+- DESIGN.md 정합성 해소
+
+### 추가 작업
+1. auth/callback/route.ts: try/catch + 에러 로깅 추가
+2. guide/[slug]/page.tsx: generateStaticParams 추가 (SSG 활성화, Supabase fallback)
+3. header.tsx: 모바일 메뉴 버튼 aria-label 추가
+4. .gitignore: .dev-lock 추가 + 중복 .vercel 제거
+5. footer.tsx: 링크 hover transition-colors duration-200 추가
+6. docs/architecture.md: 공유 API 유틸리티 문서화
+
+### Refactor-on-Touch 결과
+- API 라우트 5개 파일: 중복 auth/error 패턴 → requireAuth() + handleApiError()로 통합
+  - calculations/route.ts (GET, POST)
+  - calculations/[id]/route.ts (GET, DELETE)
+  - subscriptions/route.ts (GET, POST)
+  - subscriptions/portal/route.ts (POST)
+- 코드 감소: ~140줄 → ~90줄 (API 라우트 합산, 유틸리티 40줄 포함)
+- 불필요 import 제거: AppError (5개 파일에서 유틸리티로 이동)
+
+### 구현 상세
+- 생성 파일:
+  - `src/lib/utils/api-handler.ts` — requireAuth() + handleApiError() 공유 유틸리티
+- 수정 파일:
+  - `src/app/api/auth/callback/route.ts` — try/catch + 에러 로깅
+  - `src/app/api/calculations/route.ts` — requireAuth/handleApiError 적용
+  - `src/app/api/calculations/[id]/route.ts` — requireAuth/handleApiError 적용
+  - `src/app/api/subscriptions/route.ts` — requireAuth/handleApiError 적용
+  - `src/app/api/subscriptions/portal/route.ts` — requireAuth/handleApiError 적용
+  - `src/app/(main)/guide/page.tsx` — CTA h2 text-3xl/bold, 카드 duration-200
+  - `src/app/(main)/guide/[slug]/page.tsx` — generateStaticParams + related links rounded-xl
+  - `src/components/common/disclaimer-banner.tsx` — rounded-xl
+  - `src/components/layouts/header.tsx` — nav duration-200 + 모바일 메뉴 aria-label
+  - `src/components/layouts/footer.tsx` — 링크 transition-colors duration-200
+  - `docs/architecture.md` — 공유 API 유틸리티 문서
+  - `.gitignore` — .dev-lock + 중복 제거
+
+### 아키텍처 메모
+- requireAuth(): Supabase 클라이언트 생성 + 인증 확인을 하나의 함수로 통합. AppError 기반 에러 throw.
+- handleApiError(): AppError → typed JSON response, unknown → 500 + console.error. 라우트 레이블로 에러 추적 가능.
+- generateStaticParams: Supabase 빌드 시 접근 가능하면 SSG, 불가하면 빈 배열 반환 (동적 렌더링 fallback).
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (글로벌 설치, 클라우드 아님 — 세션 시간 절약)
+- /qa --quick: ⏭️ 스킵 (Playwright 미설치)
+
+### 기술 부채 현황
+- 이번 세션 발견: API 에러 처리 중복 (5개 라우트)
+- 이번 세션 해소: API 에러 처리 통합
+- 잔여:
+  - calculateFIRE 함수 104줄 (50줄 임계치 초과, 미수정 — Refactor-on-Touch 대상)
+  - PortfolioPanel 178줄 (미수정)
+  - MonteCarloPanel 96줄 (미수정)
+  - page.tsx 129줄 (CalculatorPage, 미수정)
+
+### 배포
+- Git: push ✅ (https://github.com/yonghot/firepath)
+- 배포 방식: GitHub 자동 배포 (Vercel 연동)
+- 프로덕션 확인: ❌ (Vercel SSO 보호 — 이전 세션과 동일)
+
+### 판단 필요
+1. **Vercel SSO 보호 해제**: 이전 세션과 동일 — 프로덕션 URL이 401 반환
+2. **RESEARCH.md C-1**: 글로벌 vs 한국어 타겟 결정 미완 [미반영 — 오너 확인 대기]
+3. **RESEARCH.md C-2**: $4.99/월 가격 적정성 검증 미완 [미반영 — 오너 확인 대기]
+4. **RESEARCH.md C-3**: SEO 키워드 전략 심층 연구 필요
+5. **Supabase 환경변수**: SUPABASE_SERVICE_ROLE_KEY 미설정
+6. **NEXT_PUBLIC_APP_URL**: 프로덕션 URL로 업데이트 필요
+
+### 다음 세션 권장
+1. Vercel SSO 해제 + 환경변수 설정 (오너)
+2. F012 Stripe 연동 (SECRET_KEY 필요)
+3. 리서치 수행 (쿨다운 경과 시)
+4. 코드 품질: 긴 컴포넌트 분리 (calculateFIRE, PortfolioPanel)
+5. SEO 최적화 + 가이드 콘텐츠 확장
+
+---
 
 ## [2026-04-08 19:30] 자동 개발 세션
 

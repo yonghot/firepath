@@ -42,12 +42,12 @@ export default async function GuidesIndexPage() {
             <Link
               key={guide.slug}
               href={`/guide/${guide.slug}`}
-              className="group block rounded-xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow"
+              className="group block rounded-xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow duration-200"
             >
               <Badge variant="secondary" className="mb-3 capitalize">
                 {guide.fire_type}
               </Badge>
-              <h2 className="text-xl font-semibold group-hover:text-[var(--brand-primary)] transition-colors">
+              <h2 className="text-xl font-semibold group-hover:text-[var(--brand-primary)] transition-colors duration-200">
                 {guide.title}
               </h2>
               <p className="text-sm text-muted-foreground mt-2 line-clamp-3">
@@ -73,7 +73,7 @@ export default async function GuidesIndexPage() {
 
       {/* CTA */}
       <div className="mt-10 p-6 rounded-xl bg-primary/5 border border-primary/20 text-center">
-        <h2 className="text-2xl font-semibold mb-2">Ready to Plan Your FIRE Path?</h2>
+        <h2 className="text-3xl font-bold mb-2">Ready to Plan Your FIRE Path?</h2>
         <p className="text-sm text-muted-foreground mb-4">
           Use our interactive calculator to compare all 5 FIRE types instantly.
         </p>

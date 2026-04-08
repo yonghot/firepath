@@ -21,17 +21,17 @@ export function Footer() {
             <div className="space-y-2">
               <h4 className="text-sm font-semibold">Product</h4>
               <nav className="flex flex-col gap-1">
-                <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">Calculator</Link>
-                <Link href="/premium" className="text-sm text-muted-foreground hover:text-foreground">Premium</Link>
+                <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Calculator</Link>
+                <Link href="/premium" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Premium</Link>
               </nav>
             </div>
             <div className="space-y-2">
               <h4 className="text-sm font-semibold">Guides</h4>
               <nav className="flex flex-col gap-1">
-                <Link href="/guide" className="text-sm text-muted-foreground hover:text-foreground">All Guides</Link>
-                <Link href="/guide/what-is-coastfire" className="text-sm text-muted-foreground hover:text-foreground">CoastFIRE</Link>
-                <Link href="/guide/what-is-leanfire" className="text-sm text-muted-foreground hover:text-foreground">LeanFIRE</Link>
-                <Link href="/guide/what-is-fatfire" className="text-sm text-muted-foreground hover:text-foreground">FatFIRE</Link>
+                <Link href="/guide" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">All Guides</Link>
+                <Link href="/guide/what-is-coastfire" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">CoastFIRE</Link>
+                <Link href="/guide/what-is-leanfire" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">LeanFIRE</Link>
+                <Link href="/guide/what-is-fatfire" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">FatFIRE</Link>
               </nav>
             </div>
           </div>

@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { CalculationRepository } from '@/lib/repositories/calculation.repository';
 import { ProfileRepository } from '@/lib/repositories/profile.repository';
 import { CalculationService } from '@/lib/services/calculation.service';
-import { AppError } from '@/constants/error-codes';
+import { requireAuth, handleApiError } from '@/lib/utils/api-handler';
 import { z } from 'zod/v4';
 
 const CreateCalculationSchema = z.object({
@@ -25,15 +24,7 @@ const CreateCalculationSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: { code: 'AUTH_REQUIRED', message: '로그인이 필요합니다' } },
-        { status: 401 }
-      );
-    }
-
+    const { supabase, user } = await requireAuth();
     const { searchParams } = new URL(request.url);
     const rawPage = parseInt(searchParams.get('page') || '1', 10);
     const rawLimit = parseInt(searchParams.get('limit') || '10', 10);
@@ -48,30 +39,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: { ...result, page, limit } });
   } catch (error) {
-    if (error instanceof AppError) {
-      return NextResponse.json(
-        { success: false, error: { code: error.code, message: error.message } },
-        { status: error.status }
-      );
-    }
-    console.error('GET /api/calculations error:', error);
-    return NextResponse.json(
-      { success: false, error: { code: 'INTERNAL_ERROR', message: '서버 오류가 발생했습니다' } },
-      { status: 500 }
-    );
+    return handleApiError('GET /api/calculations', error);
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: { code: 'AUTH_REQUIRED', message: '로그인이 필요합니다' } },
-        { status: 401 }
-      );
-    }
+    const { supabase, user } = await requireAuth();
 
     let body: unknown;
     try {
@@ -98,16 +72,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: record }, { status: 201 });
   } catch (error) {
-    if (error instanceof AppError) {
-      return NextResponse.json(
-        { success: false, error: { code: error.code, message: error.message } },
-        { status: error.status }
-      );
-    }
-    console.error('POST /api/calculations error:', error);
-    return NextResponse.json(
-      { success: false, error: { code: 'INTERNAL_ERROR', message: '서버 오류가 발생했습니다' } },
-      { status: 500 }
-    );
+    return handleApiError('POST /api/calculations', error);
   }
 }

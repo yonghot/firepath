@@ -32,7 +32,7 @@ export function Header() {
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               {item.label}
             </Link>
@@ -47,7 +47,7 @@ export function Header() {
 
         {/* Mobile nav */}
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger className="md:hidden inline-flex items-center justify-center rounded-md p-2 hover:bg-accent">
+          <SheetTrigger className="md:hidden inline-flex items-center justify-center rounded-md p-2 hover:bg-accent" aria-label="Open navigation menu">
             <Menu className="h-5 w-5" />
           </SheetTrigger>
           <SheetContent side="right" className="w-64">
