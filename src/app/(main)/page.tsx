@@ -11,6 +11,7 @@ import { ScenarioManager } from '@/components/features/scenario/scenario-manager
 import { ScenarioComparison } from '@/components/features/scenario/scenario-comparison';
 import { MonteCarloPanel } from '@/components/features/monte-carlo/monte-carlo-panel';
 import { PortfolioPanel } from '@/components/features/portfolio/portfolio-panel';
+import { SaveCalculationButton } from '@/components/features/calculator/save-calculation-button';
 import { DisclaimerBanner } from '@/components/common/disclaimer-banner';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -97,7 +98,10 @@ export default function CalculatorPage() {
 
               {/* Result cards */}
               <div>
-                <h2 className="text-3xl font-bold mb-3">Your FIRE Numbers</h2>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-3xl font-bold">Your FIRE Numbers</h2>
+                  <SaveCalculationButton />
+                </div>
                 <FIREResultCards
                   results={output.results}
                   onHighlight={setHighlightedType}

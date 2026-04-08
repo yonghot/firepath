@@ -36,6 +36,11 @@ export async function generateMetadata({ params }: GuidePageProps): Promise<Meta
   return {
     title: guide.title,
     description: guide.description,
+    openGraph: {
+      title: guide.title,
+      description: guide.description,
+      type: 'article',
+    },
   };
 }
 
@@ -70,8 +75,23 @@ export default async function GuidePage({ params }: GuidePageProps) {
     })
     .join('\n');
 
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: guide.title,
+    description: guide.description,
+    author: { '@type': 'Organization', name: 'FIREPath' },
+    publisher: { '@type': 'Organization', name: 'FIREPath' },
+    ...(guide.created_at && { datePublished: guide.created_at }),
+    ...(guide.updated_at && { dateModified: guide.updated_at }),
+  };
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
       <div className="flex flex-col lg:flex-row gap-8">
         <article className="flex-1 min-w-0">
           <Badge variant="secondary" className="mb-4 capitalize">

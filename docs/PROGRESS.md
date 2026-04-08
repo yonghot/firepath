@@ -1,10 +1,88 @@
 # PROGRESS.md
 
 ## 현재 상태
-- 현재 Phase: P2 완료 + 코드 품질 개선
+- 현재 Phase: P2 완료 + 디자인/UX 폴리싱
 - 마지막 업데이트: 2026-04-09
 - 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료)
 - 프로덕션: https://firepath-2j7weljnc-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
+
+## [2026-04-09 13:50] 자동 개발 세션
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미경과, ~5.5h < 6h)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음
+- PRD 변경점: 없음
+- DESIGN.md 불일치: 1건 — --primary CSS 변수가 brand-primary (#065F53)와 불일치. oklch(0.37 0.08 172) ≠ oklch(0.436 0.077 180.1)
+- feature_list.json vs 코드: 불일치 0건
+- 아키텍처 위반: 0건
+- RESEARCH 자동 반영: A-5~A-8 모두 이전 세션에서 구현 완료
+
+### 메인 태스크
+- DESIGN.md 정합성: --primary CSS 변수를 brand-primary에 맞춤
+- SEO 기반: robots.txt, sitemap.xml, JSON-LD 구조화 데이터 추가
+- UX 개선: 인증 상태 헤더 반영, Save to Account 버튼 추가
+
+### 구현 상세
+1. **--primary CSS 변수 brand-primary 정합**
+   - Light mode: oklch(0.37 0.08 172) → oklch(0.436 0.077 180.1) (#065F53 정확히 일치)
+   - Dark mode: oklch(0.922 0 0) (회색) → oklch(0.704 0.123 182.5) (teal-500)
+   - Dark mode foreground: oklch(0.205) → oklch(0.145) (어두운 텍스트)
+   - 접근성 검증: Light mode 7.58:1 AA PASS, Dark mode text-on-card 5.69:1 AA PASS, Dark mode btn 4.56:1 AA PASS
+
+2. **SEO 기반 구축**
+   - `src/app/robots.txt` — /api/와 /saved 차단, sitemap 참조
+   - `src/app/sitemap.xml` — 정적 페이지 + 5개 가이드 slug
+   - JSON-LD WebApplication 스키마 (layout.tsx)
+   - JSON-LD Article 스키마 (guide/[slug]/page.tsx)
+   - Guide 페이지 OG 메타 태그 추가
+
+3. **인증 상태 헤더 반영**
+   - `src/hooks/use-auth.ts` 생성 — Supabase 클라이언트 auth 상태 구독
+   - Header 컴포넌트 — 로그인 시 "Saved" + "Sign Out" 표시, 비로그인 시 "Sign In"
+   - 모바일 네비게이션에도 동일 적용
+
+4. **Save to Account 버튼**
+   - `src/components/features/calculator/save-calculation-button.tsx` — 인증된 사용자만 표시
+   - POST /api/calculations 호출, 이름 입력, 성공/에러 피드백
+   - 메인 페이지 "Your FIRE Numbers" 섹션에 배치
+
+### Refactor-on-Touch 결과
+- globals.css: CSS 변수만 수정, 구조 변경 없음
+- header.tsx: auth import + 조건부 렌더링 추가
+- guide/[slug]/page.tsx: OG 메타 + JSON-LD 추가
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (로컬 환경, 세션 시간 절약)
+- /qa --quick: ⏭️ 스킵 (Playwright 미설치)
+
+### 기술 부채 현황
+- 이번 세션 발견: 없음
+- 이번 세션 해소: --primary 색상 불일치
+- 잔여:
+  - PortfolioPanel 198줄 (미수정 — 300줄 미만이므로 임계치 이하)
+  - page.tsx 131줄 (CalculatorPage, 300줄 미만)
+
+### 배포
+- Git: push ✅ (https://github.com/yonghot/firepath)
+- 배포 방식: GitHub 자동 배포 (Vercel 연동)
+- 프로덕션 확인: ❌ (Vercel SSO 보호 — 이전 세션과 동일)
+
+### 판단 필요
+1. **Vercel SSO 보호 해제**: 이전 세션과 동일
+2. **RESEARCH.md C-1~C-3**: 이전 세션과 동일
+3. **Supabase 환경변수**: SUPABASE_SERVICE_ROLE_KEY 미설정
+4. **NEXT_PUBLIC_APP_URL**: 프로덕션 URL로 업데이트 필요
+
+### 다음 세션 권장
+1. 리서치 수행 (쿨다운 경과 시)
+2. SEO 가이드 콘텐츠 확장 (C-3 키워드 리서치 반영)
+3. F012 Stripe 연동 (SECRET_KEY 필요)
+4. Vercel SSO 해제 + 환경변수 설정 (오너)
+5. 성능 최적화 (코드 스플리팅, 이미지 최적화)
+
+---
 
 ## [2026-04-09 05:45] 자동 개발 세션
 
