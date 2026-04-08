@@ -1,12 +1,5 @@
 import type { FIREInput, FIREType } from '@/types/fire.types';
-import { MAX_SIMULATION_AGE } from '@/constants/fire-defaults';
-
-const FIRE_MULTIPLIERS: Record<Exclude<FIREType, 'coast'>, number> = {
-  lean: 0.6,
-  regular: 1.0,
-  fat: 1.5,
-  barista: 0.5,
-};
+import { MAX_SIMULATION_AGE, FIRE_MULTIPLIERS } from '@/constants/fire-defaults';
 
 export interface MonteCarloConfig {
   simulations: number; // default 1000
@@ -46,88 +39,65 @@ function normalRandom(rand: () => number, mean: number, stdDev: number): number 
   return mean + z * stdDev;
 }
 
-export function runMonteCarlo(
-  input: FIREInput,
-  config: MonteCarloConfig = { simulations: 1000, volatility: 0.15 }
-): MonteCarloResult {
-  const {
-    currentAge,
-    retirementAge,
-    annualIncome,
-    currentNetWorth,
-    savingsRate,
-    annualExpenses,
-    expectedReturn,
-    inflation,
-    safeWithdrawalRate,
-  } = input;
+interface SimulationContext {
+  currentAge: number;
+  retirementAge: number;
+  currentNetWorth: number;
+  annualSavings: number;
+  expectedReturn: number;
+  inflation: number;
+  years: number;
+  targets: Record<Exclude<FIREType, 'coast'>, number>;
+  realReturnBase: number;
+}
 
-  const annualSavings = annualIncome * savingsRate;
-  const years = MAX_SIMULATION_AGE - currentAge;
+/** Run a single simulation path and record FIRE achievement ages */
+function runSingleSimulation(
+  ctx: SimulationContext,
+  rand: () => number,
+  volatility: number,
+  reachAges: Record<FIREType, number[]>
+): number[] {
+  const path: number[] = [];
+  let netWorth = ctx.currentNetWorth;
 
-  // FIRE targets
-  const targets: Record<Exclude<FIREType, 'coast'>, number> = {
-    lean: (annualExpenses * FIRE_MULTIPLIERS.lean) / safeWithdrawalRate,
-    regular: (annualExpenses * FIRE_MULTIPLIERS.regular) / safeWithdrawalRate,
-    fat: (annualExpenses * FIRE_MULTIPLIERS.fat) / safeWithdrawalRate,
-    barista: (annualExpenses * FIRE_MULTIPLIERS.barista) / safeWithdrawalRate,
-  };
-
-  // Coast target
-  const realReturnBase = (1 + expectedReturn) / (1 + inflation) - 1;
-  const yearsToRetirement = retirementAge - currentAge;
-  const coastTarget = targets.regular / Math.pow(1 + realReturnBase, yearsToRetirement);
-
-  // Run simulations
-  const allPaths: number[][] = [];
-  const reachAges: Record<FIREType, number[]> = {
-    lean: [],
-    regular: [],
-    fat: [],
-    coast: [],
-    barista: [],
-  };
-
-  const rand = mulberry32(42); // deterministic seed for reproducibility
-
-  for (let sim = 0; sim < config.simulations; sim++) {
-    const path: number[] = [];
-    let netWorth = currentNetWorth;
-
-    for (let y = 0; y <= years; y++) {
-      path.push(netWorth);
-
-      if (y < years) {
-        // Randomize annual return using normal distribution
-        const randomReturn = normalRandom(rand, expectedReturn, config.volatility);
-        const realReturn = (1 + randomReturn) / (1 + inflation) - 1;
-        netWorth = netWorth * (1 + realReturn) + annualSavings;
-        if (netWorth < 0) netWorth = 0;
-      }
-    }
-
-    allPaths.push(path);
-
-    // Track FIRE achievement ages for this simulation
-    for (const [type, target] of Object.entries(targets) as [Exclude<FIREType, 'coast'>, number][]) {
-      const reachYear = path.findIndex((nw) => nw >= target);
-      if (reachYear >= 0) {
-        reachAges[type].push(currentAge + reachYear);
-      }
-    }
-
-    // Coast FIRE check
-    for (let y = 0; y < path.length && currentAge + y < retirementAge; y++) {
-      const yearsLeft = retirementAge - (currentAge + y);
-      const coastTargetAtAge = targets.regular / Math.pow(1 + realReturnBase, yearsLeft);
-      if (path[y] >= coastTargetAtAge) {
-        reachAges.coast.push(currentAge + y);
-        break;
-      }
+  for (let y = 0; y <= ctx.years; y++) {
+    path.push(netWorth);
+    if (y < ctx.years) {
+      const randomReturn = normalRandom(rand, ctx.expectedReturn, volatility);
+      const realReturn = (1 + randomReturn) / (1 + ctx.inflation) - 1;
+      netWorth = netWorth * (1 + realReturn) + ctx.annualSavings;
+      if (netWorth < 0) netWorth = 0;
     }
   }
 
-  // Calculate percentiles for each year
+  // Track FIRE achievement ages
+  for (const [type, target] of Object.entries(ctx.targets) as [Exclude<FIREType, 'coast'>, number][]) {
+    const reachYear = path.findIndex((nw) => nw >= target);
+    if (reachYear >= 0) {
+      reachAges[type].push(ctx.currentAge + reachYear);
+    }
+  }
+
+  // Coast FIRE check
+  for (let y = 0; y < path.length && ctx.currentAge + y < ctx.retirementAge; y++) {
+    const yearsLeft = ctx.retirementAge - (ctx.currentAge + y);
+    const coastTargetAtAge = ctx.targets.regular / Math.pow(1 + ctx.realReturnBase, yearsLeft);
+    if (path[y] >= coastTargetAtAge) {
+      reachAges.coast.push(ctx.currentAge + y);
+      break;
+    }
+  }
+
+  return path;
+}
+
+/** Calculate percentiles from simulation paths */
+function calculatePercentiles(
+  allPaths: number[][],
+  currentAge: number,
+  years: number
+): MonteCarloPercentile[] {
   const percentiles: MonteCarloPercentile[] = [];
   for (let y = 0; y <= years; y++) {
     const values = allPaths.map((p) => p[y]).sort((a, b) => a - b);
@@ -141,31 +111,67 @@ export function runMonteCarlo(
       p90: values[Math.floor(n * 0.9)],
     });
   }
+  return percentiles;
+}
 
-  // Calculate success rates
-  const successRates: Record<FIREType, number> = {
-    lean: reachAges.lean.length / config.simulations,
-    regular: reachAges.regular.length / config.simulations,
-    fat: reachAges.fat.length / config.simulations,
-    coast: reachAges.coast.length / config.simulations,
-    barista: reachAges.barista.length / config.simulations,
-  };
+/** Calculate success rates and median reach ages from simulation results */
+function calculateStatistics(
+  reachAges: Record<FIREType, number[]>,
+  simulations: number
+): { successRates: Record<FIREType, number>; medianReachAge: Record<FIREType, number | null> } {
+  const fireTypes: FIREType[] = ['lean', 'regular', 'fat', 'coast', 'barista'];
 
-  // Calculate median reach ages
-  const medianReachAge: Record<FIREType, number | null> = {
-    lean: null,
-    regular: null,
-    fat: null,
-    coast: null,
-    barista: null,
-  };
+  const successRates = {} as Record<FIREType, number>;
+  const medianReachAge = {} as Record<FIREType, number | null>;
 
-  for (const type of Object.keys(reachAges) as FIREType[]) {
+  for (const type of fireTypes) {
+    successRates[type] = reachAges[type].length / simulations;
     const ages = reachAges[type].sort((a, b) => a - b);
-    if (ages.length > 0) {
-      medianReachAge[type] = ages[Math.floor(ages.length / 2)];
-    }
+    medianReachAge[type] = ages.length > 0 ? ages[Math.floor(ages.length / 2)] : null;
   }
+
+  return { successRates, medianReachAge };
+}
+
+export function runMonteCarlo(
+  input: FIREInput,
+  config: MonteCarloConfig = { simulations: 1000, volatility: 0.15 }
+): MonteCarloResult {
+  const annualSavings = input.annualIncome * input.savingsRate;
+  const years = MAX_SIMULATION_AGE - input.currentAge;
+  const realReturnBase = (1 + input.expectedReturn) / (1 + input.inflation) - 1;
+
+  const targets: Record<Exclude<FIREType, 'coast'>, number> = {
+    lean: (input.annualExpenses * FIRE_MULTIPLIERS.lean) / input.safeWithdrawalRate,
+    regular: (input.annualExpenses * FIRE_MULTIPLIERS.regular) / input.safeWithdrawalRate,
+    fat: (input.annualExpenses * FIRE_MULTIPLIERS.fat) / input.safeWithdrawalRate,
+    barista: (input.annualExpenses * FIRE_MULTIPLIERS.barista) / input.safeWithdrawalRate,
+  };
+
+  const ctx: SimulationContext = {
+    currentAge: input.currentAge,
+    retirementAge: input.retirementAge,
+    currentNetWorth: input.currentNetWorth,
+    annualSavings,
+    expectedReturn: input.expectedReturn,
+    inflation: input.inflation,
+    years,
+    targets,
+    realReturnBase,
+  };
+
+  const allPaths: number[][] = [];
+  const reachAges: Record<FIREType, number[]> = {
+    lean: [], regular: [], fat: [], coast: [], barista: [],
+  };
+
+  const rand = mulberry32(42); // deterministic seed for reproducibility
+  for (let sim = 0; sim < config.simulations; sim++) {
+    allPaths.push(runSingleSimulation(ctx, rand, config.volatility, reachAges));
+  }
+
+  const percentiles = calculatePercentiles(allPaths, input.currentAge, years);
+  const { successRates, medianReachAge } = calculateStatistics(reachAges, config.simulations);
 
   return { percentiles, successRates, medianReachAge };
 }

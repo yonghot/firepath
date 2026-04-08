@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { CalculationRepository } from '@/lib/repositories/calculation.repository';
-import { ProfileRepository } from '@/lib/repositories/profile.repository';
-import { CalculationService } from '@/lib/services/calculation.service';
-import { requireAuth, handleApiError } from '@/lib/utils/api-handler';
+import { requireAuth, handleApiError, createCalculationService } from '@/lib/utils/api-handler';
 import { z } from 'zod/v4';
 
 const CreateCalculationSchema = z.object({
@@ -31,10 +28,7 @@ export async function GET(request: NextRequest) {
     const page = Math.max(1, isNaN(rawPage) ? 1 : rawPage);
     const limit = Math.min(50, Math.max(1, isNaN(rawLimit) ? 10 : rawLimit));
 
-    const service = new CalculationService(
-      new CalculationRepository(supabase),
-      new ProfileRepository(supabase)
-    );
+    const service = createCalculationService(supabase);
     const result = await service.listByUser(user.id, page, limit);
 
     return NextResponse.json({ success: true, data: { ...result, page, limit } });
@@ -64,10 +58,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const service = new CalculationService(
-      new CalculationRepository(supabase),
-      new ProfileRepository(supabase)
-    );
+    const service = createCalculationService(supabase);
     const record = await service.create(user.id, parsed.data);
 
     return NextResponse.json({ success: true, data: record }, { status: 201 });

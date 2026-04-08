@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { CalculationRepository } from '@/lib/repositories/calculation.repository';
-import { ProfileRepository } from '@/lib/repositories/profile.repository';
-import { CalculationService } from '@/lib/services/calculation.service';
-import { requireAuth, handleApiError } from '@/lib/utils/api-handler';
+import { requireAuth, handleApiError, createCalculationService } from '@/lib/utils/api-handler';
 
 export async function GET(
   _request: NextRequest,
@@ -11,10 +8,7 @@ export async function GET(
   try {
     const { id } = await params;
     const { supabase, user } = await requireAuth();
-    const service = new CalculationService(
-      new CalculationRepository(supabase),
-      new ProfileRepository(supabase)
-    );
+    const service = createCalculationService(supabase);
     const record = await service.getById(user.id, id);
 
     return NextResponse.json({ success: true, data: record });
@@ -30,10 +24,7 @@ export async function DELETE(
   try {
     const { id } = await params;
     const { supabase, user } = await requireAuth();
-    const service = new CalculationService(
-      new CalculationRepository(supabase),
-      new ProfileRepository(supabase)
-    );
+    const service = createCalculationService(supabase);
     await service.delete(user.id, id);
 
     return NextResponse.json({ success: true, data: null });

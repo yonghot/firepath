@@ -11,24 +11,13 @@ import {
   Legend,
 } from 'recharts';
 import { formatCurrency } from '@/lib/utils/format';
-import type { PortfolioResult } from '@/lib/engine/portfolio-optimizer';
+import { RISK_PROFILE_COLORS, RISK_PROFILE_LABELS } from '@/lib/engine/portfolio-optimizer';
+import type { PortfolioResult, RiskProfile } from '@/lib/engine/portfolio-optimizer';
 
 interface PortfolioGrowthChartProps {
   projectedGrowth: PortfolioResult['projectedGrowth'];
   recommended: string;
 }
-
-const PROFILE_COLORS: Record<string, string> = {
-  conservative: '#10B981',
-  moderate: '#2563EB',
-  aggressive: '#7C3AED',
-};
-
-const PROFILE_LABELS: Record<string, string> = {
-  conservative: 'Conservative',
-  moderate: 'Moderate',
-  aggressive: 'Aggressive',
-};
 
 function GrowthTooltip({
   active,
@@ -36,7 +25,7 @@ function GrowthTooltip({
   label,
 }: {
   active?: boolean;
-  payload?: Array<{ value: number; dataKey: string; color: string }>;
+  payload?: Array<{ value: number; dataKey: RiskProfile; color: string }>;
   label?: number;
 }) {
   if (!active || !payload?.length) return null;
@@ -47,7 +36,7 @@ function GrowthTooltip({
       <div className="space-y-0.5 text-xs">
         {payload.map((p) => (
           <p key={p.dataKey} style={{ color: p.color }}>
-            {PROFILE_LABELS[p.dataKey]}:{' '}
+            {RISK_PROFILE_LABELS[p.dataKey]}:{' '}
             <span className="font-mono font-medium text-white">
               {formatCurrency(p.value)}
             </span>
@@ -72,7 +61,7 @@ export function PortfolioGrowthChart({
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={projectedGrowth} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
           <defs>
-            {Object.entries(PROFILE_COLORS).map(([key, color]) => (
+            {Object.entries(RISK_PROFILE_COLORS).map(([key, color]) => (
               <linearGradient key={key} id={`grad-${key}`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor={color} stopOpacity={key === recommended ? 0.15 : 0.05} />
                 <stop offset="95%" stopColor={color} stopOpacity={0} />
@@ -97,7 +86,7 @@ export function PortfolioGrowthChart({
           <Legend
             formatter={(value: string) => (
               <span className="text-xs">
-                {PROFILE_LABELS[value] || value}
+                {RISK_PROFILE_LABELS[value as RiskProfile] || value}
                 {value === recommended ? ' (rec.)' : ''}
               </span>
             )}
@@ -108,7 +97,7 @@ export function PortfolioGrowthChart({
               key={profile}
               type="monotone"
               dataKey={profile}
-              stroke={PROFILE_COLORS[profile]}
+              stroke={RISK_PROFILE_COLORS[profile]}
               strokeWidth={profile === recommended ? 2.5 : 1.5}
               fill={`url(#grad-${profile})`}
               animationDuration={300}

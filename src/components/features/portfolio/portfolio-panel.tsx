@@ -7,7 +7,7 @@ import { Crown, PieChart as PieChartIcon, Info, CheckCircle } from 'lucide-react
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { PortfolioChart, PortfolioLegend } from './portfolio-chart';
 import { PortfolioGrowthChart } from './portfolio-results';
-import { optimizePortfolio } from '@/lib/engine/portfolio-optimizer';
+import { optimizePortfolio, RISK_PROFILE_DESCRIPTIONS } from '@/lib/engine/portfolio-optimizer';
 import type { FIREInput, FIREOutput } from '@/types/fire.types';
 import type { RiskProfile } from '@/lib/engine/portfolio-optimizer';
 import Link from 'next/link';
@@ -17,12 +17,6 @@ interface PortfolioPanelProps {
   results: FIREOutput['results'];
   isPremium?: boolean;
 }
-
-const PROFILE_DESCRIPTIONS: Record<RiskProfile, string> = {
-  conservative: 'Lower risk, steadier growth. Best for shorter time horizons or risk-averse investors.',
-  moderate: 'Balanced risk and return. Suitable for most FIRE seekers with 10+ year horizons.',
-  aggressive: 'Higher risk, higher potential return. Best for young investors with 15+ years to FIRE.',
-};
 
 export function PortfolioPanel({ input, results, isPremium = false }: PortfolioPanelProps) {
   const [isRunning, setIsRunning] = useState(false);
@@ -139,7 +133,7 @@ export function PortfolioPanel({ input, results, isPremium = false }: PortfolioP
             <div className="rounded-xl border bg-card p-4">
               <h3 className="text-2xl font-semibold mb-1">{activePortfolio.label} Allocation</h3>
               <p className="text-xs text-muted-foreground mb-3">
-                {PROFILE_DESCRIPTIONS[activeProfile]}
+                {RISK_PROFILE_DESCRIPTIONS[activeProfile]}
               </p>
               <PortfolioChart portfolio={activePortfolio} />
               <PortfolioLegend portfolio={activePortfolio} />

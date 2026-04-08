@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { AppError } from '@/constants/error-codes';
+import { CalculationRepository } from '@/lib/repositories/calculation.repository';
+import { ProfileRepository } from '@/lib/repositories/profile.repository';
+import { SubscriptionRepository } from '@/lib/repositories/subscription.repository';
+import { CalculationService } from '@/lib/services/calculation.service';
+import { SubscriptionService } from '@/lib/services/subscription.service';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 
 export interface AuthContext {
@@ -19,6 +24,22 @@ export async function requireAuth(): Promise<AuthContext> {
     throw new AppError('AUTH_REQUIRED');
   }
   return { supabase, user };
+}
+
+/** Create a CalculationService with its dependencies from an authenticated supabase client */
+export function createCalculationService(supabase: SupabaseClient): CalculationService {
+  return new CalculationService(
+    new CalculationRepository(supabase),
+    new ProfileRepository(supabase)
+  );
+}
+
+/** Create a SubscriptionService with its dependencies from an authenticated supabase client */
+export function createSubscriptionService(supabase: SupabaseClient): SubscriptionService {
+  return new SubscriptionService(
+    new SubscriptionRepository(supabase),
+    new ProfileRepository(supabase)
+  );
 }
 
 /**

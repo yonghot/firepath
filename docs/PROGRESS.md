@@ -6,6 +6,95 @@
 - 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료)
 - 프로덕션: https://firepath-2j7weljnc-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
 
+## [2026-04-09 05:45] 자동 개발 세션
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미경과, ~1.5h < 6h)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음
+- PRD 변경점: 없음
+- DESIGN.md 불일치: 0건 (차트 tooltip rounded-md는 DESIGN.md에서 radius 미명시이므로 위반 아님)
+- feature_list.json vs 코드: 불일치 0건
+- 아키텍처 위반: 0건
+
+### 메인 태스크
+- 기술 부채 해소: 코드 품질 리팩토링 (5건)
+
+### 구현 상세
+1. **FIRE_MULTIPLIERS 공유 상수 추출**
+   - `src/constants/fire-defaults.ts`에 FIRE_MULTIPLIERS 추가
+   - `src/lib/engine/fire-calculator.ts` — 로컬 상수 제거, 공유 import
+   - `src/lib/engine/monte-carlo.ts` — 로컬 상수 제거, 공유 import
+
+2. **runMonteCarlo 함수 분리 (123줄 → 주함수 20줄 + 헬퍼 3개)**
+   - `runSingleSimulation()` — 단일 시뮬레이션 경로 실행 + FIRE 도달 나이 추적
+   - `calculatePercentiles()` — 시뮬레이션 경로에서 퍼센타일 계산
+   - `calculateStatistics()` — 성공률 + 중앙값 도달 나이 계산
+   - `SimulationContext` 인터페이스 — 시뮬레이션 파라미터 묶음
+
+3. **optimizePortfolio 함수 분리 (96줄 → 주함수 15줄 + 헬퍼 3개)**
+   - `buildPortfolioAllocations()` — 모델 포트폴리오에서 PortfolioAllocation 객체 생성
+   - `projectGrowth()` — 각 전략별 순자산 성장 프로젝션
+   - `calculateYearsToFIRE()` — 추천 포트폴리오 수익률 기반 FIRE 도달 연수
+
+4. **서비스 팩토리 함수 추출**
+   - `src/lib/utils/api-handler.ts`에 `createCalculationService()`, `createSubscriptionService()` 추가
+   - 4개 API 라우트에서 중복 서비스 인스턴스화 코드 제거:
+     - `src/app/api/calculations/route.ts` (GET, POST)
+     - `src/app/api/calculations/[id]/route.ts` (GET, DELETE)
+     - `src/app/api/subscriptions/route.ts` (GET, POST)
+     - `src/app/api/subscriptions/portal/route.ts` (POST)
+
+5. **포트폴리오 프로필 상수 통합**
+   - `portfolio-optimizer.ts`에 `RISK_PROFILE_LABELS`, `RISK_PROFILE_COLORS`, `RISK_PROFILE_DESCRIPTIONS` export
+   - `portfolio-panel.tsx` — 로컬 PROFILE_DESCRIPTIONS 제거, 공유 import
+   - `portfolio-results.tsx` — 로컬 PROFILE_COLORS/PROFILE_LABELS 제거, 공유 import + RiskProfile 타입 적용
+
+### Refactor-on-Touch 결과
+- 중복 상수: FIRE_MULTIPLIERS 2곳 → 1곳, portfolio profile 상수 2곳 → 1곳
+- 중복 서비스 인스턴스화: 7회 → 팩토리 2개 + 호출 7회 (각 1줄)
+- 긴 함수: runMonteCarlo 123줄 → 20줄 + 3 헬퍼, optimizePortfolio 96줄 → 15줄 + 3 헬퍼
+- 타입 개선: portfolio-results.tsx tooltip payload dataKey string → RiskProfile
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (로컬 환경, 세션 시간 절약)
+- /qa --quick: ⏭️ 스킵 (Playwright 미설치)
+
+### 기술 부채 현황
+- 이번 세션 발견: 없음 (이전 세션 잔여 해소)
+- 이번 세션 해소:
+  - FIRE_MULTIPLIERS 중복 (fire-calculator.ts + monte-carlo.ts)
+  - runMonteCarlo 123줄 (50줄 임계치 초과)
+  - optimizePortfolio 96줄 (50줄 임계치 초과)
+  - 서비스 인스턴스화 중복 (4개 API 라우트)
+  - portfolio profile 상수 중복 (panel + results)
+- 잔여:
+  - PortfolioPanel 195줄 (미수정 — 컴포넌트 분리 필요)
+  - page.tsx 129줄 (CalculatorPage, 미수정)
+
+### 배포
+- Git: push ✅ (https://github.com/yonghot/firepath)
+- 배포 방식: GitHub 자동 배포 (Vercel 연동)
+- 프로덕션 확인: ❌ (Vercel SSO 보호 — 이전 세션과 동일)
+
+### 판단 필요
+1. **Vercel SSO 보호 해제**: 이전 세션과 동일
+2. **RESEARCH.md C-1**: 글로벌 vs 한국어 타겟 결정 미완
+3. **RESEARCH.md C-2**: $4.99/월 가격 적정성 검증 미완
+4. **RESEARCH.md C-3**: SEO 키워드 전략 심층 연구 필요
+5. **Supabase 환경변수**: SUPABASE_SERVICE_ROLE_KEY 미설정
+6. **NEXT_PUBLIC_APP_URL**: 프로덕션 URL로 업데이트 필요
+
+### 다음 세션 권장
+1. 리서치 수행 (쿨다운 경과 시)
+2. PortfolioPanel 컴포넌트 분리 (195줄)
+3. F012 Stripe 연동 (SECRET_KEY 필요)
+4. Vercel SSO 해제 + 환경변수 설정 (오너)
+5. SEO 최적화 + 가이드 콘텐츠 확장
+
+---
+
 ## [2026-04-09 04:15] 자동 개발 세션
 
 ### 리서치

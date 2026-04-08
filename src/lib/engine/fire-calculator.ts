@@ -1,12 +1,5 @@
 import type { FIREInput, FIREOutput, FIRETimeline, FIREResult, FIREType } from '@/types/fire.types';
-import { MAX_SIMULATION_AGE } from '@/constants/fire-defaults';
-
-const FIRE_MULTIPLIERS: Record<Exclude<FIREType, 'coast'>, number> = {
-  lean: 0.6,
-  regular: 1.0,
-  fat: 1.5,
-  barista: 0.5,
-};
+import { MAX_SIMULATION_AGE, FIRE_MULTIPLIERS } from '@/constants/fire-defaults';
 
 export function calculateFIRE(input: FIREInput): FIREOutput {
   const {

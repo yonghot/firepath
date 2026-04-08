@@ -1,4 +1,12 @@
-import type { SliderConfig, FIREInput } from '@/types/fire.types';
+import type { SliderConfig, FIREInput, FIREType } from '@/types/fire.types';
+
+/** Multipliers applied to annual expenses (divided by SWR) to get FIRE target */
+export const FIRE_MULTIPLIERS: Record<Exclude<FIREType, 'coast'>, number> = {
+  lean: 0.6,
+  regular: 1.0,
+  fat: 1.5,
+  barista: 0.5,
+};
 
 export const SLIDER_CONFIGS: SliderConfig[] = [
   {
