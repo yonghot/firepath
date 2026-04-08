@@ -2,6 +2,96 @@
 
 ---
 
+**리서치 일시**: 2026-04-08 19:25 KST
+**코드베이스 상태**: 완료 15/16 (F012 partial — Stripe), 빌드 PASS
+
+## [A] 방향/기능 제안
+
+### A-5: Premium 버튼 dead-end 수정 [자동 반영]
+- 현재 상태: `/premium` 페이지의 "Get Premium" 버튼에 onClick/href가 없어 아무 동작 안 함
+- 제안: Stripe 미연동 상태에서도 "Coming Soon" 또는 이메일 수집 CTA로 전환
+- 근거: R1-1 사용자 플로우 분석에서 premium 전환 경로가 dead-end
+- 구현 가이드: premium/page.tsx 버튼에 적절한 상태 표시
+- 예상 작업량: 15분
+- 부작용: 없음
+
+### A-6: 시나리오 데이터 새로고침 시 유실 방지 [자동 반영]
+- 현재 상태: 시나리오가 Zustand 메모리 스토어에만 저장되어 페이지 새로고침 시 전부 유실
+- 제안: Zustand persist middleware + localStorage로 시나리오 영속화
+- 근거: R1-1 사용자 플로우 분석 — 사용자가 시나리오 2개 저장 후 새로고침하면 모두 사라짐
+- 구현 가이드: scenario.store.ts에 persist middleware 추가
+- 예상 작업량: 15분
+- 부작용: 없음
+
+### A-7: 가이드 인덱스 페이지 + generateStaticParams 추가 [자동 반영]
+- 현재 상태: /guide/[slug] 개별 페이지만 존재. 가이드 목록 페이지 없음. SSG 미적용.
+- 제안: /guide 인덱스 페이지 생성 + generateStaticParams로 빌드 시 정적 생성
+- 근거: PRD 2-7에서 Guide는 "SC" 타입. SEO에 중요. R1-5 분석에서 SSG 미적용 확인.
+- 구현 가이드: src/app/(main)/guide/page.tsx 인덱스 + [slug]/page.tsx에 generateStaticParams
+- 예상 작업량: 30분
+- 부작용: 없음 (Supabase 연결 필요하므로 빌드 시 DB 접근 가능해야 함)
+
+### A-8: Calculator Panel 헤딩 DESIGN.md 정합성 [자동 반영]
+- 현재 상태: calculator-panel.tsx의 "Parameters" h2가 text-lg (18px), scenario-manager.tsx의 "Scenarios" h3가 text-sm (14px)
+- 제안: DESIGN.md 스케일에 맞춤 — h2는 최소 text-xl, h3는 text-base 이상
+- 근거: R1-2 디자인 감사에서 DESIGN.md 타이포그래피 스케일 위반 확인
+- 구현 가이드: calculator-panel.tsx h2 → text-xl font-semibold, scenario-manager.tsx h3 → text-base font-semibold
+- 예상 작업량: 5분
+- 부작용: 없음
+
+## [B] 코드 개선
+
+### B-3: Guide 페이지 서비스 레이어 바이패스 [오너 판단 필요]
+- 대상 파일: src/app/(main)/guide/[slug]/page.tsx
+- 문제: Server Component가 GuideRepository를 직접 호출 (서비스 레이어 없음)
+- 제안: guide.service.ts 생성하여 3-Layer 준수
+- 위험도: 낮음 (읽기 전용 공개 콘텐츠)
+
+### B-4: Repository 에러를 AppError로 래핑 [오너 판단 필요]
+- 대상 파일: src/lib/repositories/ 내 모든 파일
+- 문제: Supabase 에러를 raw로 throw하여 500 응답 시 내부 DB 상세가 로깅될 수 있음
+- 제안: Repository 에러를 AppError로 래핑하여 구조화된 에러 처리
+- 위험도: 낮음 (현재 서버 사이드에서만 로깅, 클라이언트 노출 없음)
+
+## [C] 외부 조사
+
+[C] 작성 전 기존 항목 확인:
+- C-1 (한국 FIRE 커뮤니티): PRD.md 변경 없음 → [미반영 — 오너 확인 대기]
+- C-2 (수익화 벤치마크): PRD.md 변경 없음 → [미반영 — 오너 확인 대기]
+
+### C-3: FIRE 계산기 SEO 키워드 전략
+- 배경: 가이드 콘텐츠가 Supabase DB에만 존재하고, 빌드 시 정적 생성되지 않음. SEO 효과 미미.
+- 내부 분석 결과: 5개 가이드 토픽은 seeded 데이터로만 존재. 타겟 키워드, 검색 볼륨 분석 없음.
+- 추가로 필요한 것: FIRE 관련 롱테일 키워드 목록, 검색 볼륨, 경쟁 도구의 SEO 전략
+- 질문: "FIRE(Financial Independence Retire Early) 계산기의 SEO 전략을 조사해주세요: 1) FIRE 관련 검색 키워드 목록과 월간 검색 볼륨 (영어), 2) 상위 FIRE 계산기들의 콘텐츠 전략 (어떤 가이드/블로그를 제공하는지), 3) 'FIRE calculator', 'retirement calculator' 등 핵심 키워드의 경쟁 강도, 4) 롱테일 키워드로 진입 가능한 틈새 주제"
+- 결과 반영: PRD.md 2-7 Pages + guides 콘텐츠 전략
+- 긴급도: 중간
+
+## [D] 시장 인사이트
+
+### D-3: FIRE 계산기의 핵심 차별화는 "비교"
+- 발견: cFIREsim, FICalc 등은 단일 시나리오 중심. FIREPath의 5 FIRE 유형 동시 비교는 시장에서 고유함.
+- 적용 가능성: 이 차별점을 Hero 섹션, OG 이미지, 메타 설명에 더 강조
+- 관련 기능: F009 OG Image, SEO meta descriptions
+
+### D-4: 개인 금융 SaaS의 freemium 전환
+- 발견: 개인 금융 도구의 무료→유료 전환율은 통상 2-5%. FIRE 계산기는 일회성 사용 경향이 강해 구독 유지가 어려움.
+- 적용 가능성: 프리미엄 모델 대신 일회성 결제 또는 평생 액세스 검토 필요 (C-2 심층 연구 대기 중)
+
+## [E] 개발 효율화
+
+### E-3: Vercel SSO 보호가 여전히 프로덕션 접근 차단
+- 관찰: 4+ 세션 연속으로 프로덕션 URL이 401 반환
+- 제안: Vercel 대시보드 → Settings → Deployment Protection → "Standard Protection"으로 변경
+- 기대 효과: 프로덕션 URL 공개 접근 가능
+
+### E-4: Supabase 환경변수 미설정으로 서버 기능 불완전
+- 관찰: SUPABASE_SERVICE_ROLE_KEY, NEXT_PUBLIC_APP_URL 미설정
+- 제안: Vercel 환경변수 설정 필요 (오너 작업)
+- 기대 효과: 서버 사이드 Supabase 기능 정상 작동
+
+---
+
 **리서치 일시**: 2026-04-05 11:00 KST
 **코드베이스 상태**: 완료 14/16 (F012 partial, F014 skip), 빌드 PASS
 

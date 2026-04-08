@@ -1,10 +1,84 @@
 # PROGRESS.md
 
 ## 현재 상태
-- 현재 Phase: P2 완료 + 디자인 완성
-- 마지막 업데이트: 2026-04-05
+- 현재 Phase: P2 완료 + UX/SEO 개선
+- 마지막 업데이트: 2026-04-08
 - 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료)
 - 프로덕션: https://firepath-e8vp53uit-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
+
+## [2026-04-08 19:30] 자동 개발 세션
+
+### 리서치
+- ✅ 수행 (쿨다운 ~80h > 6h)
+- 서브에이전트 5개 병렬 스캔: User Flow, Design Audit, Backend Audit, Code Quality, Content/Data
+- [자동 반영] 4개: A-5 Premium 버튼 dead-end, A-6 시나리오 localStorage, A-7 가이드 인덱스 페이지, A-8 헤딩 타이포그래피
+- [오너 판단 필요] 2개: B-3 Guide 서비스 레이어, B-4 Repository 에러 래핑
+- [C] 외부 조사: 신규 1개 (C-3 SEO 키워드 전략)
+- [C] 반영 추적: C-1 [미반영 — 오너 확인 대기], C-2 [미반영 — 오너 확인 대기]
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음 (REVIEW.md에 [MUST] 항목 없음)
+- PRD 변경점: 없음
+- DESIGN.md 불일치 2건 → 수정: calculator-panel h2 text-lg→text-xl, scenario-manager h3 text-sm→text-base
+- feature_list.json vs 코드: 불일치 0건
+
+### 메인 태스크
+- 리서치 [자동 반영] 4건 일괄 구현
+
+### 추가 작업
+1. SEO 메타데이터 강화: Twitter Card, robots meta, siteName 추가
+2. 헤더 Guides 네비게이션 → /guide 인덱스로 변경
+3. 푸터에 "All Guides" 링크 추가
+
+### 구현 상세
+- 생성 파일:
+  - `src/app/(main)/guide/page.tsx` — 가이드 인덱스 페이지 (Server Component, SEO metadata)
+- 수정 파일:
+  - `src/app/(main)/premium/page.tsx` — "Get Premium" → "Coming Soon" disabled 버튼 + 안내 텍스트
+  - `src/stores/scenario.store.ts` — Zustand persist middleware 추가 (localStorage 영속화)
+  - `src/components/features/calculator/calculator-panel.tsx` — h2 text-lg→text-xl font-semibold
+  - `src/components/features/scenario/scenario-manager.tsx` — h3 text-sm→text-base font-semibold
+  - `src/components/layouts/header.tsx` — Guides 링크 /guide/what-is-coastfire → /guide
+  - `src/components/layouts/footer.tsx` — "All Guides" 링크 추가
+  - `src/app/layout.tsx` — Twitter Card, robots, siteName 메타 추가
+  - `RESEARCH.md` — 2026-04-08 리서치 결과 추가
+
+### 아키텍처 메모
+- 시나리오 localStorage: scenarios만 persist, compareIds는 세션 상태로 유지 (partialize)
+- 가이드 인덱스: Supabase 연결 실패 시 빈 상태 + CTA 표시 (graceful fallback)
+- Premium 버튼: Stripe 미연동이므로 Coming Soon으로 사용자 기대 관리
+
+### 시도했으나 실패한 접근
+- 없음
+
+### 자가 검토
+- REVIEW.md [MUST]: 해당 없음
+- feature_list.json AC: 신규 기능 없음 (UX 개선만)
+- DESIGN.md vs UI: 타이포그래피 2건 수정 완료
+- PRD vs 구현: 변경 없음
+- 레이어 위반: 가이드 인덱스도 기존 [slug]/page.tsx와 동일 패턴 (Server Component → Repository 직접)
+- 빌드: PASS
+
+### 배포
+- Git: push (아래 확인)
+- 프로덕션: (아래 확인)
+
+### 판단 필요
+1. **Vercel SSO 보호 해제**: 이전 세션과 동일 — 프로덕션 URL이 401 반환
+2. **RESEARCH.md C-1**: 글로벌 vs 한국어 타겟 결정 미완 [미반영 — 오너 확인 대기]
+3. **RESEARCH.md C-2**: $4.99/월 가격 적정성 검증 미완 [미반영 — 오너 확인 대기]
+4. **RESEARCH.md C-3**: SEO 키워드 전략 심층 연구 필요 (신규)
+5. **Supabase 환경변수**: SUPABASE_SERVICE_ROLE_KEY 미설정
+6. **NEXT_PUBLIC_APP_URL**: 프로덕션 URL로 업데이트 필요
+
+### 다음 세션 권장
+1. C-1, C-2, C-3 심층 연구 수행 (오너)
+2. Vercel SSO 해제 + 환경변수 설정 (오너)
+3. F012 Stripe 연동 (SECRET_KEY 필요)
+4. 코드 품질 개선 (테스트, 리팩토링 — 핵심 기능 완료 후)
+5. SEO 최적화 + 가이드 콘텐츠 확장
+
+---
 
 ## [2026-04-05 11:16] 자동 개발 세션
 

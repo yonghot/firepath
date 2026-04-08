@@ -28,6 +28,7 @@ export function Footer() {
             <div className="space-y-2">
               <h4 className="text-sm font-semibold">Guides</h4>
               <nav className="flex flex-col gap-1">
+                <Link href="/guide" className="text-sm text-muted-foreground hover:text-foreground">All Guides</Link>
                 <Link href="/guide/what-is-coastfire" className="text-sm text-muted-foreground hover:text-foreground">CoastFIRE</Link>
                 <Link href="/guide/what-is-leanfire" className="text-sm text-muted-foreground hover:text-foreground">LeanFIRE</Link>
                 <Link href="/guide/what-is-fatfire" className="text-sm text-muted-foreground hover:text-foreground">FatFIRE</Link>

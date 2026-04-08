@@ -9,7 +9,7 @@ import { useState } from 'react';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Calculator' },
-  { href: '/guide/what-is-coastfire', label: 'Guides' },
+  { href: '/guide', label: 'Guides' },
   { href: '/premium', label: 'Premium' },
 ];
 

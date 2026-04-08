@@ -78,10 +78,13 @@ export default function PremiumPage() {
                 <FeatureCheck value={f.premium} />
               </div>
             ))}
-            <Button className="w-full mt-4">
+            <Button className="w-full mt-4" disabled>
               <Crown className="h-4 w-4 mr-2" />
-              Get Premium
+              Coming Soon
             </Button>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              Premium subscriptions launching soon.
+            </p>
           </CardContent>
         </Card>
       </div>

@@ -31,6 +31,16 @@ export const metadata: Metadata = {
     title: 'FIREPath — All FIRE Types in One Beautiful Calculator',
     description: 'Compare 5 FIRE types on one interactive timeline.',
     type: 'website',
+    siteName: 'FIREPath',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'FIREPath — All FIRE Types in One Beautiful Calculator',
+    description: 'Compare 5 FIRE types on one interactive timeline.',
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
