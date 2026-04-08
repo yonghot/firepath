@@ -4,7 +4,7 @@
 - 현재 Phase: P2 완료 + UX/SEO 개선
 - 마지막 업데이트: 2026-04-08
 - 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료)
-- 프로덕션: https://firepath-e8vp53uit-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
+- 프로덕션: https://firepath-2j7weljnc-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
 
 ## [2026-04-08 19:30] 자동 개발 세션
 
@@ -60,8 +60,9 @@
 - 빌드: PASS
 
 ### 배포
-- Git: push (아래 확인)
-- 프로덕션: (아래 확인)
+- Git: push ✅ (https://github.com/yonghot/firepath)
+- Vercel: ✅ 배포 완료 (https://firepath-2j7weljnc-sk1597530-3914s-projects.vercel.app)
+- 프로덕션 확인: ❌ HTTP 401 — Vercel SSO 보호 활성화 (이전 세션과 동일)
 
 ### 판단 필요
 1. **Vercel SSO 보호 해제**: 이전 세션과 동일 — 프로덕션 URL이 401 반환
