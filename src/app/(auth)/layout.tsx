@@ -1,5 +1,11 @@
+import type { Metadata } from 'next';
 import { Flame } from 'lucide-react';
 import Link from 'next/link';
+
+// Auth pages shouldn't appear in search results — personalized + ephemeral.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default function AuthLayout({
   children,

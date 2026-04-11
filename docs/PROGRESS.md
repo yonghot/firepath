@@ -1,10 +1,97 @@
 # PROGRESS.md
 
 ## 현재 상태
-- 현재 Phase: P2 완료 + 컴포넌트 레이어 3-Layer 정합성 확보
+- 현재 Phase: P2 완료 + Calculator 서버 컴포넌트 분리 + SEO 메타데이터 강화
 - 마지막 업데이트: 2026-04-11
-- 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료). Lint 0/0. 빌드 PASS.
+- 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료). Lint 0/0. 빌드 PASS. Home(/)이 Static(○)으로 승격.
 - 프로덕션: https://firepath-2j7weljnc-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
+
+## [2026-04-11 20:10] 자동 개발 세션
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미경과, 직전 리서치 커밋 ~3.2h 전)
+
+### 정합성 검증 (B-0.5)
+- 이전 세션 미커밋 변경 감지: Calculator 서버 컴포넌트 분리 작업 (page.tsx, premium/page.tsx, saved/page.tsx, calculator-client.tsx 신규)
+- [MUST] 위반: 없음
+- PRD 변경점: 없음
+- DESIGN.md 불일치: 0건
+- feature_list.json vs 코드: 0건
+- 아키텍처 위반: 0건
+
+### 메인 태스크
+- 이전 세션 미완료 작업 완료 + 커밋 (Calculator SSR + 페이지 메타데이터 보강)
+- SEO 메타데이터 추가 개선: title template redundancy, canonical URLs, auth noindex, sitemap 정리
+
+### 구현 상세
+1. **이전 세션 Calculator 서버 컴포넌트 분리 확정 + 커밋**
+   - `src/components/features/calculator/calculator-client.tsx` 신규 (118줄)
+     - 기존 page.tsx의 `'use client'` 로직(useState, stores, URL sync, compare view)을 전부 이동
+   - `src/app/(main)/page.tsx`: 125줄 → 30줄
+     - Server Component로 전환 → `export const metadata` 추가
+     - Hero(Flame 아이콘 + H1 + 설명 텍스트) 서버 렌더링 → LCP 개선
+     - Calculator 인터랙션 부분만 `<CalculatorClient />`로 하이드레이트
+   - `src/app/(main)/premium/page.tsx`: `'use client'` 제거, Server Component로 전환 + metadata 추가
+   - `src/app/(main)/saved/page.tsx`: metadata 추가 (robots: noindex — 개인 데이터)
+   - 빌드 출력: `/`, `/premium` 모두 `○ (Static)`으로 승격 (이전엔 client-rendered)
+
+2. **home title template 중복 해소**
+   - 문제: root layout의 `title.template = '%s | FIREPath'`가 page title과 결합 → `FIREPath — ... | FIREPath` 중복
+   - 수정: page.tsx에서 `title: { absolute: '...' }` 형태로 절대 지정 → template 우회
+
+3. **Auth 페이지 robots: noindex 일괄 적용**
+   - 파일: `src/app/(auth)/layout.tsx`
+   - login/signup은 `'use client'`이라 metadata export 불가 → 공유 layout에서 noindex 지정
+   - 개인 인증 플로우가 검색 결과에 노출되지 않도록 차단
+
+4. **Guide 페이지 canonical URL 추가**
+   - `/guide` (index): `alternates: { canonical: '/guide' }` + openGraph 추가
+   - `/guide/[slug]`: `generateMetadata`에 `alternates: { canonical: \`/guide/${slug}\` }` 추가
+   - 추가 혜택: guide index title이 `FIRE Guides | FIREPath`로 템플릿 정상 결합 (이전엔 `FIRE Guides — FIREPath | FIREPath` 이중 표기)
+
+5. **Sitemap에서 `/result` 제거**
+   - `/result`는 URL hash로 개인화된 공유 결과를 렌더링 → home(`/`)과 콘텐츠 중복
+   - 검색 엔진에 중복 콘텐츠 신호를 보내지 않도록 sitemap에서 제외
+
+### Refactor-on-Touch 결과
+- page.tsx: 125줄 → 30줄 (client 로직을 calculator-client로 분리)
+- 모든 수정 파일에서 `console.log`, `any`, `TODO` 없음
+- 미사용 import 없음 (lint 0/0)
+- premium/saved/guide 페이지 metadata 구조 일관화 (title + description + alternates + optional openGraph/robots)
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (gstack 미설치)
+- /qa --quick: ⏭️ 스킵 (Playwright 미설치 + 네트워크 제한)
+
+### 기술 부채 현황
+- 이번 세션 해소:
+  - home `/`을 Static(○)으로 승격 — Next.js 렌더링 전략 최적화
+  - title template 중복 (1건)
+  - auth 페이지 검색 노출 누출 (2건)
+  - guide canonical 누락 (2 페이지)
+  - sitemap 중복 콘텐츠 (/result)
+- 잔여: /result noindex 직접 설정은 client 컴포넌트라 생략 (sitemap 제외로 충분)
+
+### 배포
+- Git: push 시도 예정
+- 배포 방식: GitHub 자동 배포 (Vercel 연동)
+- 프로덕션 확인: ❌ (Vercel SSO 보호 유지)
+
+### 판단 필요 (누적)
+1. **Vercel SSO 보호 해제** (오너): 프로덕션 URL 공개 접근 불가
+2. **RESEARCH.md C-1~C-3** (오너): 시장 방향성 결정
+3. **Supabase 환경변수** (오너): SUPABASE_SERVICE_ROLE_KEY 미설정
+4. **NEXT_PUBLIC_APP_URL** (오너): 프로덕션 URL 업데이트 필요
+5. **F012 Stripe 연동** (오너): STRIPE_SECRET_KEY 필요
+
+### 다음 세션 권장
+1. 리서치 쿨다운 경과 시 C-3 SEO 키워드 전략 심층 조사 (6h 후)
+2. `/result`를 Server Component wrapper + client 분리하여 page-level `robots: noindex` 직접 지정 (선택적)
+3. Guide 콘텐츠 확장 (SEO 롱테일 — Barista FIRE 세부 시나리오, Coast FIRE 계산 예시)
+4. F012 Stripe 연동 (환경변수 준비 시)
+5. Lighthouse 자동 감사 (환경변수 준비 후)
+
+---
 
 ## [2026-04-11 18:30] 자동 개발 세션
 

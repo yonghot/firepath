@@ -22,12 +22,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.6,
     },
-    {
-      url: `${baseUrl}/result`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
+    // /result is intentionally excluded — it renders personalized content
+    // from a URL hash (shared results), which would duplicate / in search.
   ];
 
   // Guide slugs — hardcoded since Supabase may not be available at build time

@@ -1,9 +1,20 @@
-'use client';
-
+import type { Metadata } from 'next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, X, Crown } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Premium — Unlock Advanced FIRE Tools',
+  description:
+    'Upgrade to FIREPath Premium for Monte Carlo simulations, portfolio optimization, unlimited saves, and PDF reports. $4.99/month.',
+  alternates: { canonical: '/premium' },
+  openGraph: {
+    title: 'FIREPath Premium',
+    description: 'Advanced simulations and unlimited saves for serious FIRE planners.',
+    type: 'website',
+  },
+};
 
 const FEATURES = [
   { name: 'FIRE Calculator', free: true, premium: true },

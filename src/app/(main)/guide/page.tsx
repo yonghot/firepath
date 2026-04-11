@@ -7,9 +7,16 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'FIRE Guides — FIREPath',
+  title: 'FIRE Guides',
   description:
     'Learn about different FIRE types — Lean, Regular, Fat, Coast, and Barista FIRE. Comprehensive guides to help you plan your path to financial independence.',
+  alternates: { canonical: '/guide' },
+  openGraph: {
+    title: 'FIRE Guides — FIREPath',
+    description:
+      'Learn about different FIRE types and find the path to financial independence that fits your lifestyle.',
+    type: 'website',
+  },
 };
 
 export default async function GuidesIndexPage() {
