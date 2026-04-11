@@ -1,10 +1,93 @@
 # PROGRESS.md
 
 ## 현재 상태
-- 현재 Phase: P2 완료 + 아키텍처/기술 부채 해소
+- 현재 Phase: P2 완료 + 코드 품질/접근성/번들 최적화
 - 마지막 업데이트: 2026-04-11
-- 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료)
+- 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료). Lint 0/0. 빌드 PASS.
 - 프로덕션: https://firepath-2j7weljnc-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
+
+## [2026-04-11 17:15] 자동 개발 세션
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미경과, 직전 리서치 커밋 ~20분 전)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음
+- PRD 변경점: 없음
+- DESIGN.md 불일치: 0건
+- feature_list.json vs 코드: 0건
+- 아키텍처 위반: 0건
+
+### 메인 태스크
+- 코드 품질 + 접근성 + 번들 최적화 (4건)
+
+### 구현 상세
+1. **theme-toggle.tsx ESLint 에러 해소**
+   - `react-hooks/set-state-in-effect` 규칙 위반 (`useEffect(() => setMounted(true), [])`)
+   - `useSyncExternalStore` 패턴으로 전환 — 서버 snapshot=false / 클라이언트 snapshot=true
+   - 캐스케이딩 리렌더 제거, React 18+ 정석 하이드레이션 패턴
+   - Before: 1 error / After: 0 errors
+
+2. **미사용 import 정리 (Refactor-on-Touch)**
+   - `src/app/(main)/page.tsx`: `Button` 제거
+   - `src/components/features/calculator/fire-timeline-chart.tsx`: `FIRE_LABELS` 제거
+   - `src/components/features/scenario/scenario-comparison.tsx`: `ReferenceLine`, `FIREType` 제거
+   - `src/stores/scenario.store.ts`: `FIREOutput` 제거
+   - Before: 5 warnings / After: 0 warnings
+
+3. **Premium 패널 Code Splitting (성능)**
+   - `monte-carlo-panel.tsx` + `portfolio-panel.tsx`가 무료 사용자에게도 전체 엔진/차트 번들을 eager load
+   - 해결: `monte-carlo-content.tsx`, `portfolio-content.tsx`로 premium 전용 렌더링 분리
+   - 상위 panel은 Gate만 렌더링, premium 콘텐츠는 `next/dynamic(..., { ssr: false })`로 lazy load
+   - 제거된 eager 의존성: `runMonteCarlo` (177줄) + `optimizePortfolio` (211줄) + 차트 컴포넌트 5개
+   - 현재 `isPremium=false` 하드코딩이므로 100% 사용자의 초기 JS 절감
+
+4. **접근성 개선 — SliderInput**
+   - `<Label>`이 `<Input>`과 미연결 (htmlFor/id 없음) — 스크린 리더에서 라벨 누락
+   - `useId()`로 고유 id 생성 → `htmlFor`로 연결
+   - Input에 `aria-label={`${label} value`}` 추가 (컨텍스트 보강)
+   - 스크린 리더 테스트 대상: Calculator 9개 슬라이더 전체
+   - 근거: DESIGN.md Accessibility "WCAG 2.1 AA", PRD 2-10
+
+### Refactor-on-Touch 결과
+- 수정 파일 6개 모두 미사용 import / 규칙 위반 / 라벨 미연결 한 번에 정리
+- 300줄 초과 파일 없음 (최대 268줄 dropdown-menu.tsx, shadcn 원본)
+- portfolio-panel.tsx: 150줄 → 59줄, monte-carlo-panel.tsx: 115줄 → 64줄
+- `console.log` 잔존 없음, `any` 타입 없음, `TODO` 없음
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (로컬 환경, 서브에이전트 토큰 비용 절약)
+- /qa --quick: ⏭️ 스킵 (Playwright 미설치)
+
+### 기술 부채 현황
+- 이번 세션 발견: 없음
+- 이번 세션 해소:
+  - theme-toggle ESLint error (1건)
+  - 미사용 import (5건)
+  - premium 패널 eager bundling (2 파일)
+  - SliderInput label/input 미연결 a11y (1건)
+- 잔여: 없음 (모든 [자동 반영] + PROGRESS 권장사항 소진)
+
+### 배포
+- Git: push 시도 예정
+- 배포 방식: GitHub 자동 배포 (Vercel 연동)
+- 프로덕션 확인: ❌ (Vercel SSO 보호 — 이전 세션과 동일)
+
+### 판단 필요 (누적)
+1. **Vercel SSO 보호 해제** (오너): 프로덕션 URL 공개 접근 불가
+2. **RESEARCH.md C-1~C-3** (오너): 시장 방향성 결정
+3. **Supabase 환경변수** (오너): SUPABASE_SERVICE_ROLE_KEY 미설정
+4. **NEXT_PUBLIC_APP_URL** (오너): 프로덕션 URL 업데이트 필요
+5. **F012 Stripe 연동** (오너): STRIPE_SECRET_KEY 필요
+
+### 다음 세션 권장
+1. 리서치 쿨다운 경과 시 C-3 SEO 키워드 전략 심층 조사
+2. Lighthouse/axe-core 자동 접근성 감사 (환경변수 준비 후)
+3. F012 Stripe 연동 (환경변수 준비 시)
+4. 가이드 콘텐츠 확장 (SEO 롱테일)
+5. Calculator 페이지 Server Component 분리 검토 (Hero는 static)
+
+---
 
 ## [2026-04-11 16:55] 자동 개발 세션
 

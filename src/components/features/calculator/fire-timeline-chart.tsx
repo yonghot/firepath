@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import type { FIREType, FIRETimeline, FIREResult } from '@/types/fire.types';
-import { FIRE_COLORS, FIRE_LABELS, FIRE_TYPES } from '@/constants/fire-colors';
+import { FIRE_COLORS, FIRE_TYPES } from '@/constants/fire-colors';
 import { formatCurrency } from '@/lib/utils/format';
 
 interface FIRETimelineChartProps {

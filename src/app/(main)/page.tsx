@@ -14,7 +14,6 @@ import { PortfolioPanel } from '@/components/features/portfolio/portfolio-panel'
 import { SaveCalculationButton } from '@/components/features/calculator/save-calculation-button';
 import { DisclaimerBanner } from '@/components/common/disclaimer-banner';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { SlidersHorizontal } from 'lucide-react';
 import type { FIREType, Scenario } from '@/types/fire.types';

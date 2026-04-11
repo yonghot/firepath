@@ -7,14 +7,13 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ReferenceLine,
   ResponsiveContainer,
   Legend,
 } from 'recharts';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import type { Scenario, FIREType } from '@/types/fire.types';
+import type { Scenario } from '@/types/fire.types';
 import { FIRE_COLORS, FIRE_LABELS, FIRE_TYPES } from '@/constants/fire-colors';
 import { formatCurrency } from '@/lib/utils/format';
 

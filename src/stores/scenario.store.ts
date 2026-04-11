@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { FIREInput, FIREOutput, Scenario } from '@/types/fire.types';
+import type { FIREInput, Scenario } from '@/types/fire.types';
 import { calculateFIRE } from '@/lib/engine/fire-calculator';
 
 const MAX_FREE_SCENARIOS = 2;

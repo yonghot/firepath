@@ -1,5 +1,6 @@
 'use client';
 
+import { useId } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -46,11 +47,12 @@ export function SliderInput({
   onChange,
   tooltip,
 }: SliderInputProps) {
+  const inputId = useId();
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Label className="text-sm font-medium">{label}</Label>
+          <Label htmlFor={inputId} className="text-sm font-medium">{label}</Label>
           {tooltip && (
             <Tooltip>
               <TooltipTrigger className="cursor-help">
@@ -63,6 +65,7 @@ export function SliderInput({
           )}
         </div>
         <Input
+          id={inputId}
           type="text"
           value={formatDisplay(value, unit)}
           onChange={(e) => {
@@ -72,6 +75,7 @@ export function SliderInput({
             }
           }}
           className="h-7 w-28 text-right text-sm font-mono"
+          aria-label={`${label} value`}
         />
       </div>
       <Slider
