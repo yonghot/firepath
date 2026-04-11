@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { wrapDbError } from './db-error';
 
 export class ProfileRepository {
   constructor(private supabase: SupabaseClient) {}
@@ -11,7 +12,7 @@ export class ProfileRepository {
       .single();
 
     if (error && error.code === 'PGRST116') return null;
-    if (error) throw error;
+    if (error) throw wrapDbError('profile.findById', error);
     return data;
   }
 
@@ -21,6 +22,6 @@ export class ProfileRepository {
       .update({ subscription_tier: tier })
       .eq('id', userId);
 
-    if (error) throw error;
+    if (error) throw wrapDbError('profile.updateTier', error);
   }
 }

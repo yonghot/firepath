@@ -1,10 +1,94 @@
 # PROGRESS.md
 
 ## 현재 상태
-- 현재 Phase: P2 완료 + 디자인/UX 폴리싱
-- 마지막 업데이트: 2026-04-09
+- 현재 Phase: P2 완료 + 아키텍처/기술 부채 해소
+- 마지막 업데이트: 2026-04-11
 - 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료)
 - 프로덕션: https://firepath-2j7weljnc-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
+
+## [2026-04-11 16:55] 자동 개발 세션
+
+### 리서치
+- ✅ 수행 (쿨다운 ~69h 경과)
+- [자동 반영] 3개 (A-9 Guide 3-Layer, A-10 Repository AppError, A-11 PortfolioPanel 분리)
+- [오너 판단 필요] 0개 (기존 C-1~C-3 대기 중)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 없음
+- PRD 변경점: 없음
+- DESIGN.md 불일치: 0건
+- feature_list.json vs 코드: 불일치 0건
+- 아키텍처 위반: 1건 발견 → 해소 (Guide 페이지가 Repository 직접 호출)
+
+### 메인 태스크
+- 기술 부채 해소: 아키텍처 정합성 + 에러 구조화 + 컴포넌트 분리 (3건 동시)
+
+### 구현 상세
+1. **Guide 서비스 레이어 도입 (A-9 / B-3)**
+   - `src/lib/services/guide.service.ts` 신규 — GuideService 클래스 + createGuideService 팩토리
+   - `getBySlug()`, `listAll()`, `getWithRelated(slug, limit)` 메소드
+   - `guide/page.tsx`: `createGuideService(supabase).listAll()` 사용
+   - `guide/[slug]/page.tsx`: `getWithRelated(slug)`로 guide + related를 한 번에 조회
+   - `generateStaticParams`, `generateMetadata` 모두 서비스 경유로 변경
+   - CLAUDE.md "3-Layer: API Route → Service → Repository" 규칙 준수
+
+2. **Repository 에러 AppError 래핑 (A-10 / B-4)**
+   - `src/constants/error-codes.ts`: `DB_ERROR` 코드 추가 (status 500)
+   - `src/lib/repositories/db-error.ts` 신규 — `wrapDbError(context, error)` 헬퍼
+     - PostgrestError를 콘솔에 상세 로깅 (code, details, hint)
+     - 상위 레이어로는 `AppError('DB_ERROR', context)`만 전파
+   - 4개 Repository 전체 갱신: calculation, guide, profile, subscription
+     - 총 14개 throw 지점을 `throw wrapDbError(...)`로 래핑
+     - PGRST116 (not found) 처리는 기존과 동일
+   - handleApiError의 로그에서 내부 DB 스키마 노출 제거 (구조화된 stable error만 상위로)
+
+3. **PortfolioPanel 컴포넌트 분리 (A-11)**
+   - `portfolio-profile-selector.tsx` 신규 (55줄) — 3-profile 선택 버튼 그리드
+   - `portfolio-metrics-card.tsx` 신규 (50줄) — 4개 지표 카드 + `MetricRow` 내부 헬퍼
+   - `portfolio-panel.tsx` 198줄 → 150줄로 축소:
+     - `PremiumGate`, `PanelHeader`, `EmptyState` 내부 컴포넌트로 분리
+     - 메인 컴포넌트 JSX 가독성 개선
+     - 모든 비즈니스 로직 (optimizePortfolio) useMemo로 유지
+
+### Refactor-on-Touch 결과
+- 3-Layer 위반: Guide 페이지 2곳 → Service 경유
+- Repository raw error 2 throw/파일 × 4파일 → wrapDbError 헬퍼 1곳으로 집중
+- portfolio-panel.tsx 긴 JSX → 5개 하위 컴포넌트로 분리 (내부 3 + 별도 파일 2)
+- `console.log` 잔존 없음 (wrapDbError의 `console.error`는 의도적 로깅)
+- 미사용 import 없음 (Build/ESLint PASS)
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (로컬 환경, 서브에이전트 토큰 비용 절약)
+- /qa --quick: ⏭️ 스킵 (Playwright 미설치)
+
+### 기술 부채 현황
+- 이번 세션 발견: 없음
+- 이번 세션 해소:
+  - Guide 페이지 3-Layer 위반 (2파일)
+  - Repository raw Supabase error throw (4파일, 14 throw 지점)
+  - PortfolioPanel 198줄 단일 컴포넌트 (150줄 + 2 하위 파일로 분리)
+- 잔여: 없음 (RESEARCH.md B-3, B-4 완료; PROGRESS 이전 잔여 해소)
+
+### 배포
+- Git: push 시도 예정
+- 배포 방식: GitHub 자동 배포 (Vercel 연동)
+- 프로덕션 확인: ❌ (Vercel SSO 보호 — 이전 세션과 동일)
+
+### 판단 필요 (누적)
+1. **Vercel SSO 보호 해제** (오너): 프로덕션 URL 공개 접근 불가
+2. **RESEARCH.md C-1~C-3** (오너): 시장 방향성 결정
+3. **Supabase 환경변수** (오너): SUPABASE_SERVICE_ROLE_KEY 미설정
+4. **NEXT_PUBLIC_APP_URL** (오너): 프로덕션 URL 업데이트 필요
+5. **F012 Stripe 연동** (오너): STRIPE_SECRET_KEY 필요
+
+### 다음 세션 권장
+1. 리서치 쿨다운 재경과 시 C-3 SEO 키워드 전략 심층 조사
+2. Monte Carlo 결과 페이지 성능 프로파일링 (1000 simulations)
+3. F012 Stripe 연동 (환경변수 준비 시)
+4. 접근성 감사 (axe-core, lighthouse)
+5. 코드 스플리팅 검토 (premium-only 모듈을 lazy import)
+
+---
 
 ## [2026-04-09 13:50] 자동 개발 세션
 

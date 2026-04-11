@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { GuideRepository } from '@/lib/repositories/guide.repository';
+import { createGuideService } from '@/lib/services/guide.service';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calculator } from 'lucide-react';
@@ -13,11 +13,8 @@ interface GuidePageProps {
 
 export async function generateStaticParams() {
   try {
-    const { createClient } = await import('@/lib/supabase/server');
-    const { GuideRepository } = await import('@/lib/repositories/guide.repository');
     const supabase = await createClient();
-    const repo = new GuideRepository(supabase);
-    const guides = await repo.findAll();
+    const guides = await createGuideService(supabase).listAll();
     return guides.map((g) => ({ slug: g.slug }));
   } catch {
     // Supabase unavailable at build time — fall back to dynamic rendering
@@ -28,8 +25,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: GuidePageProps): Promise<Metadata> {
   const { slug } = await params;
   const supabase = await createClient();
-  const repo = new GuideRepository(supabase);
-  const guide = await repo.findBySlug(slug);
+  const guide = await createGuideService(supabase).getBySlug(slug);
 
   if (!guide) return { title: 'Guide Not Found' };
 
@@ -44,25 +40,12 @@ export async function generateMetadata({ params }: GuidePageProps): Promise<Meta
   };
 }
 
-export default async function GuidePage({ params }: GuidePageProps) {
-  const { slug } = await params;
-  const supabase = await createClient();
-  const repo = new GuideRepository(supabase);
+// Sanitize text to prevent XSS
+const esc = (s: string) =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-  const [guide, allGuides] = await Promise.all([
-    repo.findBySlug(slug),
-    repo.findAll(),
-  ]);
-
-  if (!guide) notFound();
-
-  const relatedGuides = allGuides.filter((g) => g.slug !== slug).slice(0, 3);
-
-  // Sanitize text to prevent XSS
-  const esc = (s: string) =>
-    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-
-  const htmlContent = guide.content
+function renderGuideContent(content: string): string {
+  return content
     .split('\n')
     .map((line: string) => {
       if (line.startsWith('### ')) return `<h3 class="text-2xl font-semibold mt-6 mb-2">${esc(line.slice(4))}</h3>`;
@@ -74,6 +57,16 @@ export default async function GuidePage({ params }: GuidePageProps) {
       return `<p class="text-muted-foreground leading-relaxed">${esc(line)}</p>`;
     })
     .join('\n');
+}
+
+export default async function GuidePage({ params }: GuidePageProps) {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { guide, related } = await createGuideService(supabase).getWithRelated(slug);
+
+  if (!guide) notFound();
+
+  const htmlContent = renderGuideContent(guide.content);
 
   const articleJsonLd = {
     '@context': 'https://schema.org',
@@ -119,11 +112,11 @@ export default async function GuidePage({ params }: GuidePageProps) {
         </article>
 
         {/* Sidebar */}
-        {relatedGuides.length > 0 && (
+        {related.length > 0 && (
           <aside className="lg:w-64 shrink-0">
             <h3 className="font-semibold mb-3">Related Guides</h3>
             <nav className="space-y-2">
-              {relatedGuides.map((g) => (
+              {related.map((g) => (
                 <Link
                   key={g.slug}
                   href={`/guide/${g.slug}`}

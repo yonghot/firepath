@@ -2,6 +2,40 @@
 
 ---
 
+**리서치 일시**: 2026-04-11 16:55 KST
+**코드베이스 상태**: 완료 15/16 (F012 partial — Stripe), 빌드 PASS
+
+## [A] 방향/기능 제안 (신규)
+
+### A-9: 가이드 3-Layer 아키텍처 준수 [자동 반영]
+- 현재 상태: guide/[slug]/page.tsx + guide/page.tsx가 GuideRepository 직접 호출 (CLAUDE.md의 3-Layer 규칙 위반)
+- 제안: src/lib/services/guide.service.ts 생성, 페이지는 서비스만 호출
+- 근거: CLAUDE.md "3-Layer: API Route → Service → Repository (직접 DB 접근 금지)" + RESEARCH.md B-3
+- 구현 가이드: GuideService에 getBySlug, listAll 메소드. 빌드 타임 fallback 처리 포함.
+- 예상 작업량: 20분
+- 부작용: 없음 (기존 에러 폴백 유지)
+
+### A-10: Repository 에러 AppError 래핑 [자동 반영]
+- 현재 상태: 모든 Repository가 Supabase raw error를 throw. 내부 DB 스키마/코드가 handleApiError 로그에 노출
+- 제안: DB_ERROR 에러 코드 추가 + 각 Repository에서 AppError로 래핑
+- 근거: RESEARCH.md B-4, 구조화된 에러 로깅 표준화
+- 구현 가이드: error-codes.ts에 DB_ERROR 추가, repository에서 `throw new AppError('DB_ERROR', error.message)` 패턴
+- 예상 작업량: 25분
+- 부작용: 없음 (기존 처리 유지, 상위 레이어는 그대로 동작)
+
+### A-11: PortfolioPanel 컴포넌트 분리 [자동 반영]
+- 현재 상태: portfolio-panel.tsx 198줄, JSX 블록 5개가 한 파일에 혼재
+- 제안: profile-selector, metrics-card 하위 컴포넌트 분리 — 수정 시 Refactor-on-Touch 원칙 적용
+- 근거: 가독성 + 테스트 용이성. (PROGRESS.md 기술 부채 잔여)
+- 예상 작업량: 20분
+- 부작용: 없음 (순수 렌더링 리팩토링)
+
+## [B] 코드 개선 (업데이트)
+- B-3 (Guide 서비스 레이어 바이패스) → A-9에서 승격 [자동 반영]
+- B-4 (Repository AppError 래핑) → A-10에서 승격 [자동 반영]
+
+---
+
 **리서치 일시**: 2026-04-08 19:25 KST
 **코드베이스 상태**: 완료 15/16 (F012 partial — Stripe), 빌드 PASS
 

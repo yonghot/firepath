@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { GuideRepository } from '@/lib/repositories/guide.repository';
+import { createGuideService } from '@/lib/services/guide.service';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BookOpen, Calculator } from 'lucide-react';
@@ -14,11 +14,11 @@ export const metadata: Metadata = {
 
 export default async function GuidesIndexPage() {
   const supabase = await createClient();
-  const repo = new GuideRepository(supabase);
+  const guideService = createGuideService(supabase);
 
-  let guides: Awaited<ReturnType<typeof repo.findAll>> = [];
+  let guides: Awaited<ReturnType<typeof guideService.listAll>> = [];
   try {
-    guides = await repo.findAll();
+    guides = await guideService.listAll();
   } catch {
     // DB may be unavailable during build or if env vars are missing
   }

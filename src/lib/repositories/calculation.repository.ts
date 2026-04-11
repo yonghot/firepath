@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { wrapDbError } from './db-error';
 
 export interface CreateCalcInput {
   user_id: string;
@@ -18,7 +19,7 @@ export class CalculationRepository {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) throw wrapDbError('calculation.create', error);
     return record;
   }
 
@@ -33,7 +34,7 @@ export class CalculationRepository {
       .order('created_at', { ascending: false })
       .range(offset, offset + opts.limit - 1);
 
-    if (error) throw error;
+    if (error) throw wrapDbError('calculation.findByUser', error);
     return { items: items || [], total: count || 0 };
   }
 
@@ -46,7 +47,7 @@ export class CalculationRepository {
       .single();
 
     if (error && error.code === 'PGRST116') return null;
-    if (error) throw error;
+    if (error) throw wrapDbError('calculation.findById', error);
     return data;
   }
 
@@ -57,7 +58,7 @@ export class CalculationRepository {
       .eq('user_id', userId)
       .is('deleted_at', null);
 
-    if (error) throw error;
+    if (error) throw wrapDbError('calculation.countByUser', error);
     return count || 0;
   }
 
@@ -67,6 +68,6 @@ export class CalculationRepository {
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) throw wrapDbError('calculation.softDelete', error);
   }
 }

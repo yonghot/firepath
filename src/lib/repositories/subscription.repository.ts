@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { wrapDbError } from './db-error';
 
 export class SubscriptionRepository {
   constructor(private supabase: SupabaseClient) {}
@@ -11,7 +12,7 @@ export class SubscriptionRepository {
       .single();
 
     if (error && error.code === 'PGRST116') return null;
-    if (error) throw error;
+    if (error) throw wrapDbError('subscription.findByUser', error);
     return data;
   }
 
@@ -27,7 +28,7 @@ export class SubscriptionRepository {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) throw wrapDbError('subscription.create', error);
     return record;
   }
 
@@ -40,7 +41,7 @@ export class SubscriptionRepository {
       .update(update)
       .eq('stripe_subscription_id', subscriptionId);
 
-    if (error) throw error;
+    if (error) throw wrapDbError('subscription.updateStatus', error);
   }
 
   async updatePeriod(subscriptionId: string, start: string, end: string) {
@@ -49,6 +50,6 @@ export class SubscriptionRepository {
       .update({ current_period_start: start, current_period_end: end })
       .eq('stripe_subscription_id', subscriptionId);
 
-    if (error) throw error;
+    if (error) throw wrapDbError('subscription.updatePeriod', error);
   }
 }
