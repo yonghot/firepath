@@ -80,11 +80,25 @@ export default async function GuidePage({ params }: GuidePageProps) {
     ...(guide.updated_at && { dateModified: guide.updated_at }),
   };
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: '/' },
+      { '@type': 'ListItem', position: 2, name: 'FIRE Guides', item: '/guide' },
+      { '@type': 'ListItem', position: 3, name: guide.title, item: `/guide/${slug}` },
+    ],
+  };
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <div className="flex flex-col lg:flex-row gap-8">
         <article className="flex-1 min-w-0">

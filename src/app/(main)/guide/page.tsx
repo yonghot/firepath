@@ -30,8 +30,39 @@ export default async function GuidesIndexPage() {
     // DB may be unavailable during build or if env vars are missing
   }
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: '/' },
+      { '@type': 'ListItem', position: 2, name: 'FIRE Guides', item: '/guide' },
+    ],
+  };
+
+  const itemListJsonLd = guides.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'FIRE Guides',
+    itemListElement: guides.map((g, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: g.title,
+      url: `/guide/${g.slug}`,
+    })),
+  } : null;
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      {itemListJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+        />
+      )}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
           <BookOpen className="h-6 w-6 text-[var(--brand-primary)]" />

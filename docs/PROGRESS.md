@@ -1,10 +1,102 @@
 # PROGRESS.md
 
 ## 현재 상태
-- 현재 Phase: P2 완료 + Calculator 서버 컴포넌트 분리 + SEO 메타데이터 강화
+- 현재 Phase: P2 완료 + /result Server Component 분리 + Guide 구조화 데이터 강화
 - 마지막 업데이트: 2026-04-11
-- 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료). Lint 0/0. 빌드 PASS. Home(/)이 Static(○)으로 승격.
+- 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료). Lint 0/0. 빌드 PASS. /, /result 모두 Static(○).
 - 프로덕션: https://firepath-2j7weljnc-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
+
+## [2026-04-11 20:30] 자동 개발 세션
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미경과, 직전 리서치 커밋 ~4.2h 전)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 0건
+- PRD 변경점: 없음
+- DESIGN.md 불일치: 0건
+- feature_list.json vs 코드: 0건
+- 아키텍처 위반: 0건
+
+### 메인 태스크
+- /result 페이지 Server Component 분리 (이전 세션 "다음 권장"의 2번 항목)
+- Guide 페이지 구조화 데이터 (JSON-LD) 확장 — BreadcrumbList, ItemList
+
+### 환경 메모
+- 빌드 초기 3회 OOM (Turbopack + webpack worker 모두). 원인: 백그라운드 node 프로세스 1054MB 누수 + 시스템 free RAM 3.3GB/14.8GB
+- 해소: 좀비 node 프로세스(PID 33416 등) 종료 → free 4.6GB → 빌드 정상 통과
+- 코드 변경 없음, 순수 환경 문제로 확인
+
+### 구현 상세
+1. **`src/app/(main)/result/page.tsx` — Server Component 전환**
+   - 이전: 전체 `'use client'` 컴포넌트
+   - 변경: Server Component로 전환 + `export const metadata` 추가
+     - `title: 'FIRE Results'` (layout 템플릿과 결합 → `FIRE Results | FIREPath`)
+     - `description`: Shared result 페이지 설명
+     - `robots: { index: false, follow: true }` — URL hash로 개인화된 공유 결과이므로 색인 제외 (home 중복 신호 방지)
+   - 빌드 출력: `/result`가 `○ (Static)`으로 승격
+   - 본문은 신규 `<ResultClient />`에 위임
+
+2. **`src/components/features/calculator/result-client.tsx` — 신규 (60줄)**
+   - 기존 page.tsx의 `'use client'` 로직 전부 이동
+   - `useCalculatorStore` + `decodeState` (URL hash 디코딩)
+   - Share 버튼 (`navigator.clipboard.writeText`)
+   - `<FIRETimelineChart />`, `<FIREResultCards />`, `<DisclaimerBanner />` 렌더링
+   - Ealry-return 패턴 (`if (!hash) return`)으로 가독성 개선
+
+3. **`src/app/(main)/guide/page.tsx` — Guide Index 구조화 데이터 추가**
+   - `BreadcrumbList` JSON-LD: Home → FIRE Guides
+   - `ItemList` JSON-LD: 가이드 목록을 검색 엔진에 구조화 전달 (가이드가 0개이면 삽입하지 않음)
+   - 두 `<script type="application/ld+json">` 태그 추가
+
+4. **`src/app/(main)/guide/[slug]/page.tsx` — Guide Detail 구조화 데이터 확장**
+   - 기존 `Article` JSON-LD 유지
+   - `BreadcrumbList` JSON-LD 추가: Home → FIRE Guides → {guide title}
+   - 검색 결과에서 breadcrumb 경로가 표시되도록 개선
+
+### Refactor-on-Touch 결과
+- result/page.tsx: 60줄 → 23줄 (client 로직을 result-client로 분리)
+- 분리된 result-client.tsx: 60줄, 단일 책임
+- `console.log`/`any`/`TODO` 없음
+- lint 0/0 유지
+- SEO title 템플릿 일관화: `/result`가 `FIRE Results | FIREPath`로 정상 결합
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (매 세션 초기화, 변경 범위 작고 자가 검토 충분)
+- /qa --quick: ⏭️ 스킵 (Playwright CDN 차단 + dev 서버 미실행)
+
+### 기술 부채 현황
+- 이번 세션 해소:
+  - `/result` 개인화 콘텐츠의 검색 엔진 색인 노출 위험 (noindex 직접 설정)
+  - Guide 페이지 breadcrumb 구조화 신호 누락 (3개 경로 레벨 정의)
+  - Guide index item 열거 구조화 신호 누락 (ItemList)
+- 잔여: guide 컨텐츠 markdown 렌더러가 리스트 항목을 `<ul>` 래퍼 없이 출력 (브라우저 허용 HTML이지만 엄격히는 부적절) — 컨텐츠 포맷 확인 필요하므로 다음 세션에서 검토
+
+### 정적 렌더링 현황 (빌드 출력 기준)
+- ○ Static: `/`, `/_not-found`, `/guide`, `/login`, `/premium`, `/result`, `/robots.txt`, `/signup`, `/sitemap.xml`
+- ● SSG: `/guide/[slug]` (5개 가이드 slug prerendered)
+- ƒ Dynamic: API routes + `/saved` (개인 데이터)
+
+### 배포
+- Git: push 시도 예정
+- 배포 방식: GitHub 자동 배포 (Vercel 연동)
+- 프로덕션 확인: ❌ (Vercel SSO 보호 유지)
+
+### 판단 필요 (누적)
+1. **Vercel SSO 보호 해제** (오너): 프로덕션 URL 공개 접근 불가
+2. **RESEARCH.md C-1~C-3** (오너): 시장 방향성 결정
+3. **Supabase 환경변수** (오너): SUPABASE_SERVICE_ROLE_KEY 미설정
+4. **NEXT_PUBLIC_APP_URL** (오너): 프로덕션 URL 업데이트 필요
+5. **F012 Stripe 연동** (오너): STRIPE_SECRET_KEY 필요
+
+### 다음 세션 권장
+1. 리서치 쿨다운 경과 시 C-3 SEO 키워드 전략 심층 조사 (~1.8h 후 가능)
+2. Guide markdown 렌더러 개선: 리스트/테이블/링크 지원 + 단위 테스트
+3. FAQ 섹션 + FAQ JSON-LD 추가 (홈 또는 Guide — 사용자 가시 콘텐츠 필요)
+4. F012 Stripe 연동 (환경변수 준비 시)
+5. 엔진 로직 단위 테스트 (fire-calculator, monte-carlo, portfolio-optimizer — 모두 순수 함수)
+
+---
 
 ## [2026-04-11 20:10] 자동 개발 세션
 
