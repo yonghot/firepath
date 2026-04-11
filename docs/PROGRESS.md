@@ -1,10 +1,94 @@
 # PROGRESS.md
 
 ## 현재 상태
-- 현재 Phase: P2 완료 + 코드 품질/접근성/번들 최적화
+- 현재 Phase: P2 완료 + 컴포넌트 레이어 3-Layer 정합성 확보
 - 마지막 업데이트: 2026-04-11
 - 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료). Lint 0/0. 빌드 PASS.
 - 프로덕션: https://firepath-2j7weljnc-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
+
+## [2026-04-11 18:30] 자동 개발 세션
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미경과, 직전 리서치 커밋 ~1.2h 전)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 1건 발견 → 해소
+  - `src/components/features/calculator/save-calculation-button.tsx`가 직접 `fetch('/api/calculations')` 호출
+  - `src/components/features/saved/saved-list.tsx`가 직접 `fetch('/api/calculations?limit=50')` + DELETE 호출
+  - components/CLAUDE.md "No direct API calls — use React Query hooks" 위반
+- PRD 변경점: 없음
+- DESIGN.md 불일치: 0건
+- feature_list.json vs 코드: 0건
+- 아키텍처 위반: 위 1건 (서브에이전트 B-0.5 스캔으로 발견)
+
+### 메인 태스크
+- 컴포넌트 레이어 3-Layer 정합성: 직접 fetch 호출을 React Query 훅으로 통합
+- a11y: saved-item 삭제 버튼 aria-label 보강
+
+### 구현 상세
+1. **`src/hooks/use-calculations.ts` 신규 생성**
+   - `useSavedCalculations(limit = 50)` — React Query 조회 훅, 쿼리 키 `['calculations', { limit }]`
+   - `useSaveCalculation()` — POST mutation, 성공 시 `['calculations']` 무효화
+   - `useDeleteCalculation()` — DELETE mutation, 성공 시 `['calculations']` 무효화
+   - `parseApiResponse<T>()` 내부 헬퍼로 `ApiResponse<T>` 판별 + 에러 throw 통합
+   - `ApiClientError` 클래스 export — 에러 코드(`LIMIT_EXCEEDED` 등) 기반 분기 가능
+   - `SaveCalculationInput` 인터페이스로 `is_default` 기본값 처리
+
+2. **`save-calculation-button.tsx` 리팩토링**
+   - 직접 `fetch`/수동 `ApiResponse` 파싱 제거 → `useSaveCalculation` 훅 사용
+   - `saving` 로컬 state 제거 → `mutation.isPending` 활용
+   - 에러 처리: `ApiClientError.code === 'LIMIT_EXCEEDED'` 분기로 기존 UX 유지
+   - 전체 102줄 → 91줄로 축소, `try/catch/finally` 단순화
+
+3. **`saved-list.tsx` 리팩토링**
+   - `useQuery` + `useMutation` 수동 선언 제거 → `useSavedCalculations`, `useDeleteCalculation` 훅 사용
+   - `queryFn` 내부 fetch + 에러 throw 로직 제거
+   - toast 피드백은 `mutate(id, { onSuccess, onError })` 스코프드 옵션으로 유지
+   - 전체 67줄 → 51줄로 축소
+
+4. **`saved-item.tsx` 접근성 개선**
+   - 삭제 버튼에 `aria-label={\`Delete ${item.name}\`}` 추가
+   - Trash2 아이콘만 있는 버튼에 스크린 리더용 라벨 제공
+   - 근거: DESIGN.md "WCAG 2.1 AA", components/CLAUDE.md "All interactive elements must be keyboard accessible"
+
+### Refactor-on-Touch 결과
+- 중복 제거: 3개 API 호출(GET/POST/DELETE)에 각각 `ApiResponse<T>` 판별/에러 throw 코드가 반복되던 것을 `parseApiResponse` 1곳으로 통합
+- 에러 타입 안정성: `ApiClientError`가 `code` 필드를 보존 → 호출 컴포넌트에서 `LIMIT_EXCEEDED` 등 에러 코드 분기 가능
+- 쿼리 무효화: 훅 레벨에서 `['calculations']` 키 무효화 자동화 (save 성공 시 saved 목록이 자동 새로고침)
+- `console.log` 잔존 없음, `any` 타입 없음, `TODO` 없음
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (gstack 미설치, 클라우드 매 세션 초기화)
+- /qa --quick: ⏭️ 스킵 (Playwright 미설치 + 네트워크 제한 모드)
+
+### 기술 부채 현황
+- 이번 세션 발견: 컴포넌트 레이어 3-Layer 위반 2곳
+- 이번 세션 해소:
+  - save-calculation-button 직접 fetch (1곳)
+  - saved-list 직접 fetch + delete mutation (2 endpoint)
+  - saved-item 삭제 버튼 a11y
+- 잔여: 없음
+
+### 배포
+- Git: push 시도 예정
+- 배포 방식: GitHub 자동 배포 (Vercel 연동)
+- 프로덕션 확인: ❌ (Vercel SSO 보호 — 이전 세션과 동일)
+
+### 판단 필요 (누적)
+1. **Vercel SSO 보호 해제** (오너): 프로덕션 URL 공개 접근 불가
+2. **RESEARCH.md C-1~C-3** (오너): 시장 방향성 결정
+3. **Supabase 환경변수** (오너): SUPABASE_SERVICE_ROLE_KEY 미설정
+4. **NEXT_PUBLIC_APP_URL** (오너): 프로덕션 URL 업데이트 필요
+5. **F012 Stripe 연동** (오너): STRIPE_SECRET_KEY 필요
+
+### 다음 세션 권장
+1. 리서치 쿨다운 경과 시 C-3 SEO 키워드 전략 심층 조사
+2. Subscription 관련 훅도 동일 패턴으로 추출 (`use-subscription.ts`) — 현재 직접 호출 없음, 신규 기능 추가 시 대비
+3. F012 Stripe 연동 (환경변수 준비 시)
+4. Calculator 페이지 Server Component 분리 검토 (Hero는 static)
+5. MonteCarloPanel/PortfolioPanel unit 테스트 (엔진 로직은 순수 함수)
+
+---
 
 ## [2026-04-11 17:15] 자동 개발 세션
 

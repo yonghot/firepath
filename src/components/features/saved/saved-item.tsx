@@ -42,6 +42,7 @@ export function SavedItem({ item, onDelete, isDeleting }: SavedItemProps) {
             onClick={() => onDelete(item.id)}
             disabled={isDeleting}
             className="text-destructive hover:text-destructive"
+            aria-label={`Delete ${item.name}`}
           >
             <Trash2 className="h-4 w-4" />
           </Button>

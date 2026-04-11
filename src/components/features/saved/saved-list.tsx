@@ -1,38 +1,23 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useDeleteCalculation,
+  useSavedCalculations,
+} from '@/hooks/use-calculations';
 import { SavedItem } from './saved-item';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { ApiResponse, PaginatedResult, SavedCalculation } from '@/types/api.types';
 
 export function SavedCalculationsList() {
-  const queryClient = useQueryClient();
+  const { data, isLoading } = useSavedCalculations();
+  const deleteMutation = useDeleteCalculation();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['calculations'],
-    queryFn: async (): Promise<PaginatedResult<SavedCalculation>> => {
-      const res = await fetch('/api/calculations?limit=50');
-      const json: ApiResponse<PaginatedResult<SavedCalculation>> = await res.json();
-      if (!json.success) throw new Error('Failed to load');
-      return json.data;
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const res = await fetch(`/api/calculations/${id}`, { method: 'DELETE' });
-      const json = await res.json();
-      if (!json.success) throw new Error(json.error?.message || 'Failed to delete');
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['calculations'] });
-      toast.success('Calculation deleted');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
-  });
+  const handleDelete = (id: string) => {
+    deleteMutation.mutate(id, {
+      onSuccess: () => toast.success('Calculation deleted'),
+      onError: (error) => toast.error(error.message),
+    });
+  };
 
   if (isLoading) {
     return (
@@ -57,7 +42,7 @@ export function SavedCalculationsList() {
         <SavedItem
           key={item.id}
           item={item}
-          onDelete={(id) => deleteMutation.mutate(id)}
+          onDelete={handleDelete}
           isDeleting={deleteMutation.isPending}
         />
       ))}
