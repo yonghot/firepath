@@ -1,7 +1,7 @@
 {
   "project": "FIREPath",
   "version": "0.2.4",
-  "lastUpdated": "2026-04-11",
+  "lastUpdated": "2026-04-13",
   "evaluator": {
     "build": "PASS",
     "lint": "0 errors / 0 warnings",
@@ -10,7 +10,7 @@
     "p0Coverage": "6/6 PASS",
     "codeSplitting": "premium panels (Monte Carlo + Portfolio) dynamically imported",
     "componentLayer": "no direct fetch/supabase calls — all mutations via React Query hooks",
-    "structuredData": "WebApplication (root), Article + BreadcrumbList (guide detail), BreadcrumbList + ItemList (guide index)",
+    "structuredData": "WebApplication (root), FAQPage (home), Article + BreadcrumbList (guide detail), BreadcrumbList + ItemList (guide index)",
     "staticPages": "/, /premium, /result, /guide, /login, /signup, /_not-found all prerendered as static"
   },
   "features": [

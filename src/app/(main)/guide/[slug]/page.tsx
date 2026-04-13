@@ -45,19 +45,65 @@ export async function generateMetadata({ params }: GuidePageProps): Promise<Meta
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+// Only allow safe URL protocols for rendered links
+const isSafeUrl = (url: string) =>
+  /^https?:\/\//.test(url) || url.startsWith('/') || url.startsWith('#');
+
+// Render inline markdown: **bold**, *italic*, [text](url)
+function renderInline(text: string): string {
+  let s = esc(text);
+  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  s = s.replace(
+    /\[([^\]]+)\]\(([^)]+)\)/g,
+    (_, label: string, url: string) => {
+      const decoded = url.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+      if (!isSafeUrl(decoded)) return label;
+      return `<a href="${url}" class="text-[var(--brand-light)] underline hover:text-[var(--brand-primary)]" rel="noopener noreferrer">${label}</a>`;
+    },
+  );
+  return s;
+}
+
 function renderGuideContent(content: string): string {
-  return content
-    .split('\n')
-    .map((line: string) => {
-      if (line.startsWith('### ')) return `<h3 class="text-2xl font-semibold mt-6 mb-2">${esc(line.slice(4))}</h3>`;
-      if (line.startsWith('## ')) return `<h2 class="text-3xl font-bold mt-8 mb-3">${esc(line.slice(3))}</h2>`;
-      if (line.startsWith('# ')) return `<h1 class="text-4xl font-bold mt-8 mb-4">${esc(line.slice(2))}</h1>`;
-      if (line.startsWith('- ')) return `<li class="ml-4 text-muted-foreground">${esc(line.slice(2))}</li>`;
-      if (line.startsWith('| ')) return `<div class="text-sm text-muted-foreground font-mono">${esc(line)}</div>`;
-      if (line.trim() === '') return '<br />';
-      return `<p class="text-muted-foreground leading-relaxed">${esc(line)}</p>`;
-    })
-    .join('\n');
+  const lines = content.split('\n');
+  const result: string[] = [];
+  let inList = false;
+
+  for (const line of lines) {
+    const isList = line.startsWith('- ');
+
+    // Close list if previous was list and current is not
+    if (inList && !isList) {
+      result.push('</ul>');
+      inList = false;
+    }
+
+    if (line.startsWith('### ')) {
+      result.push(`<h3 class="text-2xl font-semibold mt-6 mb-2">${renderInline(line.slice(4))}</h3>`);
+    } else if (line.startsWith('## ')) {
+      result.push(`<h2 class="text-3xl font-bold mt-8 mb-3">${renderInline(line.slice(3))}</h2>`);
+    } else if (line.startsWith('# ')) {
+      result.push(`<h1 class="text-4xl font-bold mt-8 mb-4">${renderInline(line.slice(2))}</h1>`);
+    } else if (isList) {
+      if (!inList) {
+        result.push('<ul class="list-disc pl-6 space-y-1 my-2">');
+        inList = true;
+      }
+      result.push(`<li class="text-muted-foreground">${renderInline(line.slice(2))}</li>`);
+    } else if (line.startsWith('| ')) {
+      result.push(`<div class="text-sm text-muted-foreground font-mono">${esc(line)}</div>`);
+    } else if (line.trim() === '') {
+      result.push('<br />');
+    } else {
+      result.push(`<p class="text-muted-foreground leading-relaxed">${renderInline(line)}</p>`);
+    }
+  }
+
+  // Close trailing list
+  if (inList) result.push('</ul>');
+
+  return result.join('\n');
 }
 
 export default async function GuidePage({ params }: GuidePageProps) {

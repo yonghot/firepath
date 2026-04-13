@@ -1,10 +1,98 @@
 # PROGRESS.md
 
 ## 현재 상태
-- 현재 Phase: P2 완료 + /result Server Component 분리 + Guide 구조화 데이터 강화
-- 마지막 업데이트: 2026-04-11
+- 현재 Phase: P2 완료 + Guide 렌더러 개선 + FAQ 섹션 + FAQ JSON-LD
+- 마지막 업데이트: 2026-04-13
 - 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료). Lint 0/0. 빌드 PASS. /, /result 모두 Static(○).
 - 프로덕션: https://firepath-2j7weljnc-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
+
+## [2026-04-13 14:30] 자동 개발 세션
+
+### 리서치
+- ✅ 수행 (쿨다운 45h+ 경과). [자동 반영] 3개 (A-12, A-13, A-14). [오너 판단 필요] 0개 신규.
+- 기존 [자동 반영] A-1~A-11 전부 반영 완료 확인.
+- 코드 품질 스캔: console.log 0, any 0, 300줄+ 0, TODO 0. 양호.
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 0건
+- PRD 변경점: 없음
+- DESIGN.md 불일치: 0건
+- feature_list.json vs 코드: 0건
+- 아키텍처 위반: 0건
+
+### 메인 태스크
+- A-12: Guide 마크다운 렌더러 개선 (ul 래핑 + 인라인 마크다운 + 안전 URL 검증)
+- A-13: FAQ 섹션 + FAQPage JSON-LD (홈 페이지)
+
+### 사전 리팩토링 (B-3)
+- 없음 (수정 대상 파일 모두 300줄 미만, 50줄+ 함수 없음)
+
+### 추가 작업
+- 렌더러 링크 URL에 javascript: 프로토콜 차단 (isSafeUrl 검증)
+
+### Refactor-on-Touch 결과
+- guide/[slug]/page.tsx: renderGuideContent 개선 — map→for-of 루프, li→ul 래핑, 인라인 마크다운 지원
+- console.log/any/TODO 없음, lint 0/0 유지
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (변경 범위 작고 자가 검토 충분)
+- /qa --quick: ⏭️ 스킵 (Playwright CDN 차단 + dev 서버 미실행)
+
+### 구현 상세
+1. **Guide 마크다운 렌더러 개선 (`guide/[slug]/page.tsx`)**
+   - `renderGuideContent()`: `Array.map()` → `for-of` 루프로 전환하여 상태 추적 (inList)
+   - `<li>` 태그를 `<ul class="list-disc pl-6 space-y-1 my-2">` 래퍼로 감싸 유효 HTML 생성
+   - 연속 리스트 아이템은 하나의 `<ul>`로 그룹화, 비리스트 라인에서 자동 닫기
+   - 신규 `renderInline()`: `**bold**`→`<strong>`, `*italic*`→`<em>`, `[text](url)`→`<a>` 지원
+   - 보안: `isSafeUrl()` — http/https/상대경로/앵커만 허용, javascript: 등 위험 프로토콜 차단
+
+2. **FAQ 섹션 + FAQPage JSON-LD (`faq-section.tsx` 신규, `page.tsx` 수정)**
+   - `src/components/common/faq-section.tsx` 신규 (72줄)
+   - FIRE 관련 FAQ 6개: FIRE 정의, 5가지 유형, 계산법, 4% 룰, 정확도, 저장 기능
+   - shadcn/ui Accordion (base-ui) 사용
+   - `faqJsonLd()` 함수: Schema.org FAQPage 구조화 데이터 생성
+   - 홈 페이지에 `<FAQSection />` 추가 (calculator 아래), JSON-LD `<script>` 삽입
+   - 홈 페이지 `○ (Static)` 렌더링 유지 확인
+
+3. **shadcn/ui accordion 컴포넌트 추가**
+   - `npx shadcn@latest add accordion` — base-ui 기반
+   - `src/components/ui/accordion.tsx` 자동 생성
+
+### 기술 부채 현황
+- 이번 세션 해소:
+  - Guide 리스트 아이템 `<ul>` 래퍼 누락 (무효 HTML) → 수정
+  - Guide 인라인 마크다운 미지원 → bold/italic/link 지원 추가
+  - Guide 링크 XSS 가능성 → isSafeUrl 프로토콜 검증
+  - 홈 페이지 FAQ 부재 → 6개 Q&A + FAQPage JSON-LD
+- 잔여:
+  - A-14: FIRE 엔진 단위 테스트 미작성 (vitest 미설치)
+  - tailwindcss/typography 미설치 (prose 클래스 미적용 — 현재 인라인 스타일로 대체)
+
+### 정적 렌더링 현황 (빌드 출력 기준)
+- ○ Static: `/`, `/_not-found`, `/guide`, `/login`, `/premium`, `/result`, `/robots.txt`, `/signup`, `/sitemap.xml`
+- ● SSG: `/guide/[slug]` (5개 가이드 slug prerendered)
+- ƒ Dynamic: API routes + `/saved` (개인 데이터)
+
+### 배포
+- Git: push 예정
+- 배포 방식: GitHub 자동 배포 (Vercel 연동)
+- 프로덕션 확인: ❌ (Vercel SSO 보호 유지)
+
+### 판단 필요 (누적)
+1. **Vercel SSO 보호 해제** (오너): 프로덕션 URL 공개 접근 불가
+2. **RESEARCH.md C-1~C-3** (오너): 시장 방향성 결정
+3. **Supabase 환경변수** (오너): SUPABASE_SERVICE_ROLE_KEY 미설정
+4. **NEXT_PUBLIC_APP_URL** (오너): 프로덕션 URL 업데이트 필요
+5. **F012 Stripe 연동** (오너): STRIPE_SECRET_KEY 필요
+
+### 다음 세션 권장
+1. A-14: FIRE 엔진 단위 테스트 (vitest 설치 + fire-calculator, monte-carlo, portfolio-optimizer)
+2. tailwindcss/typography 설치 + prose 스타일 적용 (Guide 콘텐츠 타이포그래피 개선)
+3. Guide 콘텐츠 확장 (SEO 롱테일 — Barista FIRE 시나리오, Coast FIRE 계산 예시)
+4. F012 Stripe 연동 (환경변수 준비 시)
+5. Lighthouse 자동 감사 (환경변수 준비 후)
+
+---
 
 ## [2026-04-11 20:30] 자동 개발 세션
 

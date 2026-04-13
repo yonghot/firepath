@@ -2,6 +2,46 @@
 
 ---
 
+**리서치 일시**: 2026-04-13 14:30 KST
+**코드베이스 상태**: 완료 15/16 (F012 partial — Stripe), 빌드 PASS, 코드 품질 양호 (console.log 0, any 0, 300줄+ 0, TODO 0)
+
+## [A] 방향/기능 제안 (신규)
+
+### A-12: Guide 마크다운 렌더러 개선 [자동 반영]
+- 현재 상태: guide/[slug]/page.tsx의 renderGuideContent()가 라인별 문자열 처리로 HTML 생성. `<li>` 태그가 `<ul>` 래퍼 없이 출력 (무효 HTML). 링크/볼드/이탤릭/코드 미지원. tailwindcss/typography 미설치로 prose 클래스 미적용.
+- 제안: react-markdown + remark-gfm 도입 또는 최소한 renderGuideContent() 내에서 `<ul>` 래핑 + 기본 인라인 마크다운 (bold, italic, link) 지원
+- 근거: PROGRESS.md 잔여 기술 부채 + SEO 콘텐츠 품질 (구조적 HTML이 검색 엔진 파싱에 유리)
+- 구현 가이드: 의존성 최소화를 위해 react-markdown 대신 renderGuideContent() 자체 개선 (li→ul 래핑, [text](url)→a 태그, **bold**→strong, *italic*→em)
+- 예상 작업량: 30분
+- 부작용: 없음 (기존 콘텐츠 호환)
+
+### A-13: FAQ 섹션 + FAQ JSON-LD [자동 반영]
+- 현재 상태: FAQ 콘텐츠 없음. 구글 FAQ rich snippet 미활용.
+- 제안: 홈 또는 /guide 페이지에 FIRE FAQ 5-8개 추가 + FAQPage JSON-LD
+- 근거: PROGRESS.md "다음 세션 권장" 3번. FAQ rich snippet은 SERP CTR 개선에 효과적.
+- 구현 가이드: 홈 하단에 Accordion FAQ 섹션 + script JSON-LD. 질문은 FIRE 초보자 관점.
+- 예상 작업량: 40분
+- 부작용: 없음
+
+### A-14: FIRE 엔진 단위 테스트 [자동 반영]
+- 현재 상태: fire-calculator.ts, monte-carlo.ts, portfolio-optimizer.ts 모두 순수 함수이나 테스트 없음
+- 제안: vitest로 핵심 계산 로직 단위 테스트 작성
+- 근거: PROGRESS.md "다음 세션 권장" 5번. 순수 함수라 테스트 용이. 회귀 방지 효과 높음.
+- 구현 가이드: vitest 설치 + src/lib/engine/__tests__/ 하위에 테스트 파일 생성
+- 예상 작업량: 45분
+- 부작용: devDependency 추가
+
+## 반영 현황 (이전 리서치)
+- A-1~A-4: 전부 [반영] 완료
+- A-5~A-8: 전부 [반영] 완료
+- A-9~A-11: 전부 [반영] 완료
+- B-1: [오너 판단 필요] 유지
+- B-2: [반영] 완료
+- B-3, B-4: A-9, A-10으로 승격 후 [반영] 완료
+- C-1, C-2, C-3: [오너 판단 필요] 유지
+
+---
+
 **리서치 일시**: 2026-04-11 16:55 KST
 **코드베이스 상태**: 완료 15/16 (F012 partial — Stripe), 빌드 PASS
 
