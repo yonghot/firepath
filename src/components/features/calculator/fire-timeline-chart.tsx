@@ -23,7 +23,7 @@ interface FIRETimelineChartProps {
 function ChartTooltipContent({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: number }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-md bg-neutral-900 p-3 shadow-lg">
+    <div className="rounded-md bg-neutral-900 p-3 shadow-lg ring-1 ring-neutral-700">
       <p className="text-sm font-semibold text-white">Age {label}</p>
       <p className="text-sm text-neutral-300">
         Net Worth: <span className="font-mono font-medium text-white">{formatCurrency(payload[0].value)}</span>

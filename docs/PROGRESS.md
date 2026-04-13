@@ -1,12 +1,88 @@
 # PROGRESS.md
 
 ## 현재 상태
-- 현재 Phase: P2 완료 + 단위 테스트 + Guide 타이포그래피 개선
+- 현재 Phase: P2 완료 + SEO 가이드 확장 + 차트 다크모드 개선
 - 마지막 업데이트: 2026-04-13
-- 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료). 테스트 35/35 PASS. Lint 0/0. 빌드 PASS. /, /result 모두 Static(○).
+- 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료). 가이드 7편. 테스트 35/35 PASS. Lint 0/0. 빌드 PASS. /, /result 모두 Static(○).
 - 프로덕션: https://firepath-2j7weljnc-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
 
-## [2026-04-13 20:00] 자동 개발 세션
+## [2026-04-13 20:06] 자동 개발 세션
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미경과, 직전 리서치 커밋 ~0h 전)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 0건
+- PRD 변경점: 없음
+- DESIGN.md 불일치: 1건 (차트 툴팁 다크모드 구분 부족 → ring-1 추가로 해소)
+- feature_list.json vs 코드: 0건
+- 아키텍처 위반: 0건
+
+### 메인 태스크
+- SEO 가이드 콘텐츠 확장: Barista FIRE + Regular FIRE 가이드 2편 추가 (DB 직접 삽입)
+- 차트 툴팁 다크모드 개선: 5개 차트 컴포넌트에 ring-1 ring-neutral-700 추가
+
+### 사전 리팩토링 (B-3)
+- 없음 (수정 대상 파일 모두 300줄 미만)
+
+### 추가 작업
+- 사이트맵 가이드 slug 목록 업데이트 (5→7편, 실제 DB와 동기화)
+- 존재하지 않는 'what-is-fire' slug 제거, 실제 slug 7개로 교체
+
+### Refactor-on-Touch 결과
+- sitemap.ts: 가이드 slug 배열을 실제 DB 데이터와 동기화
+- 5개 차트 컴포넌트: className에 ring-1 추가만 (1줄 변경씩)
+- console.log 0, any 0, TODO 0, 300줄+ 0
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (변경 범위 작고 자가 검토 충분)
+- /qa --quick: ⏭️ 스킵 (Playwright CDN 차단 + dev 서버 미실행)
+
+### 구현 상세
+1. **Barista FIRE 가이드** (what-is-baristafire)
+   - 정의, 작동 방식, 공식 ($40K expenses → $500K target), 다른 FIRE 유형 비교
+   - 대상 독자, 리스크, CTA
+   - sort_order: 7
+
+2. **Regular FIRE 가이드** (what-is-regular-fire)
+   - 핵심 공식 (25x rule), 4% 룰 설명, 수학적 근거 (저축률이 핵심 변수)
+   - 다른 FIRE 유형 비교, 대상 독자, 일반 전략, 리스크
+   - sort_order: 3 (Lean과 Fat 사이)
+
+3. **차트 툴팁 다크모드 개선**
+   - 5개 파일: fire-timeline-chart, monte-carlo-chart, scenario-comparison, portfolio-results, portfolio-chart
+   - bg-neutral-900이 다크모드 배경(#0A0A0A)과 유사하여 구분 어려움
+   - ring-1 ring-neutral-700 추가로 테두리 시각적 구분 확보
+
+4. **사이트맵 동기화**
+   - 존재하지 않는 'what-is-fire' 제거
+   - lean-vs-fat-fire, coast-vs-barista-fire, what-is-regular-fire 추가
+   - 총 7개 가이드 slug로 업데이트
+
+### 기술 부채 현황
+- 발견: 사이트맵에 존재하지 않는 slug ('what-is-fire') 포함 → 해소
+- 해소: 차트 다크모드 구분 부족, 사이트맵 불일치
+- 잔여: F012 Stripe 연동 (환경변수 필요)
+
+### 배포
+- Git push: 아래 확인 (브랜치: main)
+- 배포 방식: GitHub push → Vercel 자동 배포 예상
+- 프로덕션: SSO 보호로 확인 불가
+
+### 판단 필요 (누적)
+1. **Vercel SSO 보호 해제** (오너): 프로덕션 URL 공개 접근 불가
+2. **RESEARCH.md C-1~C-3** (오너): 시장 방향성 결정
+3. **Supabase 환경변수** (오너): SUPABASE_SERVICE_ROLE_KEY 미설정
+4. **NEXT_PUBLIC_APP_URL** (오너): 프로덕션 URL 업데이트 필요
+5. **F012 Stripe 연동** (오너): STRIPE_SECRET_KEY 필요
+
+### 다음 세션 권장
+1. 가이드 콘텐츠 추가 확장 (FIRE 계산 예시 시나리오, 4% 룰 심층, FIRE 초보자 로드맵)
+2. F012 Stripe 연동 (환경변수 준비 시)
+3. E2E 테스트 (Playwright — 계산기 플로우, 시나리오 비교)
+4. Lighthouse 자동 감사 (환경변수 준비 후)
+
+## [2026-04-13 20:00] 자동 개발 세션 (아카이브)
 
 ### 리서치
 - ⏭️ 스킵 (쿨다운 미경과, 직전 리서치 커밋 ~5h 전)

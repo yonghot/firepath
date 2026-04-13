@@ -24,7 +24,7 @@ function ChartTooltip({
   if (!active || !payload?.length) return null;
   const d = payload[0];
   return (
-    <div className="rounded-md bg-neutral-900 p-2 shadow-lg text-xs">
+    <div className="rounded-md bg-neutral-900 p-2 shadow-lg ring-1 ring-neutral-700 text-xs">
       <span className="text-white font-medium">{d.name}: </span>
       <span className="font-mono text-white">{(d.value * 100).toFixed(0)}%</span>
     </div>

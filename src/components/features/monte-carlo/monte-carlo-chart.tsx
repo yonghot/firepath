@@ -35,7 +35,7 @@ function MCTooltip({
   if (!data) return null;
 
   return (
-    <div className="rounded-md bg-neutral-900 p-3 shadow-lg">
+    <div className="rounded-md bg-neutral-900 p-3 shadow-lg ring-1 ring-neutral-700">
       <p className="text-sm font-semibold text-white mb-1">Age {label}</p>
       <div className="space-y-0.5 text-xs">
         <p className="text-neutral-300">

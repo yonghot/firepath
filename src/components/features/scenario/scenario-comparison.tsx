@@ -51,7 +51,7 @@ function mergeTimelines(a: Scenario, b: Scenario): MergedDataPoint[] {
 function ComparisonTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; name: string; color: string }>; label?: number }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-md bg-neutral-900 p-3 shadow-lg">
+    <div className="rounded-md bg-neutral-900 p-3 shadow-lg ring-1 ring-neutral-700">
       <p className="text-sm font-semibold text-white mb-1">Age {label}</p>
       {payload.map((entry) => (
         <p key={entry.name} className="text-sm" style={{ color: entry.color }}>

@@ -28,10 +28,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Guide slugs — hardcoded since Supabase may not be available at build time
   const guideSlugs = [
-    'what-is-fire',
-    'what-is-leanfire',
-    'what-is-fatfire',
     'what-is-coastfire',
+    'what-is-leanfire',
+    'what-is-regular-fire',
+    'what-is-fatfire',
+    'lean-vs-fat-fire',
+    'coast-vs-barista-fire',
     'what-is-baristafire',
   ];
 

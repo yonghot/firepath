@@ -24,7 +24,7 @@
     { "id": "F007", "name": "Authentication", "priority": "P1", "status": "pass", "verified": "Login/signup pages + OAuth callback + Supabase auth" },
     { "id": "F008", "name": "Save/Load Calculations", "priority": "P1", "status": "pass", "verified": "3-layer API (Route→Service→Repo), 5-limit, soft delete" },
     { "id": "F009", "name": "OG Image Generation", "priority": "P1", "status": "pass", "verified": "Edge function, 1200x630 ImageResponse" },
-    { "id": "F010", "name": "SEO Guide Content", "priority": "P1", "status": "pass", "verified": "5 guides seeded, SSR pages with metadata" },
+    { "id": "F010", "name": "SEO Guide Content", "priority": "P1", "status": "pass", "verified": "7 guides (5 type-specific + 2 comparison), SSR pages with metadata, sitemap synced" },
     { "id": "F011", "name": "Scenario Comparison", "priority": "P1", "status": "pass", "verified": "2-scenario limit, save current input, side-by-side chart + table comparison, diff display" },
     { "id": "F012", "name": "Premium Subscription", "priority": "P2", "status": "partial", "note": "UI complete, Stripe integration placeholder" },
     { "id": "F013", "name": "Monte Carlo Simulation", "priority": "P2", "status": "pass", "verified": "1000 simulations with 15% volatility, fan chart (10-90 percentiles), success rates per FIRE type, premium gate" },
