@@ -23,7 +23,7 @@
 - 예상 작업량: 40분
 - 부작용: 없음
 
-### A-14: FIRE 엔진 단위 테스트 [자동 반영]
+### A-14: FIRE 엔진 단위 테스트 [반영]
 - 현재 상태: fire-calculator.ts, monte-carlo.ts, portfolio-optimizer.ts 모두 순수 함수이나 테스트 없음
 - 제안: vitest로 핵심 계산 로직 단위 테스트 작성
 - 근거: PROGRESS.md "다음 세션 권장" 5번. 순수 함수라 테스트 용이. 회귀 방지 효과 높음.

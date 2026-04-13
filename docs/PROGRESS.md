@@ -1,10 +1,94 @@
 # PROGRESS.md
 
 ## 현재 상태
-- 현재 Phase: P2 완료 + Guide 렌더러 개선 + FAQ 섹션 + FAQ JSON-LD
+- 현재 Phase: P2 완료 + 단위 테스트 + Guide 타이포그래피 개선
 - 마지막 업데이트: 2026-04-13
-- 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료). Lint 0/0. 빌드 PASS. /, /result 모두 Static(○).
+- 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료). 테스트 35/35 PASS. Lint 0/0. 빌드 PASS. /, /result 모두 Static(○).
 - 프로덕션: https://firepath-2j7weljnc-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
+
+## [2026-04-13 20:00] 자동 개발 세션
+
+### 리서치
+- ⏭️ 스킵 (쿨다운 미경과, 직전 리서치 커밋 ~5h 전)
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 0건
+- PRD 변경점: 없음
+- DESIGN.md 불일치: 0건
+- feature_list.json vs 코드: 0건
+- 아키텍처 위반: 0건
+
+### 메인 태스크
+- A-14: FIRE 엔진 단위 테스트 (vitest 설치 + 3개 테스트 파일, 35 테스트)
+
+### 사전 리팩토링 (B-3)
+- 없음 (수정 대상 파일 모두 300줄 미만)
+
+### 추가 작업
+- Guide 타이포그래피 개선: @tailwindcss/typography 설치 + prose 클래스 적용
+
+### Refactor-on-Touch 결과
+- guide/[slug]/page.tsx: renderGuideContent에서 중복 인라인 클래스 제거 (prose가 처리), 빈 줄 `<br/>`→생략 (prose 마진 활용), 링크 인라인 스타일 제거 (prose 기본 스타일 사용)
+- console.log 0, any 0, TODO 0, 300줄+ 0
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (변경 범위 작고 자가 검토 충분)
+- /qa --quick: ⏭️ 스킵 (Playwright CDN 차단 + dev 서버 미실행)
+
+### 구현 상세
+1. **FIRE 엔진 단위 테스트 (A-14)**
+   - vitest 설치 (devDependency) + vitest.config.ts 생성 (@/ alias 설정)
+   - package.json에 `"test": "vitest run"` 스크립트 추가
+   - `src/lib/engine/__tests__/fire-calculator.test.ts` (13 테스트)
+     - 5 FIRE 타입 결과 확인, 정확한 타겟 계산 (4% 룰), 타임라인 길이/순서
+     - 순자산 비감소 검증, 초기값 검증, 타겟/도달 나이 순서 검증
+     - 월 수동 소득 계산, Coast FIRE 타겟/도달 나이, 경계값 (0 순자산, 높은 저축률)
+     - Fisher 방정식 (실질 수익률) 정확성 검증
+   - `src/lib/engine/__tests__/monte-carlo.test.ts` (10 테스트)
+     - 반환 구조, 퍼센타일 엔트리 수, 퍼센타일 순서 (p10≤p25≤p50≤p75≤p90)
+     - 성공률 범위 (0-1), 성공률 순서 (lean≥regular≥fat)
+     - 시드 42 결정론적 재현성, 변동성에 따른 팬 폭 변화
+     - 초기값 일관성, 중위 도달 나이 순서, 기본 config 동작
+   - `src/lib/engine/__tests__/portfolio-optimizer.test.ts` (12 테스트)
+     - 3개 리스크 프로필, 유효한 추천, 가중치 합=1.0
+     - 공격형>보수형 기대수익률/변동성, 양의 샤프 비율
+     - 성장 예측 초기값, 시간에 따른 성장 순서
+     - 자산 클래스 수, 5개 FIRE 타입 yearsToFIRE
+     - 젊은 투자자→공격형, 은퇴 임박→보수형/중립형 추천
+
+2. **Guide 타이포그래피 개선**
+   - @tailwindcss/typography 설치 (dependency)
+   - globals.css에 `@plugin "@tailwindcss/typography"` 추가 (Tailwind v4 방식)
+   - guide/[slug]/page.tsx: `prose prose-sm` → `prose prose-neutral dark:prose-invert` 변경
+   - renderGuideContent: 인라인 클래스 제거하여 prose 기본 스타일에 위임
+     - h1/h2/h3: 수동 font-size/weight 클래스 제거 → prose가 처리
+     - ul/li: 수동 list-disc/pl-6 제거 → prose가 처리
+     - p: text-muted-foreground/leading-relaxed 제거 → prose가 처리
+     - a: 수동 color/underline 클래스 제거 → prose가 처리
+     - 빈 줄: `<br/>` → 생략 (prose 마진으로 간격 처리)
+
+### 기술 부채 현황
+- 발견: 0건
+- 해소: A-14 (테스트 부재 → 35개 단위 테스트 추가), Guide 타이포그래피 (prose 미적용 → 적용)
+- 잔여: F012 Stripe 연동 (환경변수 필요)
+
+### 배포
+- Git push: 아래 확인 (브랜치: main)
+- 배포 방식: GitHub push → Vercel 자동 배포 예상
+- 프로덕션: SSO 보호로 확인 불가
+
+### 판단 필요 (누적)
+1. **Vercel SSO 보호 해제** (오너): 프로덕션 URL 공개 접근 불가
+2. **RESEARCH.md C-1~C-3** (오너): 시장 방향성 결정
+3. **Supabase 환경변수** (오너): SUPABASE_SERVICE_ROLE_KEY 미설정
+4. **NEXT_PUBLIC_APP_URL** (오너): 프로덕션 URL 업데이트 필요
+5. **F012 Stripe 연동** (오너): STRIPE_SECRET_KEY 필요
+
+### 다음 세션 권장
+1. Guide 콘텐츠 확장 (SEO 롱테일 — Barista FIRE 시나리오, Coast FIRE 계산 예시)
+2. F012 Stripe 연동 (환경변수 준비 시)
+3. Lighthouse 자동 감사 (환경변수 준비 후)
+4. E2E 테스트 (Playwright — 계산기 플로우, 시나리오 비교)
 
 ## [2026-04-13 14:30] 자동 개발 세션
 

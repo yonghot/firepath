@@ -1,6 +1,6 @@
 {
   "project": "FIREPath",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "lastUpdated": "2026-04-13",
   "evaluator": {
     "build": "PASS",
@@ -11,7 +11,8 @@
     "codeSplitting": "premium panels (Monte Carlo + Portfolio) dynamically imported",
     "componentLayer": "no direct fetch/supabase calls — all mutations via React Query hooks",
     "structuredData": "WebApplication (root), FAQPage (home), Article + BreadcrumbList (guide detail), BreadcrumbList + ItemList (guide index)",
-    "staticPages": "/, /premium, /result, /guide, /login, /signup, /_not-found all prerendered as static"
+    "staticPages": "/, /premium, /result, /guide, /login, /signup, /_not-found all prerendered as static",
+    "testCoverage": "35 tests (fire-calculator: 13, monte-carlo: 10, portfolio-optimizer: 12) — vitest"
   },
   "features": [
     { "id": "F001", "name": "FIRE Calculation Engine", "priority": "P0", "status": "pass", "verified": "Default input → Regular=$1M, Lean=$600K, Fat=$1.5M, timeline=51 entries" },

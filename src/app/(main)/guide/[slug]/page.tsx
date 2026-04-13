@@ -59,7 +59,7 @@ function renderInline(text: string): string {
     (_, label: string, url: string) => {
       const decoded = url.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
       if (!isSafeUrl(decoded)) return label;
-      return `<a href="${url}" class="text-[var(--brand-light)] underline hover:text-[var(--brand-primary)]" rel="noopener noreferrer">${label}</a>`;
+      return `<a href="${url}" rel="noopener noreferrer">${label}</a>`;
     },
   );
   return s;
@@ -80,23 +80,23 @@ function renderGuideContent(content: string): string {
     }
 
     if (line.startsWith('### ')) {
-      result.push(`<h3 class="text-2xl font-semibold mt-6 mb-2">${renderInline(line.slice(4))}</h3>`);
+      result.push(`<h3>${renderInline(line.slice(4))}</h3>`);
     } else if (line.startsWith('## ')) {
-      result.push(`<h2 class="text-3xl font-bold mt-8 mb-3">${renderInline(line.slice(3))}</h2>`);
+      result.push(`<h2>${renderInline(line.slice(3))}</h2>`);
     } else if (line.startsWith('# ')) {
-      result.push(`<h1 class="text-4xl font-bold mt-8 mb-4">${renderInline(line.slice(2))}</h1>`);
+      result.push(`<h1>${renderInline(line.slice(2))}</h1>`);
     } else if (isList) {
       if (!inList) {
-        result.push('<ul class="list-disc pl-6 space-y-1 my-2">');
+        result.push('<ul>');
         inList = true;
       }
-      result.push(`<li class="text-muted-foreground">${renderInline(line.slice(2))}</li>`);
+      result.push(`<li>${renderInline(line.slice(2))}</li>`);
     } else if (line.startsWith('| ')) {
-      result.push(`<div class="text-sm text-muted-foreground font-mono">${esc(line)}</div>`);
+      result.push(`<div class="font-mono text-sm">${esc(line)}</div>`);
     } else if (line.trim() === '') {
-      result.push('<br />');
+      // Empty line — prose handles spacing via margins
     } else {
-      result.push(`<p class="text-muted-foreground leading-relaxed">${renderInline(line)}</p>`);
+      result.push(`<p>${renderInline(line)}</p>`);
     }
   }
 
@@ -153,7 +153,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
           </Badge>
 
           <div
-            className="prose prose-sm max-w-none"
+            className="prose prose-neutral dark:prose-invert max-w-none"
             dangerouslySetInnerHTML={{ __html: htmlContent }}
           />
 
