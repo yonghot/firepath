@@ -1,5 +1,6 @@
 import type { FIREInput, FIREType } from '@/types/fire.types';
-import { MAX_SIMULATION_AGE, FIRE_MULTIPLIERS } from '@/constants/fire-defaults';
+import { MAX_SIMULATION_AGE } from '@/constants/fire-defaults';
+import { calculateFIRETargets } from './fire-targets';
 
 export interface MonteCarloConfig {
   simulations: number; // default 1000
@@ -141,12 +142,7 @@ export function runMonteCarlo(
   const years = MAX_SIMULATION_AGE - input.currentAge;
   const realReturnBase = (1 + input.expectedReturn) / (1 + input.inflation) - 1;
 
-  const targets: Record<Exclude<FIREType, 'coast'>, number> = {
-    lean: (input.annualExpenses * FIRE_MULTIPLIERS.lean) / input.safeWithdrawalRate,
-    regular: (input.annualExpenses * FIRE_MULTIPLIERS.regular) / input.safeWithdrawalRate,
-    fat: (input.annualExpenses * FIRE_MULTIPLIERS.fat) / input.safeWithdrawalRate,
-    barista: (input.annualExpenses * FIRE_MULTIPLIERS.barista) / input.safeWithdrawalRate,
-  };
+  const targets = calculateFIRETargets(input.annualExpenses, input.safeWithdrawalRate);
 
   const ctx: SimulationContext = {
     currentAge: input.currentAge,

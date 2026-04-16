@@ -1,34 +1,50 @@
 import type { FIREInput, FIREOutput, FIRETimeline, FIREResult, FIREType } from '@/types/fire.types';
-import { MAX_SIMULATION_AGE, FIRE_MULTIPLIERS } from '@/constants/fire-defaults';
+import { MAX_SIMULATION_AGE } from '@/constants/fire-defaults';
+import { calculateFIRETargets } from './fire-targets';
 
-export function calculateFIRE(input: FIREInput): FIREOutput {
-  const {
-    currentAge,
-    retirementAge,
-    annualIncome,
-    currentNetWorth,
-    savingsRate,
-    annualExpenses,
-    expectedReturn,
-    inflation,
-    safeWithdrawalRate,
-  } = input;
-
-  // Real return rate (Fisher equation)
-  const realReturn = (1 + expectedReturn) / (1 + inflation) - 1;
-
-  // Annual savings
-  const annualSavings = annualIncome * savingsRate;
-
-  // Calculate FIRE target amounts
-  const targets: Record<Exclude<FIREType, 'coast'>, number> = {
-    lean: (annualExpenses * FIRE_MULTIPLIERS.lean) / safeWithdrawalRate,
-    regular: (annualExpenses * FIRE_MULTIPLIERS.regular) / safeWithdrawalRate,
-    fat: (annualExpenses * FIRE_MULTIPLIERS.fat) / safeWithdrawalRate,
-    barista: (annualExpenses * FIRE_MULTIPLIERS.barista) / safeWithdrawalRate,
+/** Find the first age where net worth reaches the given target */
+function findAchievementAge(
+  timeline: FIRETimeline[],
+  target: number,
+  currentAge: number
+): { yearsToReach: number | null; reachAge: number | null } {
+  const entry = timeline.find((t) => t.netWorth >= target);
+  if (!entry) return { yearsToReach: null, reachAge: null };
+  return {
+    yearsToReach: entry.age - currentAge,
+    reachAge: entry.age,
   };
+}
 
-  // Build year-by-year timeline
+/** Find the age where current net worth will compound to regular target by retirement */
+function findCoastFIREAge(
+  timeline: FIRETimeline[],
+  regularTarget: number,
+  realReturn: number,
+  retirementAge: number,
+  currentAge: number
+): { yearsToReach: number | null; reachAge: number | null } {
+  for (const entry of timeline) {
+    if (entry.age >= retirementAge) break;
+    const yearsToRetirement = retirementAge - entry.age;
+    const coastTarget = regularTarget / Math.pow(1 + realReturn, yearsToRetirement);
+    if (entry.netWorth >= coastTarget) {
+      return {
+        yearsToReach: entry.age - currentAge,
+        reachAge: entry.age,
+      };
+    }
+  }
+  return { yearsToReach: null, reachAge: null };
+}
+
+/** Build year-by-year net worth timeline */
+function buildTimeline(
+  currentAge: number,
+  currentNetWorth: number,
+  realReturn: number,
+  annualSavings: number
+): FIRETimeline[] {
   const timeline: FIRETimeline[] = [];
   let netWorth = currentNetWorth;
   const currentYear = new Date().getFullYear();
@@ -50,57 +66,54 @@ export function calculateFIRE(input: FIREInput): FIREOutput {
     });
   }
 
-  // Find achievement ages for each FIRE type
-  const findAchievementAge = (target: number): { yearsToReach: number | null; reachAge: number | null } => {
-    const entry = timeline.find((t) => t.netWorth >= target);
-    if (!entry) return { yearsToReach: null, reachAge: null };
-    return {
-      yearsToReach: entry.age - currentAge,
-      reachAge: entry.age,
-    };
-  };
+  return timeline;
+}
 
-  // CoastFIRE: find age where current netWorth will grow to regular target by retirement age
-  const findCoastFIREAge = (): { yearsToReach: number | null; reachAge: number | null } => {
-    const regularTarget = targets.regular;
-
-    for (const entry of timeline) {
-      if (entry.age >= retirementAge) break;
-
-      const yearsToRetirement = retirementAge - entry.age;
-      const coastTarget = regularTarget / Math.pow(1 + realReturn, yearsToRetirement);
-
-      if (entry.netWorth >= coastTarget) {
-        return {
-          yearsToReach: entry.age - currentAge,
-          reachAge: entry.age,
-        };
-      }
-    }
-
-    return { yearsToReach: null, reachAge: null };
-  };
-
-  const coastResult = findCoastFIREAge();
-
-  // CoastFIRE target is the amount needed NOW that will grow to regular target by retirement
-  const yearsToRetirement = retirementAge - currentAge;
-  const coastTarget = targets.regular / Math.pow(1 + realReturn, yearsToRetirement);
-
-  const buildResult = (type: FIREType, target: number, achievement: { yearsToReach: number | null; reachAge: number | null }): FIREResult => ({
+/** Build a single FIREResult object */
+function buildResult(
+  type: FIREType,
+  target: number,
+  achievement: { yearsToReach: number | null; reachAge: number | null },
+  safeWithdrawalRate: number
+): FIREResult {
+  return {
     type,
     targetAmount: Math.round(target),
     yearsToReach: achievement.yearsToReach,
     reachAge: achievement.reachAge,
     monthlyPassiveIncome: Math.round((target * safeWithdrawalRate) / 12),
-  });
+  };
+}
+
+export function calculateFIRE(input: FIREInput): FIREOutput {
+  const {
+    currentAge,
+    retirementAge,
+    annualIncome,
+    currentNetWorth,
+    savingsRate,
+    annualExpenses,
+    expectedReturn,
+    inflation,
+    safeWithdrawalRate,
+  } = input;
+
+  const realReturn = (1 + expectedReturn) / (1 + inflation) - 1;
+  const annualSavings = annualIncome * savingsRate;
+  const targets = calculateFIRETargets(annualExpenses, safeWithdrawalRate);
+
+  const timeline = buildTimeline(currentAge, currentNetWorth, realReturn, annualSavings);
+
+  const coastResult = findCoastFIREAge(timeline, targets.regular, realReturn, retirementAge, currentAge);
+  const yearsToRetirement = retirementAge - currentAge;
+  const coastTarget = targets.regular / Math.pow(1 + realReturn, yearsToRetirement);
 
   const results: Record<FIREType, FIREResult> = {
-    lean: buildResult('lean', targets.lean, findAchievementAge(targets.lean)),
-    regular: buildResult('regular', targets.regular, findAchievementAge(targets.regular)),
-    fat: buildResult('fat', targets.fat, findAchievementAge(targets.fat)),
-    coast: buildResult('coast', coastTarget, coastResult),
-    barista: buildResult('barista', targets.barista, findAchievementAge(targets.barista)),
+    lean: buildResult('lean', targets.lean, findAchievementAge(timeline, targets.lean, currentAge), safeWithdrawalRate),
+    regular: buildResult('regular', targets.regular, findAchievementAge(timeline, targets.regular, currentAge), safeWithdrawalRate),
+    fat: buildResult('fat', targets.fat, findAchievementAge(timeline, targets.fat, currentAge), safeWithdrawalRate),
+    coast: buildResult('coast', coastTarget, coastResult, safeWithdrawalRate),
+    barista: buildResult('barista', targets.barista, findAchievementAge(timeline, targets.barista, currentAge), safeWithdrawalRate),
   };
 
   return { timeline, results };

@@ -1,10 +1,90 @@
 # PROGRESS.md
 
 ## 현재 상태
-- 현재 Phase: P2 완료 + SEO 가이드 확장 + 차트 다크모드 개선
-- 마지막 업데이트: 2026-04-13
-- 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료). 가이드 7편. 테스트 35/35 PASS. Lint 0/0. 빌드 PASS. /, /result 모두 Static(○).
+- 현재 Phase: P2 완료 + 엔진 리팩토링 + 테스트 확장
+- 마지막 업데이트: 2026-04-17
+- 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료). 가이드 7편. 테스트 42/42 PASS. Lint 0/0. 빌드 PASS. /, /result 모두 Static(○).
 - 프로덕션: https://firepath-2j7weljnc-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
+
+## [2026-04-17 00:10] 자동 개발 세션
+
+### 리서치
+- ✅ 수행 (쿨다운 76h+ 경과). [자동 반영] 3개 (A-15, A-16, A-17). [오너 판단 필요] 0개 신규.
+- 서브에이전트 5개 병렬: 사용자 플로우, 코드 품질, 프론트엔드 디자인, 백엔드 아키텍처, SEO/콘텐츠
+- R2(코드 품질): FIRE 타겟 계산 중복 발견 (fire-calculator + monte-carlo) → A-15
+- R3(디자인): 차트 툴팁 하드코딩 이슈 (이전 세션에서 이미 ring-1 개선)
+- R4(아키텍처): 3-Layer 전면 정합 확인
+- R5(SEO): JSON-LD, 메타데이터, 사이트맵 전부 정상
+
+### 정합성 검증 (B-0.5)
+- [MUST] 위반: 0건
+- PRD 변경점: 없음 (git diff HEAD~10 clean)
+- DESIGN.md 불일치: 0건
+- feature_list.json vs 코드: 0건
+- 아키텍처 위반: 0건
+
+### 메인 태스크
+- A-15: FIRE 타겟 계산 공유 유틸리티 추출 (fire-targets.ts)
+- A-16: calculateFIRE() 함수 분리 (107줄 → 주 함수 20줄 + 4개 헬퍼)
+
+### 사전 리팩토링 (B-3)
+- fire-calculator.ts: calculateFIRE() 103줄 → 50줄+ 임계치 초과 → 4개 파일 수준 함수로 분리
+
+### 추가 작업
+- fire-targets.test.ts: 7개 단위 테스트 추가 (calculateFIRETargets 독립 검증)
+- A-17 (FIRE 초보자 가이드): Supabase DB 연결 불가로 연기
+
+### Refactor-on-Touch 결과
+- fire-calculator.ts: calculateFIRE() 내부 중첩 함수 3개(findAchievementAge, findCoastFIREAge, buildResult) + 타임라인 루프를 파일 수준 함수 4개로 추출
+- monte-carlo.ts: FIRE_MULTIPLIERS import 제거 → calculateFIRETargets import로 대체 (5줄→1줄)
+- console.log 0, any 0, TODO 0, 300줄+ 0, 미사용 import 0
+
+### gstack 검증 결과
+- /review: ⏭️ 스킵 (변경 범위 작고 자가 검토 + 42개 테스트 전체 PASS)
+- /qa --quick: ⏭️ 스킵 (dev 서버 미실행)
+
+### 구현 상세
+1. **fire-targets.ts 신규** (19줄)
+   - `calculateFIRETargets(expenses, swr)` — 4개 non-coast FIRE 타겟 계산
+   - DRY: fire-calculator.ts와 monte-carlo.ts의 동일 계산 로직 단일화
+
+2. **fire-calculator.ts 리팩토링** (107줄 → 113줄, 주 함수 103줄→20줄)
+   - `findAchievementAge()` — 타임라인에서 타겟 도달 나이 탐색
+   - `findCoastFIREAge()` — Coast FIRE 복리 역산 나이 탐색
+   - `buildTimeline()` — 연도별 순자산 시뮬레이션
+   - `buildResult()` — FIREResult 객체 생성
+   - `calculateFIRE()` — 오케스트레이터 (입력 분해 → 타겟 → 타임라인 → 결과 조립)
+
+3. **monte-carlo.ts** (178줄 → 173줄)
+   - FIRE_MULTIPLIERS 직접 계산 → calculateFIRETargets() 호출로 대체
+
+4. **fire-targets.test.ts 신규** (7 테스트)
+   - 4개 FIRE 타입 반환, coast 미포함, 정확한 계산, 순서 검증
+   - 25x 규칙 (regular at 4% SWR), 비용 선형 스케일링, SWR 역비례
+
+### 기술 부채 현황
+- 발견: FIRE 타겟 계산 중복 (2곳) → 해소
+- 발견: calculateFIRE() 103줄 → 분리하여 해소
+- 잔여: F012 Stripe 연동 (환경변수 필요), Supabase 환경변수 미설정
+
+### 배포
+- Git push: 아래 확인 (브랜치: main)
+- 배포 방식: GitHub push → Vercel 자동 배포 예상
+- 프로덕션: SSO 보호로 확인 불가
+
+### 판단 필요 (누적)
+1. **Vercel SSO 보호 해제** (오너): 프로덕션 URL 공개 접근 불가
+2. **RESEARCH.md C-1~C-3** (오너): 시장 방향성 결정
+3. **Supabase 환경변수** (오너): SUPABASE_SERVICE_ROLE_KEY 미설정
+4. **NEXT_PUBLIC_APP_URL** (오너): 프로덕션 URL 업데이트 필요
+5. **F012 Stripe 연동** (오너): STRIPE_SECRET_KEY 필요
+6. **A-17 FIRE 초보자 가이드** (오너): Supabase DB 접근 필요 — 이 세션에서 연결 불가
+
+### 다음 세션 권장
+1. A-17: FIRE 초보자 가이드 콘텐츠 추가 (DB 접근 가능 시)
+2. 가이드 콘텐츠 추가 확장 (4% 룰 심층, FIRE 계산 예시 시나리오)
+3. F012 Stripe 연동 (환경변수 준비 시)
+4. E2E 테스트 (Playwright — 계산기 플로우, 시나리오 비교)
 
 ## [2026-04-13 20:06] 자동 개발 세션
 

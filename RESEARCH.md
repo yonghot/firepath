@@ -2,6 +2,77 @@
 
 ---
 
+**리서치 일시**: 2026-04-17 00:15 KST
+**코드베이스 상태**: 완료 15/16 (F012 partial — Stripe), 빌드 PASS, 코드 품질 양호 (console.log 0, any 0, 300줄+ 0, TODO 0), 테스트 35/35 PASS
+
+## [A] 방향/기능 제안 (신규)
+
+### A-15: FIRE 타겟 계산 중복 추출 [자동 반영]
+- 현재 상태: fire-calculator.ts:24-29와 monte-carlo.ts:144-149에서 동일한 FIRE 타겟 계산 로직 중복
+- 제안: src/lib/engine/fire-targets.ts로 공유 유틸리티 추출
+- 근거: R2 코드 품질 스캔에서 발견. DRY 원칙 위반. 두 파일 모두 FIRE_MULTIPLIERS 기반 동일 계산.
+- 구현 가이드: `calculateFIRETargets(expenses, swr)` 함수 추출 → fire-calculator.ts, monte-carlo.ts에서 import
+- 예상 작업량: 15분
+- 부작용: 없음 (순수 리팩토링)
+
+### A-16: calculateFIRE() 함수 분리 [자동 반영]
+- 현재 상태: fire-calculator.ts의 calculateFIRE() 함수가 ~103줄 (50줄+ 임계치 초과)
+- 제안: 내부 헬퍼 함수들을 파일 수준으로 분리 (simulateYear, buildTimeline 등)
+- 근거: R2 코드 품질 스캔. Refactor-on-Touch 임계치 (50줄+) 초과.
+- 구현 가이드: calculateFIRE() 내 중첩 함수를 파일 수준 private 함수로 추출
+- 예상 작업량: 20분
+- 부작용: 없음 (동작 변경 없이 구조만 개선)
+
+### A-17: 가이드 콘텐츠 확장 — FIRE 초보자 로드맵 [자동 반영]
+- 현재 상태: 7편 가이드 (5 유형별 + 2 비교). 초보자 종합 가이드 부재.
+- 제안: "How to Start Your FIRE Journey: A Beginner's Roadmap" 가이드 추가
+- 근거: 이전 세션 "다음 세션 권장" 1번. SEO 롱테일 ("how to start FIRE", "FIRE for beginners"). 기존 7편은 개별 유형 설명 → 종합 로드맵으로 내부 링크 허브 역할.
+- 구현 가이드: Supabase guides 테이블에 INSERT. slug: "fire-beginners-roadmap". sort_order: 1.
+- 예상 작업량: 30분
+- 부작용: 없음
+
+## 반영 현황 (이전 리서치)
+- A-1~A-11: 전부 [반영] 완료
+- A-12~A-14: 전부 [반영] 완료
+- B-1: [오너 판단 필요] 유지
+- C-1, C-2, C-3: [오너 판단 필요] 유지
+
+## [R] 서브에이전트 스캔 요약 (2026-04-17)
+
+### R2: 코드 품질
+- console.log: 0 (catch 블록 console.error만 존재 — 정상)
+- any 타입: 0
+- 300줄+ 파일: 0 (최대 dropdown-menu.tsx 268줄 — UI 컴포넌트)
+- 50줄+ 함수: calculateFIRE() ~103줄 → A-16
+- 미사용 import: 0
+- TODO/FIXME: 0
+- 중복 패턴: FIRE 타겟 계산 2곳 → A-15
+
+### R3: 프론트엔드 디자인
+- FIRE 타입 색상: ✅ 정합
+- 카드 패턴 (rounded-xl, 4px left border): ✅ 정합
+- 레이아웃 (max-w-7xl, 320px sidebar): ✅ 정합
+- 다크모드 CSS 변수: ✅ 정합
+- 차트 툴팁: bg-neutral-900 하드코딩 (이전 세션에서 ring-1 추가로 개선 완료)
+- 모바일 Sheet 너비: w-64 (256px) — DESIGN.md 미명시, 수용
+
+### R4: 백엔드 아키텍처
+- 3-Layer 준수: ✅ 전면 정합
+- API 응답 포맷: ✅ 전면 정합
+- Auth 미들웨어: ✅ 보호 라우트 전체 적용
+- 에러 처리: ✅ Zod + try-catch 일관
+- 컴포넌트 비즈니스 로직: ✅ 없음
+
+### R5: SEO + 콘텐츠
+- 사이트맵: ✅ 7 가이드 + 공개 페이지 전체
+- robots.txt: ✅ /api/, /saved 차단
+- JSON-LD: ✅ WebApplication, FAQPage, Article, BreadcrumbList, ItemList
+- 메타 설명: ✅ 전체 페이지 설정
+- Canonical URL: ✅ 전체 설정
+- OG/Twitter: ✅ 전체 설정
+
+---
+
 **리서치 일시**: 2026-04-13 14:30 KST
 **코드베이스 상태**: 완료 15/16 (F012 partial — Stripe), 빌드 PASS, 코드 품질 양호 (console.log 0, any 0, 300줄+ 0, TODO 0)
 
