@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { createClient } from '@/lib/supabase/client';
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
 export default function LoginPage() {
@@ -19,6 +19,10 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isSupabaseConfigured()) {
+      toast.error('로그인 서비스를 일시적으로 사용할 수 없습니다.');
+      return;
+    }
     setLoading(true);
     const supabase = createClient();
 
@@ -35,6 +39,10 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
+    if (!isSupabaseConfigured()) {
+      toast.error('로그인 서비스를 일시적으로 사용할 수 없습니다.');
+      return;
+    }
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
