@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import { createGuideService, GuideService } from '@/lib/services/guide.service';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,15 +20,18 @@ export const metadata: Metadata = {
 };
 
 export default async function GuidesIndexPage() {
-  // createClient() throws synchronously when Supabase env vars are missing, so it
-  // must live INSIDE the try — otherwise this public page 500s instead of rendering
-  // its empty state. See docs/PROGRESS.md → "인시던트 로그" [2026-06-27].
+  // When Supabase is unconfigured, skip the client entirely (don't call cookies())
+  // and render the empty state. Only the DB query is wrapped in try/catch — NOT
+  // createClient()/cookies(), whose dynamic-bailout must not be swallowed.
+  // See docs/PROGRESS.md → "인시던트 로그" [2026-06-27].
   let guides: Awaited<ReturnType<GuideService['listAll']>> = [];
-  try {
+  if (isSupabaseConfigured()) {
     const supabase = await createClient();
-    guides = await createGuideService(supabase).listAll();
-  } catch {
-    // Supabase unavailable (missing env vars or DB down) — render empty state.
+    try {
+      guides = await createGuideService(supabase).listAll();
+    } catch {
+      // DB unreachable — render empty state instead of 500ing this public page.
+    }
   }
 
   const breadcrumbJsonLd = {

@@ -48,4 +48,21 @@ describe('public /guide pages — graceful degradation when Supabase env missing
     // the page component is callable without a configured backend.
     expect(typeof mod.default).toBe('function');
   });
+
+  it('guide [slug] generateMetadata returns not-found metadata (no throw) when unconfigured', async () => {
+    const mod = await import('@/app/(main)/guide/[slug]/page');
+    const meta = await mod.generateMetadata({ params: Promise.resolve({ slug: 'x' }) });
+    // Before the fix this threw "Page changed from static to dynamic … cookies".
+    expect(meta).toEqual({ title: 'Guide Not Found' });
+  });
+
+  it('guide [slug] page calls notFound() (not a Supabase/static-dynamic error) when unconfigured', async () => {
+    const mod = await import('@/app/(main)/guide/[slug]/page');
+    const GuidePage = mod.default;
+    // notFound() throws a Next navigation signal — that is the CORRECT behavior
+    // (-> 404), as opposed to the createServerClient throw or the cookies bailout.
+    await expect(
+      GuidePage({ params: Promise.resolve({ slug: 'x' }) })
+    ).rejects.toThrow();
+  });
 });

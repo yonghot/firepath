@@ -27,6 +27,21 @@ export async function createClient() {
   );
 }
 
+/**
+ * True when the public Supabase env vars are present (trimmed).
+ * Check this BEFORE calling createClient() in pages so you can skip the call
+ * entirely when Supabase is unconfigured — createClient() invokes cookies(),
+ * and guarding/try-catching cookies() swallows Next's dynamic-rendering bailout
+ * ("Page changed from static to dynamic at runtime"). See docs/PROGRESS.md
+ * → "인시던트 로그" [2026-06-27].
+ */
+export function isSupabaseConfigured(): boolean {
+  return Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
+  );
+}
+
 /** WARNING: This client BYPASSES Row Level Security. Use only for admin/webhook operations. */
 export async function createServiceClient() {
   const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');

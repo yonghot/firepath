@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import { createGuideService, GuideService } from '@/lib/services/guide.service';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,12 +24,14 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: GuidePageProps): Promise<Metadata> {
   const { slug } = await params;
+  if (!isSupabaseConfigured()) return { title: 'Guide Not Found' };
+
+  const supabase = await createClient();
   let guide: Awaited<ReturnType<GuideService['getBySlug']>> = null;
   try {
-    const supabase = await createClient();
     guide = await createGuideService(supabase).getBySlug(slug);
   } catch {
-    // Supabase unavailable — fall through to the not-found metadata.
+    // DB unreachable — fall through to the not-found metadata.
   }
 
   if (!guide) return { title: 'Guide Not Found' };
@@ -113,11 +115,15 @@ function renderGuideContent(content: string): string {
 
 export default async function GuidePage({ params }: GuidePageProps) {
   const { slug } = await params;
-  // createClient() throws when Supabase env vars are missing; keep it inside the
-  // try so a config gap renders 404 instead of 500. See docs/PROGRESS.md incident log.
+  // Guard env BEFORE createClient() (which calls cookies()): when Supabase is
+  // unconfigured, 404 instead of 500. Do NOT wrap createClient()/cookies() in
+  // try/catch — that swallows Next's dynamic-rendering bailout. Only the DB query
+  // is guarded. See docs/PROGRESS.md → "인시던트 로그" [2026-06-27].
+  if (!isSupabaseConfigured()) notFound();
+
+  const supabase = await createClient();
   let result: Awaited<ReturnType<GuideService['getWithRelated']>>;
   try {
-    const supabase = await createClient();
     result = await createGuideService(supabase).getWithRelated(slug);
   } catch {
     notFound();
