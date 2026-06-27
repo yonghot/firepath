@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import { AppError } from '@/constants/error-codes';
 import { CalculationRepository } from '@/lib/repositories/calculation.repository';
 import { ProfileRepository } from '@/lib/repositories/profile.repository';
@@ -18,6 +18,11 @@ export interface AuthContext {
  * Throws AppError('AUTH_REQUIRED') if not authenticated.
  */
 export async function requireAuth(): Promise<AuthContext> {
+  // Backend not configured: return a clean 503 (via handleApiError) instead of a
+  // raw 500 from createClient throwing. See docs/PROGRESS.md → "인시던트 로그".
+  if (!isSupabaseConfigured()) {
+    throw new AppError('SERVICE_UNAVAILABLE');
+  }
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {

@@ -9,6 +9,7 @@ export const ERROR_CODES = {
   SUB_REQUIRED: { code: 'SUB_REQUIRED', message: '프리미엄 구독이 필요합니다', status: 403 },
   STRIPE_ERROR: { code: 'STRIPE_ERROR', message: '결제 처리 중 오류가 발생했습니다', status: 500 },
   DB_ERROR: { code: 'DB_ERROR', message: '데이터베이스 오류가 발생했습니다', status: 500 },
+  SERVICE_UNAVAILABLE: { code: 'SERVICE_UNAVAILABLE', message: '서비스를 일시적으로 사용할 수 없습니다', status: 503 },
   INTERNAL_ERROR: { code: 'INTERNAL_ERROR', message: '서버 오류가 발생했습니다', status: 500 },
 } as const;
 
