@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { createGuideService } from '@/lib/services/guide.service';
+import { createGuideService, GuideService } from '@/lib/services/guide.service';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BookOpen, Calculator } from 'lucide-react';
@@ -20,14 +20,15 @@ export const metadata: Metadata = {
 };
 
 export default async function GuidesIndexPage() {
-  const supabase = await createClient();
-  const guideService = createGuideService(supabase);
-
-  let guides: Awaited<ReturnType<typeof guideService.listAll>> = [];
+  // createClient() throws synchronously when Supabase env vars are missing, so it
+  // must live INSIDE the try — otherwise this public page 500s instead of rendering
+  // its empty state. See docs/PROGRESS.md → "인시던트 로그" [2026-06-27].
+  let guides: Awaited<ReturnType<GuideService['listAll']>> = [];
   try {
-    guides = await guideService.listAll();
+    const supabase = await createClient();
+    guides = await createGuideService(supabase).listAll();
   } catch {
-    // DB may be unavailable during build or if env vars are missing
+    // Supabase unavailable (missing env vars or DB down) — render empty state.
   }
 
   const breadcrumbJsonLd = {

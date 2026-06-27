@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { createGuideService } from '@/lib/services/guide.service';
+import { createGuideService, GuideService } from '@/lib/services/guide.service';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calculator } from 'lucide-react';
@@ -24,8 +24,13 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: GuidePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
-  const guide = await createGuideService(supabase).getBySlug(slug);
+  let guide: Awaited<ReturnType<GuideService['getBySlug']>> = null;
+  try {
+    const supabase = await createClient();
+    guide = await createGuideService(supabase).getBySlug(slug);
+  } catch {
+    // Supabase unavailable — fall through to the not-found metadata.
+  }
 
   if (!guide) return { title: 'Guide Not Found' };
 
@@ -108,8 +113,16 @@ function renderGuideContent(content: string): string {
 
 export default async function GuidePage({ params }: GuidePageProps) {
   const { slug } = await params;
-  const supabase = await createClient();
-  const { guide, related } = await createGuideService(supabase).getWithRelated(slug);
+  // createClient() throws when Supabase env vars are missing; keep it inside the
+  // try so a config gap renders 404 instead of 500. See docs/PROGRESS.md incident log.
+  let result: Awaited<ReturnType<GuideService['getWithRelated']>>;
+  try {
+    const supabase = await createClient();
+    result = await createGuideService(supabase).getWithRelated(slug);
+  } catch {
+    notFound();
+  }
+  const { guide, related } = result;
 
   if (!guide) notFound();
 
