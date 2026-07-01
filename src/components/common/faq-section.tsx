@@ -20,7 +20,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'What is the 4% rule?',
-    a: 'The 4% rule suggests you can withdraw 4% of your portfolio annually in retirement without running out of money over a 30-year period. It was derived from the Trinity Study. FIREPath lets you adjust this Safe Withdrawal Rate to match your risk tolerance.',
+    a: 'The 4% rule suggests you can withdraw 4% of your portfolio annually in retirement without running out of money over a 30-year period. It was first established by William Bengen in 1994 and later popularized by the Trinity Study (1998). FIREPath lets you adjust this Safe Withdrawal Rate to match your risk tolerance.',
   },
   {
     q: 'How accurate is the FIRE calculator?',

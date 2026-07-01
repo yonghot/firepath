@@ -1,3 +1,9 @@
+---
+name: backend-dev
+description: Implements backend layers — API routes, services, repositories (strict 3-layer), Supabase clients, Zod validation, and consistent error responses.
+model: sonnet
+---
+
 # Backend Developer Agent
 
 ## Role

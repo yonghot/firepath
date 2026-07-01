@@ -1,0 +1,102 @@
+/* design/tokens.css — FIREPath design tokens (canonical reference)
+ *
+ * This file MIRRORS the tokens defined in src/app/globals.css. It is the
+ * human-readable, single-source reference for the design system. The runtime
+ * source of truth remains globals.css (+ src/constants/fire-colors.ts for the
+ * FIRE-type colors used by components). Keep the two in sync; if they ever
+ * diverge, globals.css / fire-colors.ts win and this file must be updated.
+ *
+ * Color model: OKLCH for the neutral/semantic system; literal hex for the
+ * LOCKED brand + FIRE-type tokens (these must not be re-themed).
+ */
+
+:root {
+  /* --- FIRE type colors — SEMANTIC, LOCKED (never change) --- */
+  --fire-lean: #10B981;     /* 60% of expenses          */
+  --fire-regular: #2563EB;  /* 100% of expenses         */
+  --fire-fat: #7C3AED;      /* 150% of expenses         */
+  --fire-coast: #F59E0B;    /* compound growth (dashed 8 4) */
+  --fire-barista: #EC4899;  /* 50% via part-time work   */
+
+  /* --- Brand (locked) --- */
+  --brand-primary: #065F53; /* deep teal — primary, chart stroke, PWA theme */
+  --brand-light: #0D9488;   /* teal-500 — hover, gradients */
+  /* --brand-dark: #042F2E;  (documented in DESIGN.md; not yet a runtime var) */
+
+  /* --- Neutral / semantic (OKLCH) — light theme --- */
+  --background: oklch(0.985 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.436 0.077 180.1);          /* teal-derived shadcn primary */
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);     /* ~#EF4444 error */
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+
+  /* Generic chart ramp — intentionally GRAYSCALE so FIRE hues stay the only
+     meaningful colors. Do not colorize. */
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+
+  /* --- Radius --- */
+  --radius: 0.625rem; /* 10px base; ramp: sm ×0.6, md ×0.8, lg ×1.0, xl ×1.4, 2xl ×1.8 */
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.704 0.123 182.5);          /* teal-500 in dark */
+  --primary-foreground: oklch(0.145 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  /* FIRE-type + brand tokens are theme-invariant (locked hex). */
+}
+
+/* --- Typography (reference) ---
+ * --font-sans:    Inter (next/font/google) — deliberate, for tabular-nums alignment
+ * --font-heading: aliases --font-sans (no second display face)
+ * --font-mono:    --font-geist-mono → currently falls back to system mono
+ *                 (Geist Mono referenced but not yet loaded in layout.tsx)
+ *
+ * Scale: h1 2.25rem/700 · h2 1.875rem/700 · h3 1.5rem/600 ·
+ *        body 1rem/400 · small 0.875rem/400 · caption 0.75rem/400
+ * Rule: ALWAYS pair financial numbers with `tabular-nums`.
+ */
+
+/* --- Spacing (reference) ---
+ * Base unit 4px, comfortable density.
+ * Scale: 1=4 2=8 3=12 4=16 5=20 6=24 8=32 10=40 12=48 16=64
+ * Layout: max-width 1440px centered (px-4); desktop 320px sticky sidebar + fluid
+ *         content; mobile bottom-sheet params + full-width content.
+ * Breakpoints (min-width): sm 640 · md 768 · lg 1024 · xl 1280
+ */
+
+/* --- Motion (reference) ---
+ * Minimal-functional, 150–300ms. hover 150 · default 200 · chart recalc 300 · sheet 300.
+ * Card highlight: scale(1.02) + shadow-sm→shadow-md. No parallax / looping / entrance anim.
+ */

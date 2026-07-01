@@ -6,8 +6,29 @@
     },
     "pre-commit": {
       "command": "bash .claude/hooks/pre-commit-gate.sh",
-      "description": "Pre-commit gate: lint + typecheck"
-    }
+      "description": "Pre-commit gate: lint + typecheck + impeccable --fast"
+    },
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c \"grep -rnE 'from-purple-|to-blue-|hover:scale-105|#000000' src/ >/dev/null 2>&1 && { echo 'Anti-slop violation in src/. See design/forbidden.md' >&2; exit 2; }; exit 0\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c \"npx impeccable detect src/ --json > .slop.json 2>/dev/null || true\""
+          }
+        ]
+      }
+    ]
   },
   "permissions": {
     "allow": [

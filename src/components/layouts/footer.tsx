@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Flame } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { ManageConsentLink } from '@/components/common/manage-consent-link';
 
 export function Footer() {
   return (
@@ -23,15 +24,32 @@ export function Footer() {
               <nav className="flex flex-col gap-1">
                 <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Calculator</Link>
                 <Link href="/premium" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Premium</Link>
+                <Link href="/embed-this" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Embed the Calculator</Link>
               </nav>
             </div>
             <div className="space-y-2">
               <h4 className="text-sm font-semibold">Guides</h4>
               <nav className="flex flex-col gap-1">
                 <Link href="/guide" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">All Guides</Link>
+                <Link href="/methodology" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">How We Calculate</Link>
                 <Link href="/guide/what-is-coastfire" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">CoastFIRE</Link>
                 <Link href="/guide/what-is-leanfire" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">LeanFIRE</Link>
                 <Link href="/guide/what-is-fatfire" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">FatFIRE</Link>
+              </nav>
+            </div>
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold">Company</h4>
+              <nav className="flex flex-col gap-1">
+                <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">About</Link>
+                <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Contact</Link>
+              </nav>
+            </div>
+            <div className="space-y-2">
+              <h4 className="text-sm font-semibold">Legal</h4>
+              <nav className="flex flex-col gap-1">
+                <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Privacy Policy</Link>
+                <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Terms of Service</Link>
+                <ManageConsentLink />
               </nav>
             </div>
           </div>

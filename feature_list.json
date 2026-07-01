@@ -1,7 +1,7 @@
 {
   "project": "FIREPath",
-  "version": "0.2.5",
-  "lastUpdated": "2026-04-13",
+  "version": "0.5.0",
+  "lastUpdated": "2026-07-01",
   "evaluator": {
     "build": "PASS",
     "lint": "0 errors / 0 warnings",
@@ -15,21 +15,235 @@
     "testCoverage": "42 tests (fire-calculator: 13, fire-targets: 7, monte-carlo: 10, portfolio-optimizer: 12) — vitest"
   },
   "features": [
-    { "id": "F001", "name": "FIRE Calculation Engine", "priority": "P0", "status": "pass", "verified": "Default input → Regular=$1M, Lean=$600K, Fat=$1.5M, timeline=51 entries" },
-    { "id": "F002", "name": "Interactive Slider Panel", "priority": "P0", "status": "pass", "verified": "9 sliders render, onChange triggers recalculation" },
-    { "id": "F003", "name": "Timeline Chart", "priority": "P0", "status": "pass", "verified": "Recharts AreaChart with 5 FIRE reference lines + achievement markers" },
-    { "id": "F004", "name": "FIRE Result Cards", "priority": "P0", "status": "pass", "verified": "5 cards with correct targets, ages, monthly income" },
-    { "id": "F005", "name": "URL Hash Sharing", "priority": "P0", "status": "pass", "verified": "encodeState/decodeState + bidirectional sync" },
-    { "id": "F006", "name": "Responsive Layout", "priority": "P0", "status": "pass", "verified": "Desktop sidebar + mobile Sheet confirmed via preview" },
-    { "id": "F007", "name": "Authentication", "priority": "P1", "status": "pass", "verified": "Login/signup pages + OAuth callback + Supabase auth" },
-    { "id": "F008", "name": "Save/Load Calculations", "priority": "P1", "status": "pass", "verified": "3-layer API (Route→Service→Repo), 5-limit, soft delete" },
-    { "id": "F009", "name": "OG Image Generation", "priority": "P1", "status": "pass", "verified": "Edge function, 1200x630 ImageResponse" },
-    { "id": "F010", "name": "SEO Guide Content", "priority": "P1", "status": "pass", "verified": "7 guides (5 type-specific + 2 comparison), SSR pages with metadata, sitemap synced" },
-    { "id": "F011", "name": "Scenario Comparison", "priority": "P1", "status": "pass", "verified": "2-scenario limit, save current input, side-by-side chart + table comparison, diff display" },
-    { "id": "F012", "name": "Premium Subscription", "priority": "P2", "status": "partial", "note": "UI complete, Stripe integration placeholder" },
-    { "id": "F013", "name": "Monte Carlo Simulation", "priority": "P2", "status": "pass", "verified": "1000 simulations with 15% volatility, fan chart (10-90 percentiles), success rates per FIRE type, premium gate" },
-    { "id": "F014", "name": "Portfolio Optimization", "priority": "P2", "status": "pass", "verified": "4 asset classes, 3 model portfolios (Conservative/Moderate/Aggressive), correlation matrix, Sharpe ratios, growth projection chart, premium gate" },
-    { "id": "F015", "name": "PWA Support", "priority": "P1", "status": "pass", "verified": "manifest.webmanifest, SVG icon, metadata in layout (theme-color, apple-web-app)" },
-    { "id": "F016", "name": "Dark Mode", "priority": "P1", "status": "pass", "verified": "next-themes ThemeProvider, system default, toggle in header/mobile, CSS variables in globals.css" }
+    {
+      "id": "F001",
+      "name": "FIRE Calculation Engine",
+      "priority": "P0",
+      "status": "pass",
+      "verified": "Default input → Regular=$1M, Lean=$600K, Fat=$1.5M, timeline=51 entries",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F002",
+      "name": "Interactive Slider Panel",
+      "priority": "P0",
+      "status": "pass",
+      "verified": "9 sliders render, onChange triggers recalculation",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F003",
+      "name": "Timeline Chart",
+      "priority": "P0",
+      "status": "pass",
+      "verified": "Recharts AreaChart with 5 FIRE reference lines + achievement markers",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F004",
+      "name": "FIRE Result Cards",
+      "priority": "P0",
+      "status": "pass",
+      "verified": "5 cards with correct targets, ages, monthly income",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F005",
+      "name": "URL Hash Sharing",
+      "priority": "P0",
+      "status": "pass",
+      "verified": "encodeState/decodeState + bidirectional sync",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F006",
+      "name": "Responsive Layout",
+      "priority": "P0",
+      "status": "pass",
+      "verified": "Desktop sidebar + mobile Sheet confirmed via preview",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F007",
+      "name": "Authentication",
+      "priority": "P1",
+      "status": "pass",
+      "verified": "Login/signup pages + OAuth callback + Supabase auth",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F008",
+      "name": "Save/Load Calculations",
+      "priority": "P1",
+      "status": "pass",
+      "verified": "3-layer API (Route→Service→Repo), 5-limit, soft delete",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F009",
+      "name": "OG Image Generation",
+      "priority": "P1",
+      "status": "pass",
+      "verified": "Edge function, 1200x630 ImageResponse",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F010",
+      "name": "SEO Guide Content",
+      "priority": "P1",
+      "status": "pass",
+      "verified": "7 guides (5 type-specific + 2 comparison), SSR pages with metadata, sitemap synced",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F011",
+      "name": "Scenario Comparison",
+      "priority": "P1",
+      "status": "pass",
+      "verified": "2-scenario limit, save current input, side-by-side chart + table comparison, diff display",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F012",
+      "name": "Premium Subscription",
+      "priority": "P2",
+      "status": "partial",
+      "note": "UI complete, Stripe integration placeholder",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F013",
+      "name": "Monte Carlo Simulation",
+      "priority": "P2",
+      "status": "pass",
+      "verified": "1000 simulations with 15% volatility, fan chart (10-90 percentiles), success rates per FIRE type, premium gate",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F014",
+      "name": "Portfolio Optimization",
+      "priority": "P2",
+      "status": "pass",
+      "verified": "4 asset classes, 3 model portfolios (Conservative/Moderate/Aggressive), correlation matrix, Sharpe ratios, growth projection chart, premium gate",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F015",
+      "name": "PWA Support",
+      "priority": "P1",
+      "status": "pass",
+      "verified": "manifest.webmanifest, SVG icon, metadata in layout (theme-color, apple-web-app)",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F016",
+      "name": "Dark Mode",
+      "priority": "P1",
+      "status": "pass",
+      "verified": "next-themes ThemeProvider, system default, toggle in header/mobile, CSS variables in globals.css",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F017",
+      "name": "Credibility & Fact-Check — Sources UI",
+      "priority": "P1",
+      "status": "pass",
+      "verified": "3 APPLY corrections applied (Bengen 1994 attribution in methodology + FAQ; Morningstar 2024-2026 caveat on SWR); 19-citation Sources & References section added to /methodology via reusable SourcesReferences component; all URLs from verified brief only",
+      "impeccableAudit": "2026-06-29",
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F018",
+      "name": "FIRE Types Sub-Calculator Page",
+      "priority": "P1",
+      "status": "pass",
+      "verified": "Dedicated /fire-types page surfacing Coast/Barista/Fat/Lean/Regular FIRE each with formula, computed target+monthly from real engine (DEFAULT_INPUT), interlinks, SoftwareApplication JSON-LD + methodology note. Targets computed server-side; no fabricated numbers.",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F019",
+      "name": "Healthcare Bridge Estimator",
+      "priority": "P1",
+      "status": "pass",
+      "verified": "Pure function in src/lib/engine/healthcare-bridge.ts with full input validation (NaN/negative/out-of-range rejected); 25 unit tests (normal + boundary retire>=65 => 0 years + edge); client component at /healthcare-bridge with strong disclaimer; SoftwareApplication JSON-LD; no ACA subsidies fabricated.",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F020",
+      "name": "Advisor CTA Infrastructure (env-gated)",
+      "priority": "P1",
+      "status": "pass",
+      "verified": "AdvisorCta component renders real outbound link ONLY when NEXT_PUBLIC_ADVISOR_CTA_URL is set; returns null otherwise. No hardcoded affiliate URLs. Placed on /result, /fire-types, /healthcare-bridge pages.",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F021",
+      "name": "Contact & About Pages (AdSense E-E-A-T)",
+      "priority": "P1",
+      "status": "pass",
+      "verified": "/contact: form + POST /api/contact (validates name/email/message, safe no-op, 15 route tests + 13 form-validation tests = 28 new tests total); /about: publisher identity + editorial standards + E-E-A-T signals. Footer updated with Company section (About + Contact links). /about and /contact added to sitemap. No fabricated email/company detail — contact email gated behind NEXT_PUBLIC_CONTACT_EMAIL env var.",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F022",
+      "name": "Feedback Widget (site-wide floating)",
+      "priority": "P1",
+      "status": "pass",
+      "verified": "Floating FAB (bottom-right, brand-colored, Lucide icon) opens 320-380px panel with type select / message textarea (2000 char, live counter) / optional email; POSTs to /api/feedback; success message auto-closes; a11y: focus trap, Esc close, aria-live, aria-invalid/describedby, focus-visible rings. API validates type/message/email, forwards to FEEDBACK_ENDPOINT (env-gated, 5s timeout, failure-tolerant), returns 200 {ok:true} always. 36 tests: 22 unit (validation helper) + 14 route (valid, bad type, empty/oversized message, invalid email, no-op-when-unset, called-when-set, failure-tolerant). No DB. No secrets.",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F023",
+      "name": "No-Checkout Unified Monetization Stack",
+      "priority": "P2",
+      "status": "pass",
+      "verified": "lib/monetization.ts (config parser + parseFeaturedPartners + resolveAdProvider + resolvePrimaryCtaType); AdProvider.tsx (single programmatic selector: adsense|ezoic|raptive|none, never two); ResultMonetization.tsx (5-block stack: PrimaryIntentCTA + DisplaySlot + FeaturedPartnerTable + SponsorSlot + EmailCapture); ads.txt route updated with 301-redirect support; .env.example documents all 18 env keys. 53 new unit tests (parseFeaturedPartners: 9, resolveAdProvider: 8, resolvePrimaryCtaType: 7, buildMonetizationConfig-unset: 14, buildMonetizationConfig-set: 9, provider-single-selection: 1). All env unset => render null; VERTICAL_DEFAULT_CTA_TYPE=cpl; NEVER two programmatic providers. Inserted into / and /result pages replacing legacy inline AdSlot+EmailCapture+AdvisorCta. Gate: lint 0 errors, typecheck PASS, 255 tests all pass, build PASS (29 pages).",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    }
   ]
 }

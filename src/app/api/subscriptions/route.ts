@@ -17,7 +17,7 @@ export async function POST() {
   try {
     const { supabase, user } = await requireAuth();
     const service = createSubscriptionService(supabase);
-    const result = await service.createCheckout(user.id);
+    const result = await service.createCheckout(user.id, user.email);
 
     return NextResponse.json({ success: true, data: result });
   } catch (error) {

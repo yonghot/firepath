@@ -128,7 +128,10 @@ function calculateStatistics(
   for (const type of fireTypes) {
     successRates[type] = reachAges[type].length / simulations;
     const ages = reachAges[type].sort((a, b) => a - b);
-    medianReachAge[type] = ages.length > 0 ? ages[Math.floor(ages.length / 2)] : null;
+    // Use lower-median index so the result is unambiguous for all N (both odd and even).
+    // Math.floor(ages.length / 2) picks the upper element for even-length arrays,
+    // systematically overstating by 0–1 year.
+    medianReachAge[type] = ages.length > 0 ? ages[Math.floor((ages.length - 1) / 2)] : null;
   }
 
   return { successRates, medianReachAge };

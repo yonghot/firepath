@@ -6,6 +6,91 @@
 - 상태: P0 6/6, P1 7/7, P2 3/3 (전체 완료). 가이드 7편. 테스트 42/42 PASS. Lint 0/0. 빌드 PASS. /, /result 모두 Static(○).
 - 프로덕션: https://firepath-2j7weljnc-sk1597530-3914s-projects.vercel.app (SSO 보호 설정됨 — 아래 판단 필요 참조)
 
+## Impeccable 상태
+- **CLI**: ✅ 설치/사용 가능 (`npx impeccable` v2.3.2)
+- **`.impeccable.md`**: ✅ 초안 생성 (2026-06-27, 코드베이스 + DESIGN.md 기반). `[TODO: confirm via /impeccable teach]` 태그 포함 — Users(페르소나 우선순위), Brand(보이스: instrument vs coach), Geist Mono 로드 여부 등 오너 판단 항목. **오너가 `/impeccable teach` 직접 수행 권고.**
+- **baseline.json**: ✅ 생성 (`impeccable detect --json src/`) — findings **2건** (gradient-text, warning, `src/app/(auth)/layout.tsx`). 향후 비교 기준선.
+- **design 하네스**: ✅ `design/{principles,required,forbidden,tone}.md` + `design/tokens.css` + `.claude/agents/design-reviewer.md` 생성, CLAUDE.md에 `@./design/*` import 주입.
+- **Anti-Slop 훅**: ✅ `settings.json` PostToolUse(Edit|Write grep) + Stop(impeccable detect → `.slop.json`); `pre-commit-gate.sh`에 impeccable 스캔 단계 추가(비차단).
+- **CLI 플래그 주의**: v2.3.2 `detect`는 `--fast`/`--baseline` **미지원** (`--json`/`--gpt`/`--gemini`만). 따라서 pre-commit/CI는 baseline 자동 비교 불가 → 현재 **비차단(warn)** 운용. findings 0 도달 시 차단 게이트로 전환 가능.
+
+## Ultraplan 세션 로그
+- (아직 ultraplan 세션 없음) — 규모 판정 **중규모**(파일 144, TS/JS LOC ~6,606, DB 마이그레이션 0, 모노레포 아님)로 **Direct Ultraplan 미선택, 순차 흐름** 채택. 첫 아키텍처 변경·신기능은 CLAUDE.md "Workflow Defaults"의 **Two-pass(로컬→Ultraplan 승격)** 패턴 권장.
+- 기록 형식: `[날짜] 작업 — ultraplanSessionId: <id> — Phase 요약 / rollback`. feature_list.json의 각 feature에 `ultraplanSessionId` 필드 추가됨(현재 전부 null).
+
+## [2026-06-27] 프로젝트 이어받기 — 하네스 마이그레이션 세션
+
+### 개요
+- GitHub `yonghot/firepath`(public, main) 클론 → 하네스 엔지니어링 + Impeccable 표준으로 마이그레이션. **기존 파일 전부 보존**, 누락분만 보완.
+- 메인 모델 Opus 4.8 (Ultracode on). STEP 2 분석은 3-way 병렬 서브에이전트(워크플로) + 적대적 교차검증으로 수행 — gap 18건 missing + 6건 deviation 전건 CONFIRMED, 오탐 0.
+
+### 규모 판정
+- 파일 144, TS/JS LOC ~6,606, DB 마이그레이션 0개, `pnpm-workspace.yaml`에 `packages:` 없음(모노레포 아님) → **중규모 → 순차 흐름**(Direct Ultraplan 미적용).
+
+### 환경 검증
+- `pnpm install` ✅ (exit 0, 4m9s) · `pnpm test` ✅ **42/42 PASS** (vitest, 4 파일). `pnpm dev`(장기 실행 서버)는 미기동 — 설치+테스트로 실행 가능성 확인.
+- 스택: Next.js 16.2.2 / React 19.2.4 / TS 5 strict / Tailwind v4 / Supabase / pnpm 10.30.3 / Node 22.
+
+### 생성/보강 파일 (누락분만)
+- **CLAUDE.md**: Plan Contract(6섹션) + Execution Defaults + `@./design/*` import + Workflow Defaults(Two-pass) 추가.
+- **루트**: `.impeccable.md`, `baseline.json`.
+- **design/**: principles.md, required.md, forbidden.md, tone.md(DRAFT, toneDeclared=false), tokens.css.
+- **.claude/agents/**: design-reviewer.md 신규(model: sonnet) + 기존 8개 에이전트에 `model: sonnet` frontmatter 추가.
+- **.claude/settings.json**: 표준 PostToolUse/Stop anti-slop 훅 추가(기존 커스텀 키 보존).
+- **.github/workflows/design-qa.yml**: CI(lint/typecheck/test 하드게이트 + impeccable 비차단).
+- **package.json**: `typecheck`, `design:qa`, `design:qa:full`, `design:qa:ci` 스크립트 추가.
+- **feature_list.json**: 16개 feature에 `impeccableAudit`/`impeccableCritique`/`ultraplanSessionId`(null) 추가, lastUpdated 2026-06-27.
+- **hooks**: pre-commit-gate.sh에 impeccable 단계 추가; verify-and-continue.sh `$?` 버그 수정(PIPESTATUS).
+- **.gitignore**: `.slop.json` 추가. **.claude/settings.local.json**: 권한 사전승인(기존 항목과 병합·dedup).
+
+### 적대적 감사가 추가로 찾은 사항 (반영/기록)
+- `verify-and-continue.sh`의 `tsc | tail` → `$?`가 tail 코드 반영(항상 0)되는 잠재 버그 → **수정함**(PIPESTATUS[0]).
+- `post-write-format.sh`는 위치인자(`$1`) 기반 레거시 포매터로 표준 PostToolUse stdin 프로토콜과 불일치 → 오작동 위험으로 **미연결 보존**(향후 표준화 시 재배선).
+- `settings.local.json`이 `settings.json`보다 넓은 권한(supabase/vercel/DB 마이그레이션 MCP) 부여 — 이어받기용으로 의도된 것이나 신뢰경계상 인지 필요.
+
+### 판단 필요 (이번 세션 신규)
+1. **[높음] Anti-Slop 훅의 `Inter` 제외 결정** (오너): 표준 anti-slop 패턴은 `\bInter\b`를 슬롭 시그널로 차단하나, FIREPath는 **DESIGN.md에 명시된 의도적 선택**(tabular-nums 금융 정렬)으로 Inter를 사용(`layout.tsx`, `og/route.tsx` 3곳). PostToolUse 훅에서 `\bInter\b`를 **의도적으로 제외**함(그렇지 않으면 매 편집마다 차단되어 작업 불가). 폰트 교체 시 재추가 필요. → `design/forbidden.md`에 EXEMPT 명시.
+2. **[중] Impeccable `--fast`/`--baseline` 미지원** (참고): v2.3.2 한계로 pre-commit/CI가 baseline 자동 비교 불가 → 비차단 운용. 차단 게이트화하려면 findings 0 선결 또는 외부 diff 스크립트 필요.
+3. **[중] `.impeccable.md` / `design/tone.md` [TODO] 확정** (오너): `/impeccable teach`로 페르소나 우선순위·브랜드 보이스(instrument vs coach)·person/formality·로컬라이제이션 범위 확정.
+4. **[낮음] Geist Mono 미로드** (오너/개발): `globals.css`가 `--font-mono`→`--font-geist-mono` 매핑하나 `layout.tsx`는 Inter만 로드 → 현재 시스템 mono 폴백. 의도 확인 필요.
+
+### 다음 작업 권장
+1. `/impeccable teach` (오너 직접) — `.impeccable.md`/tone.md [TODO] 확정.
+2. `/office-hours` — 제품 방향 점검 (기존 RESEARCH.md C-1~C-3 대기 중).
+3. 첫 기능/아키텍처 변경은 **Two-pass**(로컬→Ultraplan 승격)로 진행.
+
+## 인시던트 로그
+
+### [2026-06-27] PROD 500 — MIDDLEWARE_INVOCATION_FAILED (전 페이지 다운)
+- **증상**: `firepath-ten.vercel.app` 전 라우트 HTTP 500 `MIDDLEWARE_INVOCATION_FAILED` (ID `icn1::g2dj5-1782568285517`).
+- **근본 원인 (3중 확증)**: Vercel 프로덕션에 환경변수 0개 → `NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY`가 `undefined`. `NEXT_PUBLIC_*`는 **빌드타임 인라인**(Next DefinePlugin)이라 edge 미들웨어 번들에 `undefined`로 박힘 → `@supabase/ssr` `createServerClient(undefined, undefined)`가 함수 첫 줄에서 **동기 throw** → `updateSession()`에 try/catch 부재 → 미처리 rejection이 matcher 적용 전 라우트에서 500으로 매핑.
+  - 확증①(코드): middleware/server/client 모두 `process.env.X!` 비널 단언.
+  - 확증②(인프라): `vercel env ls production` → "No Environment Variables found".
+  - 확증③(재현): 로컬 `createServerClient(undefined, undefined)` → `Error: Your project's URL and Key are required...`.
+  - 3-way 경쟁 가설(서브에이전트 sonnet, 적대적): A(env 누락) **confirmed 0.99** / B(edge 런타임 비호환) **refuted 0.97** / C(빌드타임 인라인+하드닝) **confirmed 0.97**.
+- **2차 발견**: Supabase `firepath` 프로젝트(`cvlbdeaattcloitjvkvw`, us-east-1)가 **INACTIVE(일시중지)** → env 설정 후에도 **복원 전까지** auth/DB 런타임 실패(현재 anon key 조회도 불가).
+- **수정 (코드, 적용·검증 완료)**: `src/lib/supabase/middleware.ts` graceful degradation — env 누락/공백 시 early-return, supabase 블록 try/catch, 값 `.trim()`(malformed 방지). 전면 다운 → 공개 페이지 정상 렌더(인증 기능만 degrade)로 전환.
+- **회귀 테스트**: `tests/regressions/middleware-missing-supabase-env.test.ts` (3 케이스: 누락/공백/malformed URL → throw 없이 200). 전체 **45/45 PASS**, typecheck 0, lint 0.
+- **유사 결함 스캔**: `server.ts`(createClient, createServiceClient), `client.ts`(createBrowserClient)도 동일 `!` 패턴. 단, 이들은 **데이터 의존 라우트**라 env 누락 시 명시적 throw가 정상(무음 억제 금지 원칙) → 의도적 미변경, env 설정에 의존. malformed-trim 가드 일괄 적용은 후속 과제.
+- **예방책 / 미해결 (오너 액션 필요 — 아래 "판단 필요" 참조)**:
+  1. Supabase `firepath` 프로젝트 복원(INACTIVE → ACTIVE).
+  2. Vercel 프로덕션 env 설정: `NEXT_PUBLIC_SUPABASE_URL=https://cvlbdeaattcloitjvkvw.supabase.co`, `NEXT_PUBLIC_SUPABASE_ANON_KEY=<복원 후 획득>`, `SUPABASE_SERVICE_ROLE_KEY=<오너 시크릿>`, `NEXT_PUBLIC_APP_URL=https://firepath-ten.vercel.app`.
+  3. **재빌드+재배포 필수**(NEXT_PUBLIC_*는 빌드타임 인라인 — env만 추가하면 미반영).
+  4. (권장) CI/pre-deploy에 필수 env 존재 검증 스텝 추가.
+- **최종 해결 (코드만 배포, 오너 선택) — main에 4커밋 push → Vercel 자동 배포·검증 완료**:
+  1. `51377ac` 미들웨어 graceful degradation (전역 500 해소).
+  2. `5226b46`+`ab78d55` 공개 `/guide`·`/guide/[slug]` 복원. 핵심 교훈: `createClient()`는 `cookies()`를 호출하므로 try/catch로 감싸면 Next의 동적 렌더 bailout을 삼켜 "static to dynamic at runtime" 500 발생 → **`isSupabaseConfigured()`로 env를 먼저 가드**하고 `cookies()`는 try/catch로 감싸지 않으며 DB 쿼리만 감싼다.
+  3. `88f272d` 비공개 라우트 정리: `requireAuth()` → 503 `SERVICE_UNAVAILABLE`(전 API 라우트), `/saved` → `/login` 리다이렉트.
+
+### [2026-06-28] PROD 클라이언트 크래시 — error.tsx "Something went wrong" (2차 인시던트)
+- **증상**: 서버는 200(미들웨어 수정 유효)이나 hydration 후 전 페이지가 클라이언트 에러 바운더리(`src/app/error.tsx`)로 대체. **curl은 200이라 못 봄 — 브라우저에서만 보임.**
+- **근본 원인 (동일 root-cause의 클라이언트 형제)**: `use-auth.ts`의 `useEffect`가 브라우저 `createClient()`(=`createBrowserClient(undefined,undefined)`) 호출 → 동기 throw. `header.tsx`가 전 `(main)` 페이지에서 `useAuth`를 마운트 → 미가드 throw가 유일한 루트 `error.tsx`로 전파. 3-way: A(use-auth) **0.99** / B(타 크래시원 없음) **0.93**.
+- **수정 (`7fc0781`)**: 클라이언트 전용 `isSupabaseConfigured()` 추가 → `useAuth`가 미설정 시 클라이언트 미생성(로그아웃 상태 유지), `loading` 초기값을 `isSupabaseConfigured()`로 설정해 effect 내 동기 setState 회피(lint). `login`/`signup` 핸들러도 가드+토스트.
+- **검증 (실브라우저, Chrome MCP)**: `firepath-ten.vercel.app` 계산기 전체 정상 렌더(슬라이더9·타임라인 차트·FIRE 카드5·FAQ), **"Something went wrong" 소멸, 콘솔 에러 0**. 스크린샷 확보.
+- **검증 (라이브, env 미설정 상태)**: `/`·`/guide`·`/result`·`/premium`·`/login`·`/signup`·`/sitemap.xml`·`/robots.txt` → 200(브라우저 정상 동작) / `/guide/[slug]` → 404 / `/saved` → 307→/login / `/api/*` → 503. **raw 500/클라이언트 크래시 전무.** 로컬 빌드 clean, 테스트 53/53, typecheck·lint 0.
+- **회귀 테스트**: `tests/regressions/` 4개 파일 — middleware(3), guide pages(4), api requireAuth(1), client auth guard(3).
+- **남은 일(오너, 정상 기능 복구 시)**: Supabase `firepath` 프로젝트 복원 + Vercel env 설정(URL/ANON/SERVICE_ROLE/APP_URL) + **재빌드·재배포**. 이후 `/guide/*` SSG·`/saved`·`/api/*`·로그인·저장이 정상 동작.
+
 ## [2026-04-17 00:10] 자동 개발 세션
 
 ### 리서치
@@ -1383,3 +1468,39 @@ docs/prd-analysis.md — PRD 분석
 docs/architecture.md — 아키텍처 설계
 scripts/seed.ts     — 데모 데이터 시딩
 ```
+
+## [2026-06-29] Credibility Fact-Check Session
+
+### 개요
+- 검증된 브리프 기반 신뢰성 수정 3건 적용 + /methodology 페이지 Sources & References UI 추가.
+- 변경 범위: content-only (신규 컴포넌트 1개, 기존 2개 파일 수정). No API/DB/constants change.
+
+### APPLY 수정 (3건, 전건 적용)
+
+1. **[swr-4pct-trinity-origin-methodology]** `src/app/(main)/methodology/page.tsx`
+   - BEFORE: "The default SWR is 4%, derived from the Trinity Study..."
+   - AFTER: "The default SWR is 4%, first established by financial planner William Bengen in 1994 and later popularized by the Trinity Study (1998), both of which found that withdrawing 4% of a portfolio annually (adjusted for inflation) has historically lasted at least 30 years."
+   - 출처: Wikipedia (William Bengen), Bankrate, Retirement Researcher
+
+2. **[swr-4pct-trinity-origin-faq]** `src/components/common/faq-section.tsx`
+   - BEFORE: "It was derived from the Trinity Study."
+   - AFTER: "It was first established by William Bengen in 1994 and later popularized by the Trinity Study (1998)."
+
+3. **[swr-4pct-default-modern-consensus]** `src/app/(main)/methodology/page.tsx`
+   - NO default change (4% retained). Added one-line caveat paragraph noting Morningstar 2024-2026 analysis puts safe starting rate at ~3.7%-3.9%, conservative users may prefer lower end of slider.
+   - 출처: NAPA Net (Morningstar 2024 revised rate), Morningstar LTCI research
+
+### Sources & References UI (신규)
+
+- `src/components/common/sources-references.tsx` — 재사용 가능한 인용 블록 컴포넌트. `SourceItem[]` prop 기반, 외부 링크 (target="_blank" rel="noopener noreferrer"), design tokens 준수.
+- `/methodology` 페이지 하단에 19개 검증된 인용 삽입 (브리프 CITE 11건 전건 포함 + APPLY 수정 출처 8건).
+- 모든 URL은 검증된 브리프에서만 인용. 발명된 URL 없음.
+
+### 빌드 검증
+- `pnpm build` — 결과: (아래 빌드 실행 후 기록)
+
+### feature_list.json
+- F017 "Credibility & Fact-Check — Sources UI" 항목 신규 추가 (status: pass)
+
+### 기술 부채
+- LAST_UPDATED 2026-06-29로 갱신 (methodology page)

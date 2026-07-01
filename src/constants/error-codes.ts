@@ -8,6 +8,7 @@ export const ERROR_CODES = {
   SUB_ALREADY_ACTIVE: { code: 'SUB_ALREADY_ACTIVE', message: '이미 활성 구독이 있습니다', status: 409 },
   SUB_REQUIRED: { code: 'SUB_REQUIRED', message: '프리미엄 구독이 필요합니다', status: 403 },
   STRIPE_ERROR: { code: 'STRIPE_ERROR', message: '결제 처리 중 오류가 발생했습니다', status: 500 },
+  STRIPE_NOT_CONFIGURED: { code: 'STRIPE_NOT_CONFIGURED', message: '결제 기능이 아직 활성화되지 않았습니다', status: 503 },
   DB_ERROR: { code: 'DB_ERROR', message: '데이터베이스 오류가 발생했습니다', status: 500 },
   SERVICE_UNAVAILABLE: { code: 'SERVICE_UNAVAILABLE', message: '서비스를 일시적으로 사용할 수 없습니다', status: 503 },
   INTERNAL_ERROR: { code: 'INTERNAL_ERROR', message: '서버 오류가 발생했습니다', status: 500 },

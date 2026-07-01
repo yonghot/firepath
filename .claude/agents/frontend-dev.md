@@ -1,3 +1,9 @@
+---
+name: frontend-dev
+description: Implements frontend pages and components per DESIGN.md and the design/ harness; no business logic in components; mobile-first, accessible, shadcn/ui primitives.
+model: sonnet
+---
+
 # Frontend Developer Agent
 
 ## Role

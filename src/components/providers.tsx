@@ -5,6 +5,7 @@ import { ThemeProvider } from 'next-themes';
 import { useState } from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
+import { CookieConsentBanner } from '@/components/common/cookie-consent-banner';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -25,6 +26,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <TooltipProvider>
           {children}
           <Toaster />
+          {/* Cookie consent banner — gates GA4 analytics until user accepts */}
+          <CookieConsentBanner />
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>

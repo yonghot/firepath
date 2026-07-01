@@ -1,0 +1,20 @@
+[
+  {
+    "antipattern": "gradient-text",
+    "name": "Gradient text",
+    "description": "Gradient text is decorative rather than meaningful — a common AI tell, especially on headings and metrics. Use solid colors for text.",
+    "severity": "warning",
+    "file": "D:\\ClaudeCode\\firepath\\src\\app\\(auth)\\layout.tsx",
+    "line": 19,
+    "snippet": "bg-clip-text + bg-gradient"
+  },
+  {
+    "antipattern": "gradient-text",
+    "name": "Gradient text",
+    "description": "Gradient text is decorative rather than meaningful — a common AI tell, especially on headings and metrics. Use solid colors for text.",
+    "severity": "warning",
+    "file": "D:\\ClaudeCode\\firepath\\src\\components\\layouts\\header.tsx",
+    "line": 33,
+    "snippet": "bg-clip-text + bg-gradient"
+  }
+]

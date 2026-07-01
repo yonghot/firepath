@@ -1,0 +1,62 @@
+/**
+ * AdvisorCta — env-gated affiliate / advisor-matching call-to-action.
+ *
+ * INFRASTRUCTURE ONLY. Renders a real outbound link ONLY when the owner has
+ * set NEXT_PUBLIC_ADVISOR_CTA_URL in their environment. When the variable is
+ * unset (local dev, CI, or any deployment without the env), this component
+ * renders nothing at all — never a fake URL, never a broken link.
+ *
+ * Usage:
+ *   Place on result pages, guide pages, or any surface where an advisor CTA
+ *   is contextually appropriate. The component is fully self-contained:
+ *   no props required (all config via env vars).
+ *
+ * Environment variables (all optional):
+ *   NEXT_PUBLIC_ADVISOR_CTA_URL     — Destination URL for the CTA button.
+ *                                     Set by owner; not shipped in source.
+ *   NEXT_PUBLIC_ADVISOR_CTA_LABEL   — Override the button label.
+ *                                     Default: "Find a fee-only financial advisor"
+ *   NEXT_PUBLIC_ADVISOR_CTA_CONTEXT — Override the supporting text.
+ *                                     Default: standard informational copy.
+ *
+ * Design: matches the existing "ready to plan" CTA blocks on guide/result pages.
+ * No affiliate URL is hardcoded; no payout or fee is mentioned or fabricated.
+ */
+
+import { ExternalLink } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+const CTA_URL = process.env.NEXT_PUBLIC_ADVISOR_CTA_URL;
+const CTA_LABEL =
+  process.env.NEXT_PUBLIC_ADVISOR_CTA_LABEL ?? 'Find a fee-only financial advisor';
+const CTA_CONTEXT =
+  process.env.NEXT_PUBLIC_ADVISOR_CTA_CONTEXT ??
+  'These projections are estimates. A fee-only financial advisor can review your full picture — taxes, asset allocation, healthcare costs, and sequence-of-returns risk.';
+
+/** Returns null when the env var is not configured — renders nothing. */
+export function AdvisorCta({ className }: { className?: string }) {
+  if (!CTA_URL) return null;
+
+  return (
+    <aside
+      aria-label="Financial advisor referral"
+      className={`rounded-xl border border-border bg-card p-6 text-center ${className ?? ''}`}
+    >
+      <p className="text-sm text-muted-foreground mb-4 max-w-prose mx-auto">{CTA_CONTEXT}</p>
+      <a
+        href={CTA_URL}
+        target="_blank"
+        rel="noopener noreferrer sponsored"
+        aria-label={`${CTA_LABEL} (opens in new tab)`}
+      >
+        <Button variant="outline" className="gap-2">
+          <ExternalLink className="h-4 w-4" aria-hidden="true" />
+          {CTA_LABEL}
+        </Button>
+      </a>
+      <p className="mt-3 text-[10px] text-muted-foreground uppercase tracking-wide">
+        Sponsored link — not financial advice
+      </p>
+    </aside>
+  );
+}

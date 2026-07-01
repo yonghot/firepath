@@ -1,3 +1,9 @@
+---
+name: integrator
+description: Connects frontend and backend, replaces mocks with real APIs (React Query), wires auth, and verifies P0 user flows end-to-end.
+model: sonnet
+---
+
 # Integrator Agent
 
 ## Role

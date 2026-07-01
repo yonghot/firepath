@@ -85,3 +85,32 @@ src/constants/    — App constants
 - 3-Layer 위반 금지: API Route → Service → Repository
 - 컴포넌트에 fetch/supabase 호출 금지
 - Service에서 Supabase 직접 호출 금지
+
+## Design System (imported)
+디자인 하네스 — 모든 UI 변경은 아래 문서를 게이트로 준수한다 (`design/tokens.css`는 CSS 토큰 정본):
+@./.impeccable.md
+@./design/principles.md
+@./design/required.md
+@./design/forbidden.md
+@./design/tone.md
+
+## Plan Contract
+모든 비자명(non-trivial) 작업은 착수 전 아래 6개 섹션을 채운 Plan Contract를 제시하고 합의한다. 사소한 1줄 수정은 면제.
+1. **Goal / Scope** — 무엇을, 왜. 완료의 정의(DoD)를 1–2줄로.
+2. **Constraints** — [MUST]/[MUST NOT]. 기존 파일 보존, 3-Layer 준수, 디자인 하네스(`design/*`) 준수, FIRE 색상 불변.
+3. **Affected Surface** — 변경/생성 파일 목록과 영향 범위(컴포넌트·API·DB·토큰).
+4. **Verification Plan** — `pnpm test`(vitest) + `pnpm lint` + `npx tsc --noEmit` + `npx impeccable detect src/`; UI는 시각 검증/스크린샷.
+5. **Rollback** — 되돌리는 방법(커밋 단위, revert 지점). 비가역 작업(DB 마이그레이션 등)은 사전 백업·분기.
+6. **Out of Scope / Risks** — 명시적 제외 항목과 위험·미해결 가정.
+
+## Execution Defaults
+> - 기본 실행 경로: Teleport back to terminal → Implement here
+> - 클라우드 실행 허용: 순수 frontend 변경 + 공개 라이브러리 의존성만
+> - Commit 정책: Ultraplan 실행 전 반드시 commit & push
+> - Windows 주의: Bug #43576 감지 시 Cancel & save로 우회
+
+## Workflow Defaults
+- **Two-pass 패턴**: 첫 아키텍처 변경·신기능은 로컬에서 1차 구현/검증 → 안정화 후 Ultraplan으로 승격(2차)하여 전수 분석·계획을 적용한다.
+- **Ultraplan 안전장치**: ultraplan/대규모 변경 실행 전 `git status` clean + `git push` 완료 보장.
+- **품질 게이트**: 커밋 전 `.claude/hooks/pre-commit-gate.sh`(tsc + eslint + impeccable --fast)가 통과해야 한다.
+- **서브에이전트**: `.claude/agents/*`(model: sonnet) — 분석/검토는 병렬 fan-out, 적대적 교차검증 후 통합.

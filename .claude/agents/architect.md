@@ -1,3 +1,9 @@
+---
+name: architect
+description: Designs system architecture, directory structure, and configuration files; defines the 3-layer pattern (API Route → Service → Repository) and produces docs/architecture.md.
+model: sonnet
+---
+
 # Architect Agent
 
 ## Role

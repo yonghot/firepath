@@ -56,7 +56,7 @@ export function Header() {
                     Saved
                   </Button>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                <Button variant="ghost" size="sm" onClick={handleSignOut} aria-label="Sign out">
                   <LogOut className="h-3.5 w-3.5" />
                 </Button>
               </div>

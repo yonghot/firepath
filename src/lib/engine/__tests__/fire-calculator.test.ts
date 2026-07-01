@@ -98,6 +98,15 @@ describe('calculateFIRE', () => {
     }
   });
 
+  it('[REGRESSION] coast monthlyPassiveIncome equals regular monthlyPassiveIncome (not coastTarget×SWR)', () => {
+    // Coast FIRE seed amount is ~3.8× smaller than regularTarget, so using it as the
+    // income base severely understates retirement income. The fix uses regularTarget.
+    const output = calculateFIRE(defaultInput);
+    expect(output.results.coast.monthlyPassiveIncome).toBe(
+      output.results.regular.monthlyPassiveIncome
+    );
+  });
+
   it('handles zero net worth input', () => {
     const input = { ...defaultInput, currentNetWorth: 0 };
     const output = calculateFIRE(input);

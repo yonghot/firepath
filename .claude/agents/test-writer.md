@@ -1,3 +1,9 @@
+---
+name: test-writer
+description: Writes and maintains unit/integration/component tests with Vitest; prioritizes correctness of the pure FIRE calculator engine.
+model: sonnet
+---
+
 # Test Writer Agent
 
 ## Role

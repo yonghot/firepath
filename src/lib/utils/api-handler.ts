@@ -39,7 +39,9 @@ export function createCalculationService(supabase: SupabaseClient): CalculationS
   );
 }
 
-/** Create a SubscriptionService with its dependencies from an authenticated supabase client */
+/** Create a SubscriptionService with its dependencies from a supabase client.
+ * Pass the authenticated request client for user-facing routes, or a
+ * service-role client for the Stripe webhook (which has no user session). */
 export function createSubscriptionService(supabase: SupabaseClient): SubscriptionService {
   return new SubscriptionService(
     new SubscriptionRepository(supabase),

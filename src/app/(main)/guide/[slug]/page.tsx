@@ -6,6 +6,9 @@ import { Badge } from '@/components/ui/badge';
 import { Calculator } from 'lucide-react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { AdSlot } from '@/components/common/ad-slot';
+import { getPremiumStatus } from '@/lib/subscription/premium';
+import { safeJsonLd } from '@/lib/utils/json-ld';
 
 interface GuidePageProps {
   params: Promise<{ slug: string }>;
@@ -132,6 +135,9 @@ export default async function GuidePage({ params }: GuidePageProps) {
 
   if (!guide) notFound();
 
+  // Free tier sees ads on guide pages; premium subscribers see nothing.
+  const { isPremium } = await getPremiumStatus();
+
   const htmlContent = renderGuideContent(guide.content);
 
   const articleJsonLd = {
@@ -159,11 +165,11 @@ export default async function GuidePage({ params }: GuidePageProps) {
     <div className="mx-auto max-w-4xl px-4 py-8">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(articleJsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
       <div className="flex flex-col lg:flex-row gap-8">
         <article className="flex-1 min-w-0">
@@ -189,6 +195,9 @@ export default async function GuidePage({ params }: GuidePageProps) {
               </Button>
             </Link>
           </div>
+
+          {/* Ad (free tier only) — below the article content, never inline. */}
+          {!isPremium && <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_GUIDE} />}
         </article>
 
         {/* Sidebar */}

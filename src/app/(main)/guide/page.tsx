@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { BookOpen, Calculator } from 'lucide-react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { AdSlot } from '@/components/common/ad-slot';
+import { getPremiumStatus } from '@/lib/subscription/premium';
+import { safeJsonLd } from '@/lib/utils/json-ld';
 
 export const metadata: Metadata = {
   title: 'FIRE Guides',
@@ -34,6 +37,9 @@ export default async function GuidesIndexPage() {
     }
   }
 
+  // Free tier sees ads on guide surfaces; premium subscribers see nothing.
+  const { isPremium } = await getPremiumStatus();
+
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -59,12 +65,12 @@ export default async function GuidesIndexPage() {
     <div className="mx-auto max-w-4xl px-4 py-8">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
       {itemListJsonLd && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListJsonLd) }}
         />
       )}
       <div className="mb-8">
@@ -112,6 +118,9 @@ export default async function GuidesIndexPage() {
           </Link>
         </div>
       )}
+
+      {/* Ad (free tier only) */}
+      {!isPremium && <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_GUIDE} />}
 
       {/* CTA */}
       <div className="mt-10 p-6 rounded-xl bg-primary/5 border border-primary/20 text-center">

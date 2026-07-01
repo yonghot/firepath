@@ -10,7 +10,19 @@
       "mcp__ecfdc682-bd94-4550-b844-6496bdfd6959__get_project",
       "mcp__ecfdc682-bd94-4550-b844-6496bdfd6959__restore_project",
       "mcp__ecfdc682-bd94-4550-b844-6496bdfd6959__apply_migration",
-      "mcp__ecfdc682-bd94-4550-b844-6496bdfd6959__list_tables"
+      "mcp__ecfdc682-bd94-4550-b844-6496bdfd6959__list_tables",
+      "Write(.claude/**)",
+      "Edit(.claude/**)",
+      "Read(.claude/**)",
+      "Bash(git:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(pnpm:*)",
+      "Bash(yarn:*)",
+      "Bash(supabase:*)",
+      "Bash(vercel:*)",
+      "Bash(python:*)",
+      "Bash(py:*)"
     ]
   }
 }

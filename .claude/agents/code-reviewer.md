@@ -1,3 +1,9 @@
+---
+name: code-reviewer
+description: Reviews code for quality, security, and 3-layer architecture compliance; logs issues with severity to REVIEW.md.
+model: sonnet
+---
+
 # Code Reviewer Agent
 
 ## Role

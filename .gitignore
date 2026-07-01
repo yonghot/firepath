@@ -43,3 +43,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# impeccable design QA (transient scan output; baseline.json is committed)
+.slop.json
+baseline.detect.err
+.gstack/

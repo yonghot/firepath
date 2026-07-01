@@ -1,3 +1,9 @@
+---
+name: evaluator
+description: Independently verifies build health, tests, and P0 feature completeness; reports only (never fixes) and updates feature_list.json.
+model: sonnet
+---
+
 # Evaluator Agent
 
 ## Role

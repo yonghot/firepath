@@ -74,14 +74,17 @@ function buildResult(
   type: FIREType,
   target: number,
   achievement: { yearsToReach: number | null; reachAge: number | null },
-  safeWithdrawalRate: number
+  safeWithdrawalRate: number,
+  /** Override the income base used to compute monthlyPassiveIncome (used for Coast) */
+  incomeBase?: number
 ): FIREResult {
+  const base = incomeBase !== undefined ? incomeBase : target;
   return {
     type,
     targetAmount: Math.round(target),
     yearsToReach: achievement.yearsToReach,
     reachAge: achievement.reachAge,
-    monthlyPassiveIncome: Math.round((target * safeWithdrawalRate) / 12),
+    monthlyPassiveIncome: Math.round((base * safeWithdrawalRate) / 12),
   };
 }
 
@@ -112,7 +115,9 @@ export function calculateFIRE(input: FIREInput): FIREOutput {
     lean: buildResult('lean', targets.lean, findAchievementAge(timeline, targets.lean, currentAge), safeWithdrawalRate),
     regular: buildResult('regular', targets.regular, findAchievementAge(timeline, targets.regular, currentAge), safeWithdrawalRate),
     fat: buildResult('fat', targets.fat, findAchievementAge(timeline, targets.fat, currentAge), safeWithdrawalRate),
-    coast: buildResult('coast', coastTarget, coastResult, safeWithdrawalRate),
+    // Coast FIRE: targetAmount is the discounted seed you need TODAY, but the income
+    // delivered at retirement is based on the full regularTarget the portfolio grows to.
+    coast: buildResult('coast', coastTarget, coastResult, safeWithdrawalRate, targets.regular),
     barista: buildResult('barista', targets.barista, findAchievementAge(timeline, targets.barista, currentAge), safeWithdrawalRate),
   };
 

@@ -1,0 +1,58 @@
+name: Design QA
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint · Typecheck · Test · Design QA
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # --- Hard gates (fail the build) ---
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      # --- Design anti-slop QA ---
+      # impeccable v2.x has no built-in baseline compare, so this reports
+      # without failing CI; pre-existing findings are tracked in baseline.json.
+      # Tighten to a hard gate (remove continue-on-error) once findings are at zero.
+      - name: Impeccable design scan
+        continue-on-error: true
+        run: pnpm --silent design:qa:ci > slop.json || true
+
+      - name: Upload design report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: design-qa-report
+          path: slop.json
+          if-no-files-found: ignore

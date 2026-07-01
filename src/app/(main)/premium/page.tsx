@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Check, X, Crown } from 'lucide-react';
+import { UpgradeButton } from '@/components/features/subscription/upgrade-button';
+import { isStripeConfigured, isPremiumPriceConfigured } from '@/lib/stripe/server';
+import { getPremiumStatus } from '@/lib/subscription/premium';
 
 export const metadata: Metadata = {
   title: 'Premium — Unlock Advanced FIRE Tools',
@@ -40,7 +42,12 @@ function FeatureCheck({ value }: { value: boolean | string }) {
   );
 }
 
-export default function PremiumPage() {
+export default async function PremiumPage() {
+  // Stripe is "live" only when the secret key AND the premium price id are set.
+  // Otherwise the upgrade button stays a disabled "Coming Soon" (free build).
+  const stripeEnabled = isStripeConfigured() && isPremiumPriceConfigured();
+  const { isPremium } = await getPremiumStatus();
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
       <div className="text-center mb-10">
@@ -89,13 +96,7 @@ export default function PremiumPage() {
                 <FeatureCheck value={f.premium} />
               </div>
             ))}
-            <Button className="w-full mt-4" disabled>
-              <Crown className="h-4 w-4 mr-2" />
-              Coming Soon
-            </Button>
-            <p className="text-xs text-muted-foreground text-center mt-2">
-              Premium subscriptions launching soon.
-            </p>
+            <UpgradeButton enabled={stripeEnabled} isPremium={isPremium} />
           </CardContent>
         </Card>
       </div>

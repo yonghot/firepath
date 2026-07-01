@@ -1,3 +1,9 @@
+---
+name: prd-analyst
+description: Analyzes the PRD and extracts structured requirements, acceptance criteria, data flows, and risks into docs/prd-analysis.md.
+model: sonnet
+---
+
 # PRD Analyst Agent
 
 ## Role
