@@ -1,7 +1,7 @@
 {
   "project": "FIREPath",
-  "version": "0.5.0",
-  "lastUpdated": "2026-07-01",
+  "version": "0.6.0",
+  "lastUpdated": "2026-07-02",
   "evaluator": {
     "build": "PASS",
     "lint": "0 errors / 0 warnings",
@@ -241,6 +241,16 @@
       "priority": "P2",
       "status": "pass",
       "verified": "lib/monetization.ts (config parser + parseFeaturedPartners + resolveAdProvider + resolvePrimaryCtaType); AdProvider.tsx (single programmatic selector: adsense|ezoic|raptive|none, never two); ResultMonetization.tsx (5-block stack: PrimaryIntentCTA + DisplaySlot + FeaturedPartnerTable + SponsorSlot + EmailCapture); ads.txt route updated with 301-redirect support; .env.example documents all 18 env keys. 53 new unit tests (parseFeaturedPartners: 9, resolveAdProvider: 8, resolvePrimaryCtaType: 7, buildMonetizationConfig-unset: 14, buildMonetizationConfig-set: 9, provider-single-selection: 1). All env unset => render null; VERTICAL_DEFAULT_CTA_TYPE=cpl; NEVER two programmatic providers. Inserted into / and /result pages replacing legacy inline AdSlot+EmailCapture+AdvisorCta. Gate: lint 0 errors, typecheck PASS, 255 tests all pass, build PASS (29 pages).",
+      "impeccableAudit": null,
+      "impeccableCritique": null,
+      "ultraplanSessionId": null
+    },
+    {
+      "id": "F024",
+      "name": "Legal Risk Mitigation (P0) — Investment/Tax Disclaimer, TermsGate, Arbitration, FTC & CAN-SPAM",
+      "priority": "P0",
+      "status": "pass",
+      "verified": "components/compliance/ (new): ResultDisclaimer.tsx (investment+tax variant — 'not investment, tax, or financial advice... not an investment adviser (Investment Advisers Act)... hypothetical projections'; surfaces figures-last-updated date + /methodology source link from lib/figures.ts); TermsGate.tsx (clickwrap — unchecked checkbox by default, localStorage ISO-timestamp persistence, non-dismissable overlay scoped to the RESULTS panel only on the slider-live home calculator + /result page — sliders/inputs stay usable; same overlay+checkbox pattern gates the button-triggered Healthcare Bridge 'Estimate' action instead); AffiliateDisclosure.tsx (standard FTC 16 CFR 255 line, reused by AdvisorCta + ResultMonetization FeaturedPartnerTable/CPL/affiliate CTAs). lib/figures.ts (new): CORE_FIGURES with lastVerified/source pulled from already-verified /methodology citations (expectedReturn 7%, inflation 3%, SWR 4%, Monte Carlo volatility 15%, all dated 2026-06-29); UNSOURCED_FIGURES lists the 4 portfolio-optimizer asset-class return/volatility pairs + correlation matrix that have no repo citation (not fabricated). Impersonal framing: RESULT-headline copy changed from 'Your FIRE Numbers'/'Your FIRE Results' to \"This Scenario's FIRE Numbers\"/\"This Scenario's FIRE Results\" on the live calculator + /result page (form-label 'your current age' etc. left as-is per spec). Advisor/affiliate CTA copy: 'Sponsored link' -> 'Advertisement', 'Consider a low-cost robo-advisor' -> neutral 'is one option'. /terms: DRAFT header comment added; new Section 14 Binding Arbitration + Class Action Waiver (with 30-day opt-out) inserted, sections renumbered 13-16, last-updated bumped. /privacy: DRAFT header comment added; Section 2f tightened to state no calculator input or analytics event ever carries FIRE scenario values; last-updated bumped. Pixel/URL hygiene (scoped, no CMP changes): GA4 gtag('config') now passes an explicit hash-stripped page_location (the URL hash on / and /result encodes income/net worth/expenses via lib/engine/url-state.ts KEY_MAP and would otherwise leak into GA); EmailResultCapture strips the hash from the URL it POSTs to /api/subscribe. CAN-SPAM: emailCaptureEnabled in lib/monetization.ts now requires BOTH NEXT_PUBLIC_EMAIL_CAPTURE=on AND NEXT_PUBLIC_POSTAL_ADDRESS; EmailResultCapture renders the postal address + 'unsubscribe with one click' line near the form; NEXT_PUBLIC_POSTAL_ADDRESS documented in .env.example. Copy audit (B): grep swept for 'you should', 'we recommend', 'guaranteed', 'will save you', 'you qualify', promissory 'accurate' across src/ — zero hits requiring replacement (repo copy was already hedged/impersonal outside the 2 RESULT-headline fixes above and the CTA-copy tightening). 7 new/updated unit tests in monetization.test.ts covering the postal-address CAN-SPAM gate. Gate: lint 0 errors, typecheck PASS, 258 tests all pass, build PASS (27 pages, no static->dynamic regressions).",
       "impeccableAudit": null,
       "impeccableCritique": null,
       "ultraplanSessionId": null

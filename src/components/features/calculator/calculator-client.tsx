@@ -12,7 +12,8 @@ import { ScenarioComparison } from '@/components/features/scenario/scenario-comp
 import { MonteCarloPanel } from '@/components/features/monte-carlo/monte-carlo-panel';
 import { PortfolioPanel } from '@/components/features/portfolio/portfolio-panel';
 import { SaveCalculationButton } from '@/components/features/calculator/save-calculation-button';
-import { DisclaimerBanner } from '@/components/common/disclaimer-banner';
+import { ResultDisclaimer } from '@/components/compliance/ResultDisclaimer';
+import { TermsGate } from '@/components/compliance/TermsGate';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { SlidersHorizontal } from 'lucide-react';
@@ -72,27 +73,37 @@ export function CalculatorClient() {
           />
         ) : (
           <>
-            {/* Chart */}
-            <div className="rounded-xl border bg-card p-4 md:p-6">
-              <h2 className="text-3xl font-bold mb-4">FIRE Timeline</h2>
-              <FIRETimelineChart
-                timeline={output.timeline}
-                results={output.results}
-                highlightedType={highlightedType}
-              />
-            </div>
-
-            {/* Result cards */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-3xl font-bold">Your FIRE Numbers</h2>
-                <SaveCalculationButton />
+            {/* TermsGate: FIREPath recalculates live as sliders move, so there is
+                no single "calculate" action to gate. Instead we gate the RESULTS
+                surface (chart + result cards) itself with a non-dismissable
+                overlay until the user affirmatively agrees. Sliders/inputs in
+                the sidebar above remain fully usable while this is showing. */}
+            <TermsGate className="space-y-6">
+              {/* Chart */}
+              <div className="rounded-xl border bg-card p-4 md:p-6">
+                <h2 className="text-3xl font-bold mb-4">FIRE Timeline</h2>
+                <FIRETimelineChart
+                  timeline={output.timeline}
+                  results={output.results}
+                  highlightedType={highlightedType}
+                />
               </div>
-              <FIREResultCards
-                results={output.results}
-                onHighlight={setHighlightedType}
-              />
-            </div>
+
+              {/* Result cards */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-3xl font-bold">This Scenario&apos;s FIRE Numbers</h2>
+                  <SaveCalculationButton />
+                </div>
+                <FIREResultCards
+                  results={output.results}
+                  onHighlight={setHighlightedType}
+                />
+              </div>
+
+              {/* Disclaimer — placed directly adjacent to the result output it describes. */}
+              <ResultDisclaimer />
+            </TermsGate>
 
             {/* Monte Carlo Simulation */}
             <MonteCarloPanel
@@ -109,9 +120,6 @@ export function CalculatorClient() {
             />
           </>
         )}
-
-        {/* Disclaimer */}
-        <DisclaimerBanner />
       </div>
     </div>
   );

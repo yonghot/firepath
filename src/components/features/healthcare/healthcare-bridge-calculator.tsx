@@ -12,7 +12,7 @@
  *   src/lib/engine/healthcare-bridge.ts.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,9 +34,50 @@ const DEFAULT_FORM: FormState = {
   annualGrowthRate: '5',
 };
 
+// Clickwrap consent gate for THIS calculator's "Estimate Bridge Cost" button.
+// Separate key from the main calculator's TermsGate (which gates the live
+// slider results panel) since this is a distinct button-triggered surface.
+const CONSENT_KEY = 'firepath_terms_consent_healthcare_bridge';
+
+interface StoredConsent {
+  accepted: true;
+  timestamp: string;
+}
+
+function readStoredConsent(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const raw = localStorage.getItem(CONSENT_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as StoredConsent;
+    return parsed?.accepted === true && typeof parsed.timestamp === 'string';
+  } catch {
+    return false;
+  }
+}
+
+function writeStoredConsent(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(
+      CONSENT_KEY,
+      JSON.stringify({ accepted: true, timestamp: new Date().toISOString() })
+    );
+  } catch {
+    // localStorage unavailable — consent won't persist; non-fatal.
+  }
+}
+
 export function HealthcareBridgeCalculator() {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [result, setResult] = useState<ReturnType<typeof calculateHealthcareBridge> | null>(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
+  useEffect(() => {
+    // Defer the setState call out of the synchronous effect body (avoids
+    // cascading-render lint warning; same pattern as CookieConsentBanner).
+    queueMicrotask(() => setTermsAccepted(readStoredConsent()));
+  }, []);
 
   const handleChange = (field: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
@@ -44,6 +85,7 @@ export function HealthcareBridgeCalculator() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!termsAccepted) return;
     const parsed = {
       currentAge: Number(form.currentAge),
       retirementAge: Number(form.retirementAge),
@@ -169,7 +211,33 @@ export function HealthcareBridgeCalculator() {
           </div>
         </div>
 
-        <Button type="submit" className="w-full sm:w-auto">
+        <div className="flex items-start gap-3">
+          <input
+            id="hb-terms-checkbox"
+            type="checkbox"
+            checked={termsAccepted}
+            onChange={(e) => {
+              const next = e.target.checked;
+              setTermsAccepted(next);
+              if (next) writeStoredConsent();
+            }}
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-input accent-[var(--brand-primary)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          />
+          <label htmlFor="hb-terms-checkbox" className="text-xs text-muted-foreground leading-snug">
+            I agree to the{' '}
+            <a
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:underline"
+            >
+              Terms of Use
+            </a>{' '}
+            and understand results are estimates, not professional advice.
+          </label>
+        </div>
+
+        <Button type="submit" className="w-full sm:w-auto" disabled={!termsAccepted}>
           Estimate Bridge Cost
         </Button>
       </form>
@@ -187,13 +255,17 @@ export function HealthcareBridgeCalculator() {
               </ul>
             </div>
           ) : result.result.noGapNeeded ? (
-            <div>
+            <div className="space-y-2">
               <p className="text-sm font-medium text-[var(--fire-lean)]">
                 No healthcare bridge needed.
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                You plan to retire at or after age {MEDICARE_ELIGIBILITY_AGE} — Medicare coverage
-                will already be available.
+                This scenario retires at or after age {MEDICARE_ELIGIBILITY_AGE} — Medicare
+                coverage will already be available.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Tax and healthcare rules change frequently — verify current rules with a
+                qualified professional.
               </p>
             </div>
           ) : (
@@ -250,6 +322,10 @@ export function HealthcareBridgeCalculator() {
                   healthcare.gov
                 </a>{' '}
                 and a licensed health-insurance advisor.
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Tax and healthcare rules change frequently — verify current rules with a
+                qualified professional.
               </p>
             </div>
           )}

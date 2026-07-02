@@ -25,6 +25,7 @@
 
 import { ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { AffiliateDisclosure } from '@/components/compliance/AffiliateDisclosure';
 
 const CTA_URL = process.env.NEXT_PUBLIC_ADVISOR_CTA_URL;
 const CTA_LABEL =
@@ -43,6 +44,7 @@ export function AdvisorCta({ className }: { className?: string }) {
       className={`rounded-xl border border-border bg-card p-6 text-center ${className ?? ''}`}
     >
       <p className="text-sm text-muted-foreground mb-4 max-w-prose mx-auto">{CTA_CONTEXT}</p>
+      <AffiliateDisclosure className="mb-2" />
       <a
         href={CTA_URL}
         target="_blank"
@@ -55,7 +57,7 @@ export function AdvisorCta({ className }: { className?: string }) {
         </Button>
       </a>
       <p className="mt-3 text-[10px] text-muted-foreground uppercase tracking-wide">
-        Sponsored link — not financial advice
+        Advertisement — not financial advice
       </p>
     </aside>
   );

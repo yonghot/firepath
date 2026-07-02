@@ -5,7 +5,8 @@ import { useCalculatorStore } from '@/stores/calculator.store';
 import { decodeState } from '@/lib/engine/url-state';
 import { FIRETimelineChart } from '@/components/features/calculator/fire-timeline-chart';
 import { FIREResultCards } from '@/components/features/calculator/fire-result-cards';
-import { DisclaimerBanner } from '@/components/common/disclaimer-banner';
+import { ResultDisclaimer } from '@/components/compliance/ResultDisclaimer';
+import { TermsGate } from '@/components/compliance/TermsGate';
 import { Button } from '@/components/ui/button';
 import { Share2, Calculator } from 'lucide-react';
 import Link from 'next/link';
@@ -33,7 +34,7 @@ export function ResultClient() {
   return (
     <>
       <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-bold">Your FIRE Results</h1>
+        <h1 className="text-4xl font-bold">This Scenario&apos;s FIRE Results</h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={handleShare}>
             <Share2 className="h-4 w-4 mr-1" />
@@ -48,12 +49,14 @@ export function ResultClient() {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card p-4 md:p-6">
-        <FIRETimelineChart timeline={output.timeline} results={output.results} />
-      </div>
+      <TermsGate className="space-y-6">
+        <div className="rounded-xl border bg-card p-4 md:p-6">
+          <FIRETimelineChart timeline={output.timeline} results={output.results} />
+        </div>
 
-      <FIREResultCards results={output.results} />
-      <DisclaimerBanner />
+        <FIREResultCards results={output.results} />
+        <ResultDisclaimer />
+      </TermsGate>
     </>
   );
 }

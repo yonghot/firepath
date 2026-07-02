@@ -9,6 +9,12 @@
  *
  * NO real email-service-provider integration is included — the storage/ESP
  * wiring (and any API keys) is the owner's responsibility (see /api/subscribe).
+ *
+ * CAN-SPAM: this is a commercial email-collection form, so a physical postal
+ * address and an unsubscribe notice must be shown near it. The caller
+ * (ResultMonetization) only renders this component when a postal address is
+ * configured (see lib/monetization.ts emailCaptureEnabled gate) and passes it
+ * in as a required prop — this component has no fallback/default address.
  */
 
 import { useState } from 'react';
@@ -21,7 +27,12 @@ const ENDPOINT = '/api/subscribe';
 
 type Status = 'idle' | 'submitting' | 'done' | 'error';
 
-export function EmailResultCapture() {
+interface EmailResultCaptureProps {
+  /** Physical postal address (CAN-SPAM requirement) — always provided by the caller. */
+  postalAddress: string;
+}
+
+export function EmailResultCapture({ postalAddress }: EmailResultCaptureProps) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<Status>('idle');
 
@@ -31,13 +42,19 @@ export function EmailResultCapture() {
     setStatus('submitting');
 
     try {
+      // PRIVACY: strip the URL hash before sending. On calculator/result pages
+      // the hash encodes the user's FIRE scenario (income, net worth, savings
+      // rate, expenses — see src/lib/engine/url-state.ts). We only need the
+      // page path for context, not the user's financial inputs.
+      const url =
+        typeof window !== 'undefined' ? window.location.href.split('#')[0] : undefined;
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
           source: 'firepath-result',
-          url: typeof window !== 'undefined' ? window.location.href : undefined,
+          url,
         }),
       });
       if (!res.ok) throw new Error(`Capture failed: ${res.status}`);
@@ -49,9 +66,14 @@ export function EmailResultCapture() {
 
   if (status === 'done') {
     return (
-      <div className="rounded-xl border bg-card p-4 text-sm text-muted-foreground">
-        Thanks! We&apos;ll send your FIRE result and the 2026 cost report to{' '}
-        <strong className="text-foreground">{email}</strong>.
+      <div className="rounded-xl border bg-card p-4 text-sm text-muted-foreground space-y-2">
+        <p>
+          Thanks! We&apos;ll send your FIRE result and the 2026 cost report to{' '}
+          <strong className="text-foreground">{email}</strong>.
+        </p>
+        <p className="text-xs text-muted-foreground border-t border-border pt-2">
+          {postalAddress} · You can unsubscribe at any time with one click.
+        </p>
       </div>
     );
   }
@@ -88,6 +110,9 @@ export function EmailResultCapture() {
           Something went wrong. Please try again.
         </p>
       )}
+      <p className="mt-3 text-[10px] text-muted-foreground">
+        {postalAddress} · You can unsubscribe at any time with one click.
+      </p>
     </form>
   );
 }

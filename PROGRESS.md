@@ -260,3 +260,52 @@ pnpm build      — PASS
 5. **Widget z-index = 40** — above content, below modals (z-50), consistent with cookie banner.
 6. **A11y** — focus moves into panel on open; Tab trapped inside; Esc closes; `aria-live="polite"` on status region; `aria-invalid` + `aria-describedby` on error states; Lucide icons only (no emoji); all inputs labeled; `focus-visible` rings preserved; `prefers-reduced-motion` respected via `motion-reduce:transition-none`.
 7. **Design tokens only** — `--brand-primary`, `--brand-light`, `--foreground`, `--muted-foreground`, `--card`, `--border`, `--input`, `--ring`, `--destructive`, `--muted`, `--background`. No hardcoded colors; no purple/blue gradients; no `hover:scale-*`; no `#000000`.
+
+---
+
+## Phase-7 Build Note — 2026-07-02 (Legal Risk Mitigation — P0)
+
+### What was done
+
+Implemented the P0 legal-risk mitigations from the compliance risk report (부속G). Investment/tax disclaimer variant: "not investment, tax, or financial advice ... not an investment adviser (Investment Advisers Act) ... projections are hypothetical." This is risk-mitigation code/copy, not legal advice; every legal document edited carries a DRAFT/attorney-review header.
+
+**New files (4):**
+- `src/components/compliance/ResultDisclaimer.tsx` — layered disclaimer placed directly adjacent to RESULT output (never footer-only); shows "Figures last updated" date + a `/methodology` source link pulled from `lib/figures.ts`.
+- `src/components/compliance/TermsGate.tsx` — clickwrap consent gate: unchecked checkbox by default, `/terms` link, localStorage-persisted ISO timestamp, non-dismissable overlay scoped to the RESULTS panel only (sliders/inputs stay interactive underneath).
+- `src/components/compliance/AffiliateDisclosure.tsx` — standard FTC 16 CFR 255 line ("We may earn a commission if you use links on this page. This does not affect the figures shown."), reused across every affiliate/lead CTA.
+- `src/lib/figures.ts` — central `{lastVerified, source}` registry for the core FIRE-engine assumption defaults (expectedReturn 7%, inflation 3%, SWR 4%, Monte Carlo volatility 15% — all dated 2026-06-29, sourced from the already-verified `/methodology` citations) plus an `UNSOURCED_FIGURES` list for the 4 portfolio-optimizer asset-class return/volatility pairs and the correlation matrix, which have no citation in repo docs — listed honestly, not fabricated.
+
+**Modified files (9):**
+- `src/components/features/calculator/calculator-client.tsx` — results (chart + result cards) wrapped in `<TermsGate>`; `ResultDisclaimer` placed inside, adjacent to output; headline "Your FIRE Numbers" → "This Scenario's FIRE Numbers".
+- `src/components/features/calculator/result-client.tsx` — same TermsGate + ResultDisclaimer treatment on `/result`; headline "Your FIRE Results" → "This Scenario's FIRE Results".
+- `src/components/features/healthcare/healthcare-bridge-calculator.tsx` — button-triggered calculator, so gated via a required checkbox next to the "Estimate Bridge Cost" submit button (disabled until checked) instead of an overlay; added the required distinct line "Tax and healthcare rules change frequently — verify current rules with a qualified professional." near both result branches; "You plan to retire..." → "This scenario retires..." (impersonal).
+- `src/components/common/advisor-cta.tsx` / `src/components/monetization/ResultMonetization.tsx` — "Sponsored link — not financial advice" → "Advertisement — not financial advice"; "Consider a low-cost robo-advisor to automate your investment strategy" → neutral "is one option for automating an investment strategy"; `AffiliateDisclosure` inserted immediately above every outbound CTA link (CPL, affiliate, AdvisorCta, FeaturedPartnerTable).
+- `src/app/(main)/terms/page.tsx` — DRAFT/attorney-review header comment; new Section 14 "Binding Arbitration and Class Action Waiver" (individual arbitration, class-action + jury-trial waiver, 30-day opt-out, small-claims/IP carve-outs); sections renumbered 13→16; last-updated bumped to July 2, 2026.
+- `src/app/(main)/privacy/page.tsx` — DRAFT/attorney-review header comment; Section 2f ("Locally Computed Data") tightened to explicitly state no calculator input or analytics event ever carries FIRE scenario values; last-updated bumped.
+- `src/components/common/cookie-consent-banner.tsx` — GA4 `gtag('config', ...)` now passes an explicit hash-stripped `page_location`. The URL hash on `/` and `/result` encodes the user's FIRE scenario (income, net worth, savings rate, expenses — see `lib/engine/url-state.ts` `KEY_MAP`) and would otherwise be picked up by GA4's default `page_location`/`page_referrer`.
+- `src/components/common/email-result-capture.tsx` — strips the URL hash before POSTing to `/api/subscribe` (same reasoning); now requires and displays a `postalAddress` prop plus a "You can unsubscribe at any time with one click." line (CAN-SPAM).
+- `src/lib/monetization.ts` — `emailCaptureEnabled` now requires **both** `NEXT_PUBLIC_EMAIL_CAPTURE=on` **and** `NEXT_PUBLIC_POSTAL_ADDRESS` set; added `postalAddress` to `MonetizationConfig`. `.env.example` documents the new var.
+
+### Copy audit (prescriptive-language ban list)
+
+Grepped `src/` for "you should", "we recommend", "guaranteed", "will save you", "you qualify", and promissory "accurate" (outside disclaimer contexts). **Zero replacements required** — the existing copy was already hedged/impersonal (FAQ answers say "no calculator can predict the future"; the methodology page cites 19 verified sources; no provider ranking exists to require a compensation-basis disclosure). The only copy changes made were the 2 RESULT-headline impersonal-framing fixes and the CTA-phrasing tightening listed above.
+
+### Privacy/pixel audit (C1/C2)
+
+Verified via grep: no `fetch`/POST anywhere sends calculator input values except the existing, already-disclosed opt-in "Save calculation" flow (`/api/calculations`, authenticated, documented in Privacy §2b). No `gtag('event', ...)` call anywhere in the codebase carries calculator inputs. The one real finding: GA4's default `page_location` would have picked up the FIRE-scenario-encoding URL hash — fixed by passing an explicit stripped `page_location`. Cookie-consent CMP and AdSense loader were **not** touched (out of scope per mandate).
+
+### Gate results (all green)
+
+```
+pnpm lint       — PASS (0 errors, 8 pre-existing warnings unrelated to this change)
+pnpm typecheck  — PASS
+pnpm test       — 258 tests, all passed (+7 new: postal-address CAN-SPAM gate coverage in monetization.test.ts)
+pnpm build      — PASS (27 pages, no static→dynamic regressions)
+```
+
+### Explicitly out of scope / unsourced
+
+- `UNSOURCED_FIGURES` in `lib/figures.ts`: US Stocks (10%/15%), Int'l Stocks (8%/17%), Bonds (4%/5%), Cash (2%/1%) return/volatility defaults and the asset-class correlation matrix in `src/lib/engine/portfolio-optimizer.ts` (premium-only Portfolio Optimization feature) — no citation found in repo docs/tests/comments. Not fabricated; flagged for owner/attorney follow-up.
+- Cookie-consent banner / CMP UI and the AdSense loader script were not redesigned or touched, per mandate.
+- `/terms` Section 14 leaves the arbitration administrator name (AAA/JAMS) and Section 13's specific venue/state as OPERATOR NOTE placeholders — cannot be filled without the owner's actual entity/jurisdiction.
+- All `/terms` and `/privacy` edits require licensed US attorney review before reliance (see DRAFT header on both files).

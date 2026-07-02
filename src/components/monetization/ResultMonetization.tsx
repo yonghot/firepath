@@ -26,6 +26,7 @@ import { ExternalLink, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AdProvider } from '@/components/monetization/AdProvider';
 import { EmailResultCapture } from '@/components/common/email-result-capture';
+import { AffiliateDisclosure } from '@/components/compliance/AffiliateDisclosure';
 import {
   buildMonetizationConfig,
   parseFeaturedPartners,
@@ -91,9 +92,10 @@ function PrimaryIntentCTA() {
         </p>
         <p className="text-sm text-muted-foreground mb-4 max-w-prose">
           These projections are estimates. A fee-only financial advisor can
-          review your full picture — taxes, asset allocation, healthcare costs,
-          and sequence-of-returns risk.
+          review a full financial picture — taxes, asset allocation, healthcare
+          costs, and sequence-of-returns risk.
         </p>
+        <AffiliateDisclosure className="mb-2" />
         <a
           href={cfg.cplUrl}
           target="_blank"
@@ -106,7 +108,7 @@ function PrimaryIntentCTA() {
           </Button>
         </a>
         <p className="mt-3 text-[10px] text-muted-foreground uppercase tracking-wide">
-          Sponsored link — not financial advice
+          Advertisement — not financial advice
         </p>
       </aside>
     );
@@ -126,9 +128,10 @@ function PrimaryIntentCTA() {
           Featured option
         </p>
         <p className="text-sm text-muted-foreground mb-4 max-w-prose">
-          Consider a low-cost robo-advisor to automate your investment strategy
-          toward your FIRE target.
+          A low-cost robo-advisor is one option for automating an investment
+          strategy toward a FIRE target.
         </p>
+        <AffiliateDisclosure className="mb-2" />
         <a
           href={first.href}
           target="_blank"
@@ -141,7 +144,7 @@ function PrimaryIntentCTA() {
           </Button>
         </a>
         <p className="mt-3 text-[10px] text-muted-foreground uppercase tracking-wide">
-          Affiliate link — we may earn a commission
+          Advertisement — we may earn a commission
         </p>
       </aside>
     );
@@ -169,15 +172,8 @@ function FeaturedPartnerTable({ partners }: { partners: FeaturedPartner[] }) {
 
   return (
     <>
-      {/* FTC plain-text disclosure inline ABOVE the table — not in footer */}
-      <p
-        className="text-[10px] text-muted-foreground uppercase tracking-wide mb-2"
-        aria-label="Advertiser disclosure"
-      >
-        Advertiser disclosure: the options below may include affiliate links.
-        We may earn a commission if you sign up through these links, at no extra
-        cost to you. This does not influence our editorial content.
-      </p>
+      {/* FTC 16 CFR 255 disclosure inline ABOVE the table — not in footer */}
+      <AffiliateDisclosure className="mb-2" />
 
       <div
         className="rounded-xl border border-border bg-card overflow-hidden"
@@ -287,8 +283,11 @@ function SponsorSlot() {
 // ─── (e) EmailCapture ────────────────────────────────────────────────────────
 
 function EmailCapture() {
-  if (!cfg.emailCaptureEnabled) return null;
-  return <EmailResultCapture />;
+  // emailCaptureEnabled already requires postalAddress to be set (see
+  // buildMonetizationConfig — CAN-SPAM gate), but guard defensively so the
+  // form can never render without a postal address to show alongside it.
+  if (!cfg.emailCaptureEnabled || !cfg.postalAddress) return null;
+  return <EmailResultCapture postalAddress={cfg.postalAddress} />;
 }
 
 // ─── Main export ─────────────────────────────────────────────────────────────

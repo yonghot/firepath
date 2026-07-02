@@ -115,7 +115,18 @@ function initGA(): void {
   if (w.__firepathGaConfigured) return;
   w.__firepathGaConfigured = true;
   window.gtag('js', new Date());
-  window.gtag('config', measurementId, { anonymize_ip: true });
+  // PRIVACY: GA4's default page_location is document.location.href, which on
+  // this app's calculator/result pages includes a URL HASH encoding the
+  // user's FIRE scenario (income, net worth, savings rate, expenses — see
+  // src/lib/engine/url-state.ts KEY_MAP). The hash is never sent to any
+  // server by the browser on its own, but GA4 reads it via JS and WOULD embed
+  // it in page_location/page_referrer unless explicitly stripped. We pass a
+  // hash-stripped page_location so no calculator input values are ever sent
+  // to Google Analytics.
+  window.gtag('config', measurementId, {
+    anonymize_ip: true,
+    page_location: window.location.href.split('#')[0],
+  });
 }
 
 /** Grant analytics + ads consent and init GA. */

@@ -1,3 +1,5 @@
+// DRAFT — REQUIRES REVIEW BY A LICENSED US ATTORNEY BEFORE RELIANCE
+
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -28,7 +30,7 @@ export default function PrivacyPage() {
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Privacy Policy</h1>
         <p className="text-sm text-muted-foreground">
-          Effective date: June 28, 2026 &mdash; Last updated: June 28, 2026
+          Effective date: June 28, 2026 &mdash; Last updated: July 2, 2026
         </p>
       </div>
 
@@ -106,8 +108,12 @@ export default function PrivacyPage() {
 
           <h3>2f. Locally Computed Data</h3>
           <p>
-            All FIRE calculations you perform without saving are computed entirely in your
-            browser. We do not transmit your unsaved calculation inputs to our servers.
+            Calculator inputs are processed in your browser and are not transmitted to or
+            stored on our servers unless you explicitly choose to save a calculation while
+            signed in (see Section&nbsp;2b). All FIRE calculations you perform without saving
+            are computed entirely in your browser using JavaScript running on your device —
+            no network request carries your slider values, and no analytics event includes
+            your calculator inputs.
           </p>
         </section>
 

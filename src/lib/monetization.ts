@@ -48,8 +48,12 @@ export interface MonetizationConfig {
   // Sponsor slot
   sponsorHtml: string | null;
   sponsorBackfillUrl: string | null;
-  // Email capture
+  // Email capture — CAN-SPAM requires a physical postal address to be
+  // displayed alongside any commercial email-collection form. Enabled ONLY
+  // when BOTH NEXT_PUBLIC_EMAIL_CAPTURE=on AND NEXT_PUBLIC_POSTAL_ADDRESS are
+  // set; postalAddress is null whenever the address env var is absent.
   emailCaptureEnabled: boolean;
+  postalAddress: string | null;
 }
 
 // ─── Featured-partner JSON parsing ───────────────────────────────────────────
@@ -155,8 +159,14 @@ export function buildMonetizationConfig(): MonetizationConfig {
   const sponsorHtml = process.env.NEXT_PUBLIC_SPONSOR_HTML?.trim() || null;
   const sponsorBackfillUrl = process.env.NEXT_PUBLIC_SPONSOR_BACKFILL_URL?.trim() || null;
 
+  const postalAddress = process.env.NEXT_PUBLIC_POSTAL_ADDRESS?.trim() || null;
+
+  // CAN-SPAM requires a physical postal address on commercial email-capture
+  // forms. Gate email capture on BOTH the existing feature flag AND a postal
+  // address being configured — never show the form without one.
   const emailCaptureEnabled =
-    process.env.NEXT_PUBLIC_EMAIL_CAPTURE?.trim().toLowerCase() === 'on';
+    process.env.NEXT_PUBLIC_EMAIL_CAPTURE?.trim().toLowerCase() === 'on' &&
+    postalAddress !== null;
 
   return {
     adProvider,
@@ -173,6 +183,7 @@ export function buildMonetizationConfig(): MonetizationConfig {
     sponsorHtml,
     sponsorBackfillUrl,
     emailCaptureEnabled,
+    postalAddress,
   };
 }
 

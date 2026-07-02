@@ -226,6 +226,7 @@ describe('buildMonetizationConfig — all env unset', () => {
       'NEXT_PUBLIC_SPONSOR_HTML',
       'NEXT_PUBLIC_SPONSOR_BACKFILL_URL',
       'NEXT_PUBLIC_EMAIL_CAPTURE',
+      'NEXT_PUBLIC_POSTAL_ADDRESS',
     ];
     for (const k of keys) delete process.env[k];
   });
@@ -299,6 +300,11 @@ describe('buildMonetizationConfig — all env unset', () => {
     const cfg = buildMonetizationConfig();
     expect(cfg.emailCaptureEnabled).toBe(false);
   });
+
+  it('postalAddress is null when unset', () => {
+    const cfg = buildMonetizationConfig();
+    expect(cfg.postalAddress).toBeNull();
+  });
 });
 
 // ─── buildMonetizationConfig — with env set ───────────────────────────────────
@@ -325,17 +331,38 @@ describe('buildMonetizationConfig — with env vars set', () => {
     });
   });
 
-  it('emailCaptureEnabled true when set to "on"', () => {
-    withEnv({ NEXT_PUBLIC_EMAIL_CAPTURE: 'on' }, () => {
+  it('emailCaptureEnabled false when set to "on" but postal address unset (CAN-SPAM gate)', () => {
+    withEnv({ NEXT_PUBLIC_EMAIL_CAPTURE: 'on', NEXT_PUBLIC_POSTAL_ADDRESS: undefined }, () => {
       const cfg = buildMonetizationConfig();
-      expect(cfg.emailCaptureEnabled).toBe(true);
+      expect(cfg.emailCaptureEnabled).toBe(false);
     });
   });
 
-  it('emailCaptureEnabled false when set to "off"', () => {
-    withEnv({ NEXT_PUBLIC_EMAIL_CAPTURE: 'off' }, () => {
+  it('emailCaptureEnabled true when set to "on" AND postal address is set', () => {
+    withEnv(
+      { NEXT_PUBLIC_EMAIL_CAPTURE: 'on', NEXT_PUBLIC_POSTAL_ADDRESS: '123 Main St, Wilmington, DE 19801' },
+      () => {
+        const cfg = buildMonetizationConfig();
+        expect(cfg.emailCaptureEnabled).toBe(true);
+        expect(cfg.postalAddress).toBe('123 Main St, Wilmington, DE 19801');
+      }
+    );
+  });
+
+  it('emailCaptureEnabled false when set to "off" even with postal address set', () => {
+    withEnv(
+      { NEXT_PUBLIC_EMAIL_CAPTURE: 'off', NEXT_PUBLIC_POSTAL_ADDRESS: '123 Main St, Wilmington, DE 19801' },
+      () => {
+        const cfg = buildMonetizationConfig();
+        expect(cfg.emailCaptureEnabled).toBe(false);
+      }
+    );
+  });
+
+  it('postalAddress is null when blank/whitespace', () => {
+    withEnv({ NEXT_PUBLIC_POSTAL_ADDRESS: '   ' }, () => {
       const cfg = buildMonetizationConfig();
-      expect(cfg.emailCaptureEnabled).toBe(false);
+      expect(cfg.postalAddress).toBeNull();
     });
   });
 
