@@ -5,6 +5,11 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 
+export interface FaqItem {
+  q: string;
+  a: string;
+}
+
 const FAQ_ITEMS = [
   {
     q: 'What is FIRE (Financial Independence, Retire Early)?',
@@ -32,15 +37,33 @@ const FAQ_ITEMS = [
   },
 ] as const;
 
-export function FAQSection() {
+interface FAQSectionProps {
+  /**
+   * Page-specific Q&A pairs (부속M K01 — entity-level FAQ content per
+   * calculator page). Defaults to the site-wide FIRE FAQ (home page,
+   * unchanged behavior) when omitted, so every existing call site keeps
+   * rendering exactly what it did before this prop was added.
+   */
+  items?: readonly FaqItem[];
+  /** Override the section heading (default: "Frequently Asked Questions"). */
+  title?: string;
+  /** Distinguishes multiple FAQ sections' accordion `value` keys on one page. */
+  idPrefix?: string;
+  className?: string;
+}
+
+export function FAQSection({
+  items = FAQ_ITEMS,
+  title = 'Frequently Asked Questions',
+  idPrefix = 'faq',
+  className,
+}: FAQSectionProps = {}) {
   return (
-    <section className="mx-auto max-w-3xl px-4 py-12">
-      <h2 className="text-3xl font-bold text-center mb-6">
-        Frequently Asked Questions
-      </h2>
+    <section className={className ?? 'mx-auto max-w-3xl px-4 py-12'}>
+      <h2 className="text-3xl font-bold text-center mb-6">{title}</h2>
       <Accordion className="w-full">
-        {FAQ_ITEMS.map((item, i) => (
-          <AccordionItem key={i} value={`faq-${i}`}>
+        {items.map((item, i) => (
+          <AccordionItem key={i} value={`${idPrefix}-${i}`}>
             <AccordionTrigger className="text-left text-base font-medium">
               {item.q}
             </AccordionTrigger>
@@ -54,12 +77,14 @@ export function FAQSection() {
   );
 }
 
-// JSON-LD for FAQPage structured data
-export function faqJsonLd() {
+// JSON-LD for FAQPage structured data. Accepts the same optional `items` so a
+// page rendering a custom FAQSection can emit matching structured data;
+// defaults to the site-wide FAQ_ITEMS (home page, unchanged behavior).
+export function faqJsonLd(items: readonly FaqItem[] = FAQ_ITEMS) {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: FAQ_ITEMS.map((item) => ({
+    mainEntity: items.map((item) => ({
       '@type': 'Question',
       name: item.q,
       acceptedAnswer: {

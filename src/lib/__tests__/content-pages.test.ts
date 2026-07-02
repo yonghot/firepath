@@ -111,3 +111,25 @@ describe('content-pages — T06 getRelatedContentPages()', () => {
     expect(links.length).toBeLessThanOrEqual(3);
   });
 });
+
+describe('content-pages — 부속M K02 indexable-page-depth audit', () => {
+  // sitemap.ts's utility-page allowlist (/premium, /contact, /embed-this) —
+  // real, hand-authored, non-templated pages that sit outside the
+  // hasUniqueData-gated content registry (see that file's header comment).
+  // Kept here as a literal, not an import, so this test independently
+  // verifies the count sitemap.ts's own console.log reports rather than
+  // trivially re-deriving it from the same source.
+  const SITEMAP_UTILITY_PAGE_COUNT = 3;
+
+  it('deduped canonical-path count from getIndexablePages() + utility pages is >= 15 (부속M K02 acceptance: indexable-count >= 15/site)', () => {
+    const uniqueCanonicalPaths = new Set(getIndexablePages().map((p) => p.canonicalPath));
+    const totalIndexable = uniqueCanonicalPaths.size + SITEMAP_UTILITY_PAGE_COUNT;
+    expect(totalIndexable).toBeGreaterThanOrEqual(15);
+  });
+
+  it('every indexable page is hasUniqueData:true (never a flag-forced/bypassed thin page — 부속M K02 anti-pattern guard)', () => {
+    for (const page of getIndexablePages()) {
+      expect(page.hasUniqueData).toBe(true);
+    }
+  });
+});

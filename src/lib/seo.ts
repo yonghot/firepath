@@ -30,8 +30,13 @@ export interface BuildMetaOptions {
   path: string;
   /** 'website' for tools/hubs, 'article' for guide/methodology-style content. Defaults to 'website'. */
   ogType?: 'website' | 'article';
-  /** Explicit robots override — defaults to index:true, follow:true. Use for T09 thin-page gating. */
-  robots?: Metadata['robots'];
+  /**
+   * Explicit robots override — defaults to index:true, follow:true. Use for
+   * T09 thin-page gating. Object form only (never the raw-string robots
+   * shape Next.js's Metadata['robots'] also permits) so buildMeta can safely
+   * merge in the K09 max-image-preview:large directive below.
+   */
+  robots?: { index?: boolean; follow?: boolean; [key: string]: unknown };
 }
 
 /**
@@ -56,11 +61,20 @@ export function buildMeta({ title, description, path, ogType = 'website', robots
   const canonicalPath = path.startsWith('/') ? path : `/${path}`;
   const absoluteUrl = `${SITE_URL}${canonicalPath}`;
 
+  // 부속M K09 — every page (indexed or not) carries max-image-preview:large
+  // so Google Discover/Images can surface a full-size preview of the page's
+  // OG image rather than defaulting to a small thumbnail. This is merged
+  // into whatever robots directive the caller passes (including T09's
+  // index:false thin-page gate) rather than only applied on the default —
+  // noindex pages still benefit from the directive if Google ever surfaces
+  // a cached/Discover preview of them independent of the index rule.
+  const resolvedRobots = { ...(robots ?? { index: true, follow: true }), 'max-image-preview': 'large' as const };
+
   return {
     title,
     description,
     alternates: { canonical: canonicalPath },
-    robots: robots ?? { index: true, follow: true },
+    robots: resolvedRobots,
     openGraph: {
       title,
       description,

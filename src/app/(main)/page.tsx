@@ -6,6 +6,7 @@ import { RelatedCalculators } from '@/components/common/related-calculators';
 import { calculatorAppJsonLd, personJsonLd, breadcrumbJsonLd } from '@/components/common/json-ld';
 import { ResultMonetization } from '@/components/monetization/ResultMonetization';
 import { EmailMyResultsGate } from '@/components/features/calculator/email-my-results-gate';
+import { HowItWorksFire } from '@/components/common/how-it-works-fire';
 import { UpdatedBadge } from '@/components/common/updated-badge';
 import { RecentCalculations } from '@/components/common/recent-calculations';
 import { getPremiumStatus } from '@/lib/subscription/premium';
@@ -89,6 +90,11 @@ export default async function CalculatorPage() {
           <EmailMyResultsGate />
         </div>
       </div>
+
+      {/* 부속M K01 — on-page editorial depth (how-it-works + worked example),
+          server-rendered, placed below the calculator/monetization block so
+          LCP and the TermsGate overlay above are unaffected. */}
+      <HowItWorksFire />
 
       <FAQSection />
 

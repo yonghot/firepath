@@ -9,7 +9,8 @@ export const metadata: Metadata = {
   description:
     'FIREPath Terms of Service — rules governing use of our FIRE planning calculator, premium subscriptions, intellectual property, and limitations of liability.',
   alternates: { canonical: '/terms' },
-  robots: { index: true, follow: true },
+  // 부속M K09 — Discover/Images full-size image preview eligibility.
+  robots: { index: true, follow: true, 'max-image-preview': 'large' },
 };
 
 /**

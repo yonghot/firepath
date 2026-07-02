@@ -45,7 +45,6 @@ export async function GET(request: NextRequest) {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
-          <span style={{ fontSize: '40px' }}>🔥</span>
           <span style={{ fontSize: '36px', fontWeight: 'bold' }}>FIREPath</span>
         </div>
 
@@ -81,7 +80,7 @@ export async function GET(request: NextRequest) {
         </div>
 
         <div style={{ fontSize: '14px', opacity: 0.5, marginTop: '24px', textAlign: 'center' }}>
-          firepath.app — All FIRE types in one beautiful calculator
+          gofirepath.com — All FIRE types in one beautiful calculator
         </div>
       </div>
     ),

@@ -50,6 +50,8 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    // 부속M K09 — Discover/Images full-size image preview eligibility.
+    'max-image-preview': 'large',
   },
   ..._adsenseId && { other: { 'google-adsense-account': _adsenseId } },
 };

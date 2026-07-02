@@ -6,6 +6,7 @@ import { AuthorByline } from "@/components/common/author-byline";
 import { DisclaimerBanner } from "@/components/common/disclaimer-banner";
 import { AdvisorCta } from "@/components/common/advisor-cta";
 import { SourcesReferences, type SourceItem } from "@/components/common/sources-references";
+import { FAQSection, faqJsonLd, type FaqItem } from "@/components/common/faq-section";
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import { calculateFIRE } from "@/lib/engine/fire-calculator";
 import { DEFAULT_INPUT, FIRE_MULTIPLIERS } from "@/constants/fire-defaults";
@@ -70,6 +71,40 @@ const SOURCES: SourceItem[] = [
     label: "Wikipedia — Fisher Equation",
     url: "https://en.wikipedia.org/wiki/Fisher_equation",
     note: "Real-return formula: (1 + nominal) / (1 + inflation) − 1.",
+  },
+];
+
+/**
+ * Entity-level FAQ (부속M K01) — one dedicated question per FIRE type plus
+ * one comparison question, each answer citing the REAL computed figure from
+ * defaultResults (calculateFIRE(DEFAULT_INPUT)) above. Never a noun-swapped
+ * template: every answer states that type's own multiplier and dollar
+ * target, derived from the SAME engine output the cards on this page show.
+ */
+const FIRE_TYPES_FAQ: FaqItem[] = [
+  {
+    q: "How much do I need for Lean FIRE?",
+    a: `Lean FIRE targets ${FIRE_MULTIPLIERS.lean * 100}% of your annual expenses divided by your SWR. At the default $${annualExpenses.toLocaleString()}/yr expenses and ${(safeWithdrawalRate * 100).toFixed(0)}% SWR, that works out to ${fmt(defaultResults.lean.targetAmount)}. It's the smallest of the five targets because it assumes you cut spending to essentials in retirement.`,
+  },
+  {
+    q: "What's the difference between Regular FIRE and Fat FIRE?",
+    a: `Regular FIRE covers 100% of your current expenses (${fmt(defaultResults.regular.targetAmount)} at the defaults); Fat FIRE covers 150% (${fmt(defaultResults.fat.targetAmount)}) for a larger cushion or higher discretionary spending. Fat FIRE's target is exactly 1.5× Regular FIRE's — same formula, different multiplier.`,
+  },
+  {
+    q: "How is the Coast FIRE number different from the others?",
+    a: `Coast FIRE isn't a percentage of expenses — it's the amount that, left untouched, compounds at your real (inflation-adjusted) return to reach the full Regular FIRE target by your retirement age. At the defaults (retire at ${retirementAge}), that seed amount is ${fmt(defaultResults.coast.targetAmount)}, discounted back from the ${fmt(defaultResults.regular.targetAmount)} Regular FIRE target.`,
+  },
+  {
+    q: "Does Barista FIRE mean I have to work at a coffee shop?",
+    a: `No — "Barista FIRE" is just the popular nickname for the strategy, borrowed from baristas who often get employer health benefits even part-time. It means your portfolio covers ${FIRE_MULTIPLIERS.barista * 100}% of expenses (${fmt(defaultResults.barista.targetAmount)} at the defaults) while any part-time job covers the rest — the job can be anything.`,
+  },
+  {
+    q: "Which FIRE type should I aim for?",
+    a: "There's no universally \"right\" type — it depends on how much you want to cut spending (Lean), keep your lifestyle unchanged (Regular), add a safety buffer (Fat), stop contributing early while still working (Coast), or ease into part-time work (Barista). Try each on the calculator with your own numbers and compare the reach ages side by side.",
+  },
+  {
+    q: "Are these FIRE target formulas fixed, or can I adjust them?",
+    a: "The 4% SWR and expense multipliers are widely used defaults (see Sources below), but every input — expenses, SWR, expected return, inflation — is a slider you control. The FIRE type multipliers (0.6x/1.0x/1.5x/0.5x) are fixed definitions of each type, not adjustable, since changing them would make it a different FIRE type.",
   },
 ];
 
@@ -185,10 +220,15 @@ function FireTypeCard({
 
 export default function FireTypesPage() {
   const pageJson = safeJsonLd(pageJsonLd);
+  // safeJsonLd escapes </> characters — same developer-authored (not
+  // user-supplied) JSON-LD pattern already used for pageJson above and on
+  // every other page in this codebase (home, healthcare-bridge, guide).
+  const faqJson = safeJsonLd(faqJsonLd(FIRE_TYPES_FAQ));
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 space-y-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: pageJson }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: faqJson }} />
 
       <Breadcrumbs items={[{ name: "FIRE Types", path: "/fire-types" }]} />
 
@@ -427,6 +467,15 @@ export default function FireTypesPage() {
         </Link>
         .
       </p>
+
+      {/* 부속M K01 — entity-level FAQ, one question per FIRE type citing that
+          type's own computed target (see FIRE_TYPES_FAQ above). */}
+      <FAQSection
+        items={FIRE_TYPES_FAQ}
+        title="FIRE Types FAQ"
+        idPrefix="fire-types-faq"
+        className="pt-2"
+      />
 
       <DisclaimerBanner />
 

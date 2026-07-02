@@ -20,7 +20,7 @@ export const VERTICAL_DEFAULT_CTA_TYPE = 'cpl' as const;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type AdProvider = 'adsense' | 'ezoic' | 'raptive' | 'none';
+export type AdProvider = 'adsense' | 'ezoic' | 'raptive' | 'journey' | 'none';
 export type PrimaryCTAType = 'call' | 'cpl' | 'affiliate' | 'none';
 
 export interface FeaturedPartner {
@@ -35,6 +35,8 @@ export interface MonetizationConfig {
   adsenseClientId: string | null;
   ezoicEnabled: boolean;
   raptiveSiteId: string | null;
+  /** Journey by Mediavine site id (부속M K10 — dormant until the 1,000-session/mo threshold; 부속M §6). */
+  journeySiteId: string | null;
   // ads.txt redirect
   adsTxtRedirectUrl: string | null;
   // Primary CTA
@@ -103,7 +105,7 @@ export function parseFeaturedPartners(raw: string | undefined): FeaturedPartner[
 export function resolveAdProvider(raw: string | undefined): AdProvider {
   if (!raw || !raw.trim()) return 'adsense';
   const v = raw.trim().toLowerCase();
-  if (v === 'adsense' || v === 'ezoic' || v === 'raptive' || v === 'none') {
+  if (v === 'adsense' || v === 'ezoic' || v === 'raptive' || v === 'journey' || v === 'none') {
     return v;
   }
   return 'none';
@@ -145,6 +147,8 @@ export function buildMonetizationConfig(): MonetizationConfig {
 
   const raptiveSiteId = process.env.NEXT_PUBLIC_RAPTIVE_SITE_ID?.trim() || null;
 
+  const journeySiteId = process.env.NEXT_PUBLIC_JOURNEY_SITE_ID?.trim() || null;
+
   const adsTxtRedirectUrl = process.env.NEXT_PUBLIC_ADSTXT_REDIRECT_URL?.trim() || null;
 
   const primaryCtaType = resolvePrimaryCtaType(process.env.NEXT_PUBLIC_PRIMARY_CTA_TYPE);
@@ -173,6 +177,7 @@ export function buildMonetizationConfig(): MonetizationConfig {
     adsenseClientId,
     ezoicEnabled,
     raptiveSiteId,
+    journeySiteId,
     adsTxtRedirectUrl,
     primaryCtaType,
     ppcNumber,

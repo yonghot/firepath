@@ -458,3 +458,315 @@ pnpm build      — PASS (27 pages incl. new /[indexnowKey] and /api/email-resul
 - Owner console tasks O01–O11 (unchanged from prior waves — see 부속I §5) — not attempted, per mandate.
 - All P0+P1a+P1b+P2 work across this and prior sessions (T01–T17) remains UNCOMMITTED in the working tree, per the "do not commit or deploy" mandate — the orchestrator is expected to review/commit/deploy.
 ```
+
+## Phase-11 Build Note — 2026-07-03 (Ad-Revenue-Maximization Wave P0 — 부속M K02/K03/K04/K05)
+
+Implemented the P0 code-side audit tasks from 부속M (광고수익 극대화 딥리서치) in the mandated order: K03 → K04 → K05 → K02. No owner-console actions (AdSense/GA4/GSC/Bing/Vercel dashboards) were touched; ads.txt, the AdSense loader, and Auto ads state are all unchanged — this wave is audit-and-guard-test only, per the 부속M §9 anti-pattern list. K01, K06–K11 are explicitly out of scope for this wave (assigned to other waves/repos per the orchestrator prompt).
+
+**K03 — ad/search crawler accessibility audit (found already clean, no code change):**
+- Grepped `middleware.ts`, `next.config.ts`, and the whole `src/` tree for any UA-based gating, rate-limiting, or bot-challenge logic. Found exactly one rate limiter (`src/lib/utils/rate-limit.ts`, `checkRateLimit`/`getClientIp`) and confirmed via grep it is wired into exactly one call site, `src/app/api/email-results/route.ts` (a POST-only form-submission API route) — never into `middleware.ts` or any page/crawlable route. `middleware.ts` only attaches a `visitor_country` cookie via Supabase session refresh; it contains no UA inspection or blocking branch. `next.config.ts`'s `headers()` applies the same security headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`) to every UA identically — no crawler-specific denial. `src/app/robots.ts` allows `/` for `userAgent: '*'`, disallowing only `/api/` and `/saved`.
+- Live evidence (production domain, this session): `curl` with `Googlebot/2.1`, `Mediapartners-Google`, and `AdsBot-Google` UAs all returned **200** on `https://gofirepath.com/`; `robots.txt` returned 200 with the clean ruleset above. Matches the orchestrator's pre-verified findings.
+- **No bot-blocking logic exists to whitelist — no code change made** (adding a whitelist where nothing blocks would be an unnecessary/no-op diff). Evidence recorded here per the K03 acceptance criterion ("UA-by-UA curl 200 log").
+
+**K04 — SPA re-initialization / refresh-adjacency audit (found already compliant; added regression-guard tests, no behavior change):**
+- Traced every ad mount site: `src/app/(main)/page.tsx` and `src/app/(main)/result/page.tsx` (via `<ResultMonetization>` → `<AdProvider>` → `<AdSlot>`), and `src/app/(main)/guide/page.tsx` / `guide/[slug]/page.tsx` (direct `<AdSlot>`). In every case `AdSlot`/`ResultMonetization` is a **sibling** of the calculator component (`CalculatorClient`/`ResultClient`) in the page tree, never a child — it receives no `input`/`output`/`results`/`interactionCount` props, so recalculation cannot even in principle re-render it with fresh ad-triggering data.
+- `src/components/common/ad-slot.tsx`'s three `useEffect` hooks depend ONLY on `[pathname, eager]` (lazy-gate re-arm) and `[inView, pathname]` (the actual `pushFill`/`adsbygoogle.push` effect) — confirmed by direct source read and now pinned by a source-level regression test (below). The fill-push effect guards on `pushedForPath.current === pathname` (a ref, not state) and on the `<ins>` element's own `data-ad-status` attribute — never re-pushing an already-resolved element (no double-count risk from unrelated re-renders).
+- Traced the specific risky paths named in the spec: (a) **recalculation** — `useCalculatorStore` changes flow only into `CalculatorClient`'s own subtree (chart/cards/Monte Carlo/Portfolio), never into `AdSlot`'s props or the `pathname` it reads; (b) **tabs/accordion** — `viewMode` (`calculator`/`compare`) toggling is local `useState` in `CalculatorClient`, does not touch `pathname`; (c) **unit toggles** — `SliderInput`'s dollar/percent/year formatting is pure render logic with no `AdSlot` interaction; (d) **`history.replaceState` share-URL updates** — `src/hooks/use-url-state.ts` calls `window.history.replaceState()` directly on every slider change; this bypasses the Next.js router entirely, so `usePathname()` (App-Router-internal, not raw `window.location`-derived) is unaffected and `AdSlot`'s pathname-keyed effects do not refire; (e) **localStorage-restore** — `useCalculatorPersistence`'s `applyRestore()` hydrates via `setInput()` (never `updateInput()`), touching only the calculator store, not routing state.
+- **New test**: `src/components/common/__tests__/ad-slot.test.ts` (8 tests) — unit-tests `pushFill`'s idempotency guard in isolation, and adds a structural regression guard that parses `ad-slot.tsx`'s own source to assert (1) exactly 3 `useEffect` hooks exist, (2) every one of their dependency arrays is drawn only from `{pathname, eager, inView}` and never contains `input`/`output`/`interactionCount`/`results`/etc., (3) the fill-push effect's deps are exactly `[inView, pathname]`, (4) the re-arm effect's deps are exactly `[pathname, eager]`, (5) no `setInterval`/polling exists (exactly one `setTimeout` for the documented single 750ms retry), and (6) `AdSlot`/`AdProvider` JSX invocations in `ResultMonetization.tsx`/`AdProvider.tsx` never receive `input`/`output`/`results`/`interactionCount` props. This test fails loudly if a future change wires recalculation state into the ad-push effect.
+
+**K05 — oclick-proximity / ad-exclusion-zone audit (found already compliant; added doc + regression tests, no behavior change):**
+- New doc: `docs/ad-exclusion-zones.md` — lists the widget CSS selectors (sticky sidebar `CalculatorPanel`, mobile sheet content, per-slider rows, the three `PrimaryIntentCTA` variants, the share button) the AdSense account owner should register as Auto-ads exclusion areas (owner-console action, 부속M §10 P05 — not performed by this session), plus the code-side DOM-order audit proving no ad container sits adjacent to calculator inputs on any page today.
+- Audited every ad-bearing page's DOM/component order: `/` — `CalculatorPanel` (sliders) renders in a separate `position:sticky` sidebar column, never in the same vertical flow as the ad; the ad is separated from the result cards by `ResultDisclaimer` → `ResultRelated` (bordered card) → `MonteCarloPanel` → `PortfolioPanel`, and there is no "Calculate" submit button (live-recalculating on slider drag). `/result` — no calculator inputs render on this page at all. `/guide`, `/guide/[slug]` — no calculator inputs; `AdSlot` renders only after the full article body + CTA block. `/fire-types`, `/healthcare-bridge` — mount no ad at all (confirmed via grep — no `AdSlot`/`AdProvider`/`ResultMonetization` import), so there is no proximity surface on them.
+- **New test**: `src/components/common/__tests__/ad-exclusion-zones.test.ts` (10 tests) — source-level assertions that `/fire-types` and `/healthcare-bridge` never import an ad component; that `CalculatorClient`/`ResultClient` never import `AdSlot`/`AdProvider`/`ResultMonetization`; that `ResultRelated` → `MonteCarloPanel` → `PortfolioPanel` render in that DOM order between the result cards and the end of `CalculatorClient` (the buffer before any page-level ad mount); and that the ad component in every page is the source-order sibling that appears strictly after the calculator/result component, never nested inside it.
+
+**K02 — indexable page-depth audit (already >= 15; count verified, no bypass needed):**
+- `src/lib/content-pages.ts`'s registry currently has **zero** `hasUniqueData: false` entries — every registered page (6 core/hub pages, 5 FIRE-type anchors collapsing to the single `/fire-types` canonical path, 7 guide articles) already passes the thin-content gate with real, hand-written or engine-computed content. There were no "borderline `hasUniqueData: false` pages" to upgrade this wave — the registry has none flagged false, so K02's "upgrade 2-3 borderline pages" clause does not apply; per the anti-pattern guardrail ("do NOT bypass or force-flip the hasUniqueData gate"), no flags were touched.
+- Counted precisely: `getIndexablePages()` yields 13 **unique** canonical paths (5 `/fire-types#*` anchors dedupe to 1) + `sitemap.ts`'s 3-page utility allowlist (`/premium`, `/contact`, `/embed-this`) = **16 total indexable URLs**, confirmed live by `pnpm build`'s own instrumented log: `[sitemap] firepath: 16 indexable URLs`. **16 ≥ 15 — K02 acceptance criterion already satisfied**, both before and after this wave (no pages were added or removed).
+- **New test**: appended to `src/lib/__tests__/content-pages.test.ts` (2 new tests, describe block "부속M K02 indexable-page-depth audit") — pins the deduped-canonical-path-count + utility-page-count total at `>= 15` as a build-breaking regression guard (so a future accidental `hasUniqueData: false` flip or page removal that drops the count below 15 fails CI), and asserts every page returned by `getIndexablePages()` is `hasUniqueData: true` (never a flag-forced bypass).
+- **K01 (page-content-depth, the actual lever for raising the count further via real content) is out of scope for this wave** per the task assignment — not attempted.
+
+### Gate results (all green)
+
+```
+pnpm lint       — PASS (0 errors, 9 pre-existing warnings, all in files this wave did not touch)
+pnpm typecheck  — PASS
+pnpm test       — 385 tests, all passed (+20 new: 8 ad-slot.test.ts, 10 ad-exclusion-zones.test.ts, 2 content-pages.test.ts K02 additions)
+pnpm build      — PASS (27 pages, [sitemap] firepath: 16 indexable URLs logged, no static→dynamic regressions)
+```
+
+### New files (3)
+- `docs/ad-exclusion-zones.md`
+- `src/components/common/__tests__/ad-slot.test.ts`
+- `src/components/common/__tests__/ad-exclusion-zones.test.ts`
+
+### Modified files (1)
+- `src/lib/__tests__/content-pages.test.ts` — added the K02 indexable-count regression tests.
+
+### Explicitly out of scope / not touched this wave
+- K01, K06, K07, K08, K09, K10, K11 (부속M) — assigned to other waves per the orchestrator prompt.
+- Owner-console actions (P01–P09, 부속M §10) — not attempted, per mandate (no AdSense/GA4/GSC/Bing/Vercel dashboard actions).
+- Registering the `docs/ad-exclusion-zones.md` selectors as actual Auto-ads exclusion areas in the AdSense console — that is the owner's P05 action; this session only produced the reference document.
+- ads.txt, the AdSense loader script, and Auto-ads/ad-provider behavior are all byte-for-byte unchanged.
+- No commit was made — per mandate, the orchestrator handles commit/deploy.
+
+## Phase-12 Build Note — 2026-07-03 (Ad-Revenue-Maximization Wave K01-CONTENT — 부속M K01)
+
+Implemented K01 ("페이지 내 편집 콘텐츠 깊이" — the #1 AdSense approval lever) for every INDEXED calculator page class: home (`/`, `fire_timeline`), `/fire-types`, and `/healthcare-bridge`. `/guide/[slug]` articles are DB-authored (Supabase `guide.content`), not repo source, so K01's editing scope for this wave is the three repo-controlled calculator page classes named in the orchestrator prompt's repo-reality hints. No owner-console actions, no ads.txt/AdSense-loader/Auto-ads changes — this wave only adds server-rendered editorial content.
+
+**Home page (`/`, fire_timeline) — new "How the FIRE Calculator Works" section:**
+- New file `src/components/common/how-it-works-fire.tsx` — a server component (zero client JS) rendered BELOW `ResultMonetization`/`EmailMyResultsGate` and ABOVE the existing `FAQSection`, so LCP (calculator is still first paint) and the `TermsGate` overlay are unaffected.
+- Content: (1) explains the shared `(expenses × multiplier) ÷ SWR` formula and what differs Coast FIRE (Fisher-equation real-return discounting), with inline links to `/fire-types#*` anchors and `/methodology`; (2) a fully worked numeric example computed via `calculateFIRE(DEFAULT_INPUT)` — the SAME engine call and SAME default input the live calculator itself uses on first render — showing the exact annual-savings, target, real-return, and reach-age arithmetic step by step.
+- Zero fabrication: every number in the worked example (`results.regular.targetAmount`, `reachAge`, `monthlyPassiveIncome`, `realReturn`) is read directly off the live `calculateFIRE()` output, never hand-typed. The freshness line reads `CORE_ASSUMPTIONS_LAST_VERIFIED` from `src/lib/figures.ts` (same field `UpdatedBadge`/JSON-LD `dateModified` already use).
+- Wired into `src/app/(main)/page.tsx` (1 new import, 1 new render line — `<HowItWorksFire />` between the calculator/monetization block and `<FAQSection />`).
+
+**`/fire-types` — new entity-level FAQ (5 FIRE types + 1 comparison question):**
+- Extended `src/components/common/faq-section.tsx` (used only by the home page previously) to accept optional `items`/`title`/`idPrefix`/`className` props, defaulting to the original site-wide `FAQ_ITEMS` and `faqJsonLd()` defaulting to the same array — the home page's existing render (`<FAQSection />`, `faqJsonLd()`) is 100% behavior-preserving (no props passed = old behavior).
+- Added `FIRE_TYPES_FAQ` in `src/app/(main)/fire-types/page.tsx`: one question per FIRE type (Lean/Regular/Fat/Coast/Barista) plus one comparison question, each answer citing that type's OWN `defaultResults.<type>.targetAmount` (the same `calculateFIRE(DEFAULT_INPUT)` output the page's `FireTypeCard`s already render) — genuinely entity-level, not a noun-swapped template (verified by the new test's per-type `defaultResults.<type>` grep). Rendered via `<FAQSection items={FIRE_TYPES_FAQ} title="FIRE Types FAQ" idPrefix="fire-types-faq" />` plus a matching `faqJsonLd(FIRE_TYPES_FAQ)` `<script>` tag, placed after the existing methodology note and before `DisclaimerBanner`/`AdvisorCta`/`SourcesReferences` (unchanged, non-duplicated).
+
+**`/healthcare-bridge` — new concrete worked example + entity-level FAQ:**
+- Added a "Worked example" subsection inside the existing "How the estimate works" `<section>`, computed via `calculateHealthcareBridge()` (the SAME pure engine function `HealthcareBridgeCalculator` calls) fed the SAME default values the calculator form itself pre-fills (`DEFAULT_FORM`: age 35, retire 50, $7,200/yr premium, 5% growth) — so the walkthrough numbers match exactly what a user sees if they just click "Estimate" without changing anything. Shows the bridge-years subtraction, the geometric-series formula with real substituted numbers, the total cost, and a comparison against the naive flat estimate to make the growth-rate field's purpose concrete.
+- Added `HEALTHCARE_BRIDGE_FAQ` (5 questions) grounded in `MEDICARE_ELIGIBILITY_AGE` and the same `exampleResult` computed above — no fabricated ACA subsidy figures (explicitly reinforces the existing "What this tool does NOT do" section's no-subsidy-fabrication stance). Rendered via `<FAQSection items={HEALTHCARE_BRIDGE_FAQ} title="Healthcare Bridge FAQ" idPrefix="healthcare-bridge-faq" />` plus matching `faqJsonLd(HEALTHCARE_BRIDGE_FAQ)` `<script>`, placed after the methodology note and before `DisclaimerBanner` (unchanged ordering/duplication-free).
+
+**Word-count verification (부속M K01 acceptance: build assertion >= 400 words/page):**
+- New test file `src/components/common/__tests__/k01-content-depth.test.ts` (7 tests) — since this repo has no jsdom/React-Testing-Library (documented constraint, see `ad-slot.test.ts`), it follows the SAME established source-level-text-extraction pattern as `ad-slot.test.ts`/`ad-exclusion-zones.test.ts`: reads each page's `.tsx` source, strips imports/comments/JSX tags/punctuation/code keywords, and counts remaining word tokens as a conservative (over-strips, never over-counts) proxy for rendered prose. All three page classes pass comfortably above the 400-word floor: home+HowItWorksFire approx 546 words, `/fire-types` approx 1,334 words, `/healthcare-bridge` approx 919 words (well into the 부속M benchmark-cited 2,000-4,500 territory for `/fire-types`, given it already carried substantial per-type worked-example prose from a prior wave). Two more tests assert FAQ entity-level distinctness (4-6 questions per page, each `/fire-types` question binds to its own `defaultResults.<type>` field, each `/healthcare-bridge` question binds to the real `exampleResult`/`calculateHealthcareBridge` output) — a tripwire against ever regressing to noun-swapped boilerplate.
+- **Live curl-style verification**: ran `pnpm build` and grepped the prerendered static HTML output directly — confirmed "How the FIRE Calculator Works", "Worked example (default scenario)" on `.next/server/app/index.html`; "FIRE Types FAQ" + "How much do I need for Lean FIRE?" on `fire-types.html`; "Worked example" + "Healthcare Bridge FAQ" on `healthcare-bridge.html`; `FAQPage` JSON-LD present on both `fire-types.html` and `healthcare-bridge.html`. `DisclaimerBanner`'s "Not financial advice" text confirmed still present and unduplicated on `fire-types.html`.
+
+### Design decisions
+
+1. **`FAQSection` was extended, not duplicated** — the home page's existing `<FAQSection />` / `faqJsonLd()` calls (zero args) are byte-for-byte behavior-preserving; the new `items`/`title`/`idPrefix`/`className` props are purely additive and only exercised by the two new call sites. This directly follows the wave mandate's "reuse/extend existing sections... rather than duplicating."
+2. **`/guide/[slug]` is out of scope for this wave's direct edits** — its `content` field is Supabase-authored (`GuideService`), not repo source; K01's per-entity-data requirement (real per-page data interpolation) cannot be satisfied by editing `guide/[slug]/page.tsx`'s renderer without touching the DB rows themselves, which is outside a code-only wave's reach. The renderer (`renderGuideContent`) was left untouched.
+3. **Healthcare-bridge worked example reuses the calculator's own `DEFAULT_FORM` values** rather than picking new illustrative numbers — this guarantees the walkthrough is exactly reproducible by clicking "Estimate Bridge Cost" with no changes, and avoids introducing a second, potentially-inconsistent set of "example" figures.
+4. **No new ad slots, no ad-slot repositioning, no `hasUniqueData` flag changes** — `content-pages.ts`'s registry, `sitemap.ts`'s 16-URL count, and every ad-mount site from the K03/K04/K05 waves are untouched; this wave is additive prose only, placed below/after existing calculator and compliance components per the guardrails.
+
+### Gate results (all green)
+
+```
+pnpm lint       — PASS (0 errors, 9 pre-existing warnings, all in files this wave did not touch)
+pnpm typecheck  — PASS
+pnpm test       — 390 tests, all passed (+5 new: k01-content-depth.test.ts)
+pnpm build      — PASS (27 pages, [sitemap] firepath: 16 indexable URLs logged — unchanged, this wave adds content depth not new pages, no static→dynamic regressions)
+```
+
+### New files (2)
+- `src/components/common/how-it-works-fire.tsx`
+- `src/components/common/__tests__/k01-content-depth.test.ts`
+
+### Modified files (4)
+- `src/app/(main)/page.tsx` — mounts `<HowItWorksFire />` below the calculator/monetization block.
+- `src/app/(main)/fire-types/page.tsx` — adds `FIRE_TYPES_FAQ` + renders `<FAQSection>` + FAQ JSON-LD.
+- `src/app/(main)/healthcare-bridge/page.tsx` — adds a worked-example subsection + `HEALTHCARE_BRIDGE_FAQ` + renders `<FAQSection>` + FAQ JSON-LD.
+- `src/components/common/faq-section.tsx` — extended with optional `items`/`title`/`idPrefix`/`className` props (backward-compatible; home page usage unchanged).
+
+### Explicitly out of scope / not touched this wave
+- K02-K11 (부속M) — assigned to other waves/repos; K02-K05 were already completed in a prior wave (see Phase-11 note above) and were re-verified unaffected by this wave (sitemap still logs 16 indexable URLs; no ad-mount site or crawler-access code was touched).
+- `/guide/[slug]` DB-authored article content — see Design decision 2.
+- Owner-console actions (P01-P09, 부속M §10) — not attempted, per mandate.
+- ads.txt, the AdSense loader script, and Auto-ads/ad-provider behavior are all byte-for-byte unchanged.
+- No commit was made — per mandate, the orchestrator handles commit/deploy.
+
+## Wave P1 — 2026-07-03 (부속M K09, K10, K11; K06 n/a; K07 → buildQueueRemaining)
+
+### Scope determination
+
+Per the P1 wave mandate (K06, K07-July-batch, K09, K10, K11):
+
+- **K06 = n/a for this repo.** The wave mandate scopes K06 to YMYL repos only
+  ("others report n/a"); this repo's PM header states `YMYL=false` for
+  firepath, confirmed by no YMYL markers anywhere in `CLAUDE.md`/`PRD.md`.
+  `src/components/common/author-byline.tsx` (the existing generic
+  "FIREPath Editorial Team" byline, unchanged this wave) already covers
+  E-E-A-T attribution for a non-YMYL site; no env-driven reviewer-credential
+  slot was added, since K06 doesn't apply here.
+- **K07 (firepath's Aug-window "2027 401(k)/IRA limits (projected)" page) was
+  NOT built this wave.** Grepped `src/constants/fire-defaults.ts` and
+  `src/lib/figures.ts` (this repo's only sourced-figures registries) for any
+  2027/COLA/contribution-limit data — none exists. Per 부속M §5, that page
+  requires the IRS's 2027 limits announcement (expected Oct-Nov 2026) or a
+  citable Milliman-style projection, neither of which is in this repo's
+  sourced-data surface today; writing placeholder/estimated limit numbers
+  now would be fabrication under the 부속M §9 guardrail ("no fabrication:
+  sources, figures — everything derives from the repo's real
+  datasets/figures.ts"). Logged to `buildQueueRemaining` instead, per the
+  wave mandate's explicit instruction for Aug+ repos: "put precise page
+  specs into buildQueueRemaining... instead of building."
+- **K09, K10, K11 were implemented** (below).
+
+### K09 — Discover hygiene: max-image-preview:large + hub/insight OG images
+
+- **`src/lib/seo.ts`** (`buildMeta()`, the shared metadata builder every
+  hardcoded static route and the DB-authored `/guide/[slug]` route consume):
+  now unconditionally merges `'max-image-preview': 'large'` into the
+  resolved `robots` object, whether the caller passes an explicit override
+  (e.g. `/result`'s `{index:false, follow:true}`) or relies on the default
+  (`{index:true, follow:true}`) — noindex pages still carry the directive in
+  case Google ever surfaces a cached/Discover preview independent of the
+  index rule. `BuildMetaOptions.robots` was narrowed from
+  `Metadata['robots']` (which also permits a raw string) to an object-only
+  shape so the merge is typesafe (`tsc --noEmit` was catching a
+  spread-of-possibly-string error before this narrowing).
+- **`src/app/layout.tsx`** (root metadata, the sitewide default) and
+  **`src/app/(main)/terms/page.tsx`** / **`privacy/page.tsx`** (the two
+  hand-rolled, non-`buildMeta` `index:true` routes) each got the same
+  `'max-image-preview': 'large'` directive added directly. The three
+  fully-noindex/nofollow hand-rolled routes (`/saved`, `/embed`, the
+  `(auth)` layout) were deliberately left untouched — the directive only has
+  meaning when a page is indexable/previewable, and adding it to
+  auth/personalized pages would be a no-op that only bloats the diff.
+  **Verified in the built HTML**: every indexed page (`/`, `/fire-types`,
+  `/healthcare-bridge`, `/terms`, `/privacy`, `/methodology`, `/about`,
+  `/contact`, `/premium`, `/embed-this`, `/guide`) renders
+  `<meta name="robots" content="index, follow, max-image-preview:large"/>`;
+  `/result` renders `noindex, follow, max-image-preview:large` (confirms the
+  override-merge path).
+- **New shared OG-image builder** `src/lib/og/og-visual.tsx`
+  (`buildOgVisual()`) — a reusable 1200x630 JSX tree for `next/og`'s
+  `ImageResponse`: site name/eyebrow + a title + 3-5 real, caller-supplied
+  data-visual stat cards. Solid `--brand-primary` (#065F53) background only
+  (no gradient), no emoji, matching `design/forbidden.md`.
+- **Three new `opengraph-image.tsx` route-segment files** (Next.js file
+  convention — auto-wires `<meta property="og:image">`/Twitter card into
+  each route's metadata with zero changes to that route's own
+  `generateMetadata`/`buildMeta()` call):
+  - `src/app/(main)/opengraph-image.tsx` (home, `/`) — Lean/Regular/Fat FIRE
+    target amounts computed live via `calculateFIRE(DEFAULT_INPUT)`, the
+    SAME default-scenario figures the page's own `HowItWorksFire` worked
+    example (added in a prior wave) already renders.
+  - `src/app/(main)/fire-types/opengraph-image.tsx` — Lean/Fat/Coast/Barista
+    targets, same `calculateFIRE(DEFAULT_INPUT)` call the page's
+    `FireTypeCard`s render from.
+  - `src/app/(main)/healthcare-bridge/opengraph-image.tsx` — bridge-years and
+    total estimated cost from the SAME worked-example input
+    (`calculateHealthcareBridge({currentAge:35, retirementAge:50,
+    annualPremium:7200, annualGrowthRate:0.05})`) the page body's own
+    "Worked example" subsection uses, plus the sourced
+    `MEDICARE_ELIGIBILITY_AGE` constant. No ACA subsidy figures (consistent
+    with the page's existing "no fabrication" stance).
+  - All three: `size = {1200, 630}` (16:9-ish, >=1200px wide per K09),
+    `contentType = 'image/png'`, `runtime = 'edge'` (next/og requirement),
+    a descriptive `alt` string.
+- **Fixed `src/app/api/og/route.tsx`** (a pre-existing, previously-unwired
+  dynamic OG generator for shared FIRE-result permalinks): removed a fire
+  emoji glyph (violated `design/forbidden.md`'s "no emoji-icons" rule) and
+  corrected a stale `firepath.app` domain reference to `gofirepath.com`.
+  This route still isn't wired into any page's `openGraph.images` (it takes
+  per-type-age query params intended for a future `/result?...` share-image
+  use case) — out of scope to wire up this wave; fixed in place since it's
+  adjacent OG-image surface this K09 pass touched.
+- **New tests**: `src/lib/og/__tests__/og-visual.test.ts` (14 tests) —
+  pins `OG_SIZE` at exactly 1200x630 (>=1200px wide, 16:9-ish tolerance
+  check), asserts `og-visual.tsx` never contains an emoji glyph, a
+  purple/blue gradient, or `#000000`, and does use the locked
+  `--brand-primary` token; asserts each of the three new
+  `opengraph-image.tsx` files exports `size`/`contentType`/`runtime`/`alt`
+  and sources its stats from a real engine call
+  (`calculateFIRE`/`calculateHealthcareBridge`), never a literal. Extended
+  `src/lib/__tests__/seo.test.ts` with a test asserting `buildMeta` merges
+  `max-image-preview:large` onto both the default and an explicit robots
+  override; the pre-existing `toEqual` assertions on `meta.robots` were
+  changed to `toMatchObject` so they keep testing the fields they actually
+  care about (index/follow) without needing to also hardcode the new
+  merged-in field, avoiding a redundant/brittle duplicate assertion.
+
+### K10 — AdProvider `journey` option (dormant)
+
+- **`src/lib/monetization.ts`**: `AdProvider` union extended to
+  `'adsense' | 'ezoic' | 'raptive' | 'journey' | 'none'`;
+  `resolveAdProvider()` accepts `'journey'` as a valid discriminant (still
+  returns exactly one value, case-insensitive, unknown -> `'none'`, matching
+  the existing raptive/ezoic pattern byte-for-byte). `MonetizationConfig`
+  gained `journeySiteId: string | null`, read from
+  `NEXT_PUBLIC_JOURNEY_SITE_ID` (trimmed, null when unset), returned from
+  `buildMonetizationConfig()`.
+- **`src/components/monetization/AdProvider.tsx`**: added a `journey`
+  branch, structurally identical to the existing `ezoic`/`raptive` branches
+  — `if (PROVIDER === 'journey') { if (!JOURNEY_SITE_ID) return null; return
+  <Script .../>; }` — injecting a single `<Script strategy="afterInteractive"
+  src="https://ns.mediavine.com/journey.js" data-site={JOURNEY_SITE_ID} />`
+  head-script only when BOTH `NEXT_PUBLIC_AD_PROVIDER=journey` AND
+  `NEXT_PUBLIC_JOURNEY_SITE_ID` are set. Because `PROVIDER` is resolved once
+  at module scope via the same single-discriminant `resolveAdProvider()`
+  every other branch uses, and every branch is a mutually-exclusive
+  `if (PROVIDER === '<x>')` guard, adding `journey` cannot cause it to
+  coexist with adsense/ezoic/raptive — verified structurally by the new test
+  (below), not just by inspection.
+- **`.env.example`**: documented `NEXT_PUBLIC_AD_PROVIDER=journey` in the
+  provider-options comment, and added a new `NEXT_PUBLIC_JOURNEY_SITE_ID`
+  section explicitly marked DORMANT — states the 부속M §6 1,000-session/mo +
+  AdSense-good-standing eligibility gate and instructs the owner not to set
+  either var before that threshold.
+- **New tests**: `src/components/monetization/__tests__/ad-provider.test.ts`
+  (6 tests, source-level — this repo has no jsdom/RTL, same documented
+  constraint as `ad-slot.test.ts`) — pins that `PROVIDER` is resolved
+  exactly once at module scope, `JOURNEY_SITE_ID` is read once via the exact
+  trimmed-or-null pattern, the journey branch short-circuits to `null` when
+  unset, renders exactly one `<Script>`, that all 4 named branches
+  (adsense/ezoic/raptive/journey) exist as mutually-exclusive top-level
+  `if (PROVIDER === ...)` guards (exactly 4, no 5th accidental branch), and
+  the component ends with an unconditional `return null;` fallthrough.
+  Extended `src/lib/__tests__/monetization.test.ts` with journey-specific
+  cases: `resolveAdProvider('journey')`, case-insensitivity, the "never
+  two providers" sweep now includes `'journey'`, `journeySiteId` defaults to
+  `null`, `buildMonetizationConfig` resolves `journey` end-to-end and reads
+  its site id, and a provider-selection test proving `journey` wins even
+  when adsense/raptive env vars are simultaneously present (mirrors the
+  existing ezoic-wins-over-adsense test).
+
+### K11 — AdSense Day-1 runbook
+
+- **New `docs/adsense-day1.md`** — transcribes 부속M §3 faithfully for this
+  repo: the four verified 2026 Auto-ads default changes (vignette
+  additional-triggers auto-activated 3/9 + back-button trigger removed
+  6/15; ad-load slider removed 4/16 -> 3 banner advanced settings; dynamic
+  anchor auto-activated 6/19; ad intents Gemini auto-insertion from 6/30
+  with no opt-out) as background for why the audit can't be skipped; the
+  6-step Day-1 audit (disable vignette additional triggers; ad intents OFF
+  everywhere; anchor mobile-on/bottom-fixed + >1000px anchor OFF; banner max
+  2 + min distance; ad exclusion areas — cross-references the existing
+  `docs/ad-exclusion-zones.md` selector list from K05 rather than
+  duplicating it; side rails OK on desktop); Week-1 CLS recheck; Month-1
+  Auto-only; Month-2-3 gate (two clean Policy Center weeks before one
+  manual slot) plus the 90-day Experiments ban; the IVT house rules
+  (never render/click live ads while authenticated, no
+  friends-look-at-my-site, permanent no traffic purchase/exchange, don't
+  react to "being assessed" states); and the rollback trigger
+  (`calculator_complete` -10-15% after any ad-config change -> immediate
+  revert, no wait-and-see period). Explicitly frames itself as an
+  owner-console runbook (부속M §10 P05 executes it) that changes no ad code,
+  Auto ads state, or the AdSense review queue — this file is documentation
+  only.
+
+### Gate results (all green)
+
+```
+pnpm lint       — PASS (0 errors, 9 pre-existing warnings, none in files this wave touched)
+pnpm typecheck  — PASS (after narrowing BuildMetaOptions.robots to an object-only shape)
+pnpm test       — 422 tests, all passed (+32 new: 14 og-visual + 6 ad-provider + 12 monetization/seo additions)
+pnpm build      — PASS (27 routes; [sitemap] firepath: 16 indexable URLs — unchanged, K09/K10/K11 add no new indexable pages; 3 new edge-runtime opengraph-image routes registered and verified present in built HTML og:image/twitter:image meta tags with correct 1200x630 dimensions)
+```
+
+### New files (7)
+- `docs/adsense-day1.md`
+- `src/lib/og/og-visual.tsx`
+- `src/lib/og/__tests__/og-visual.test.ts`
+- `src/app/(main)/opengraph-image.tsx`
+- `src/app/(main)/fire-types/opengraph-image.tsx`
+- `src/app/(main)/healthcare-bridge/opengraph-image.tsx`
+- `src/components/monetization/__tests__/ad-provider.test.ts`
+
+### Modified files (9)
+- `src/lib/seo.ts` — `buildMeta()` merges `max-image-preview:large`; `BuildMetaOptions.robots` narrowed to an object-only type.
+- `src/app/layout.tsx` — root metadata robots gains `max-image-preview:large`.
+- `src/app/(main)/terms/page.tsx`, `src/app/(main)/privacy/page.tsx` — hand-rolled robots gain `max-image-preview:large`.
+- `src/app/api/og/route.tsx` — removed emoji glyph, fixed stale domain string.
+- `src/lib/monetization.ts` — `AdProvider` union + `journeySiteId` config field.
+- `src/components/monetization/AdProvider.tsx` — new `journey` branch.
+- `.env.example` — documented `NEXT_PUBLIC_JOURNEY_SITE_ID` + updated provider-options comment.
+- `src/lib/__tests__/seo.test.ts`, `src/lib/__tests__/monetization.test.ts` — extended with K09/K10 assertions.
+
+### Explicitly out of scope / not touched this wave
+- **K06** — n/a for this non-YMYL repo (see Scope determination above).
+- **K07** — not built; logged to `buildQueueRemaining` (2027 401(k)/IRA limits page needs the IRS's Oct-Nov 2026 announcement or a citable Milliman-style projection, neither of which exists in this repo's sourced-data surface today).
+- **K01-K05, K08** — completed in prior waves (P0), re-verified unaffected: sitemap still logs 16 indexable URLs; `ad-slot.tsx`'s pathname-keyed re-init, `ad-exclusion-zones.md`'s DOM-order contract, and the crawler-access audit are all byte-for-byte unchanged this wave.
+- `ads.txt`, the AdSense loader script (`app/layout.tsx` `<script id="adsense-loader">`), and all Auto-ads/ad-provider *behavior* (only the dormant `journey` option was added, gated off by default) are unchanged.
+- Owner-console actions (P01-P09, 부속M §10) — not attempted, per mandate. `docs/adsense-day1.md` is documentation for P05, not an execution of it.
+- No commit was made — per mandate, the orchestrator handles commit/deploy.

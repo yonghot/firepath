@@ -95,7 +95,7 @@ describe('seo.ts — T10 title contract build-time assertion', () => {
 
   it('buildMeta defaults robots to index:true, follow:true', () => {
     const meta = buildMeta({ title: 'X'.repeat(55), description: 'desc', path: '/foo' });
-    expect(meta.robots).toEqual({ index: true, follow: true });
+    expect(meta.robots).toMatchObject({ index: true, follow: true });
   });
 
   it('buildMeta honors an explicit robots override (T09 thin-page gate)', () => {
@@ -105,7 +105,20 @@ describe('seo.ts — T10 title contract build-time assertion', () => {
       path: '/foo',
       robots: { index: false, follow: true },
     });
-    expect(meta.robots).toEqual({ index: false, follow: true });
+    expect(meta.robots).toMatchObject({ index: false, follow: true });
+  });
+
+  it('buildMeta always sets max-image-preview:large on robots (부속M K09 Discover hygiene), including on an override', () => {
+    const defaultMeta = buildMeta({ title: 'X'.repeat(55), description: 'desc', path: '/foo' });
+    expect(defaultMeta.robots).toMatchObject({ 'max-image-preview': 'large' });
+
+    const overriddenMeta = buildMeta({
+      title: 'X'.repeat(55),
+      description: 'desc',
+      path: '/foo',
+      robots: { index: false, follow: true },
+    });
+    expect(overriddenMeta.robots).toMatchObject({ 'max-image-preview': 'large' });
   });
 
   it('buildMeta mirrors title/description into openGraph and twitter', () => {

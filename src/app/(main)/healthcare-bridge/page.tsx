@@ -7,9 +7,12 @@ import { DisclaimerBanner } from "@/components/common/disclaimer-banner";
 import { AdvisorCta } from "@/components/common/advisor-cta";
 import { SourcesReferences, type SourceItem } from "@/components/common/sources-references";
 import { HealthcareBridgeCalculator } from "@/components/features/healthcare/healthcare-bridge-calculator";
+import { FAQSection, faqJsonLd, type FaqItem } from "@/components/common/faq-section";
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import { buildMeta } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/common/breadcrumbs";
+import { calculateHealthcareBridge, MEDICARE_ELIGIBILITY_AGE } from "@/lib/engine/healthcare-bridge";
+import { formatCurrencyFull } from "@/lib/utils/format";
 
 export const metadata: Metadata = buildMeta({
   title: "Healthcare Bridge Estimator: Your Cost Before Medicare",
@@ -47,6 +50,47 @@ const SOURCES: SourceItem[] = [
   },
 ];
 
+/**
+ * Worked example (부속M K01) — uses the SAME default values the
+ * HealthcareBridgeCalculator form pre-fills (see DEFAULT_FORM in
+ * healthcare-bridge-calculator.tsx: age 35, retire 50, $7,200/yr premium,
+ * 5% growth), run through the identical calculateHealthcareBridge() engine
+ * the live tool calls. Nothing here is a separately hand-typed figure.
+ */
+const EXAMPLE_INPUT = {
+  currentAge: 35,
+  retirementAge: 50,
+  annualPremium: 7200,
+  annualGrowthRate: 0.05,
+};
+const exampleComputed = calculateHealthcareBridge(EXAMPLE_INPUT);
+const exampleResult = exampleComputed.ok ? exampleComputed.result : null;
+
+const HEALTHCARE_BRIDGE_FAQ: FaqItem[] = [
+  {
+    q: "At what age does Medicare start?",
+    a: `Medicare eligibility begins at age ${MEDICARE_ELIGIBILITY_AGE} for most people, under the Social Security Act §226. If your planned retirement age is ${MEDICARE_ELIGIBILITY_AGE} or later, this tool shows "no healthcare bridge needed" — you can rely on Medicare from day one of retirement.`,
+  },
+  {
+    q: "Does this tool calculate my ACA subsidy?",
+    a: "No, and it never will. ACA subsidies depend on your Modified Adjusted Gross Income, household size, plan tier, and state — a tool that guesses a subsidy from age and income alone is fabricating a number. Get a real subsidy quote at healthcare.gov.",
+  },
+  {
+    q: "What premium number should I enter?",
+    a: exampleResult
+      ? `Use a real quote from healthcare.gov, your COBRA notice, or a current private plan — not a guess. In the worked example above, a $${EXAMPLE_INPUT.annualPremium.toLocaleString()}/yr premium at age ${EXAMPLE_INPUT.currentAge} retiring at ${EXAMPLE_INPUT.retirementAge} produces a ${exampleResult.bridgeYears}-year bridge totaling ${formatCurrencyFull(exampleResult.totalEstimatedCost)} — swap in your own premium to get your own total.`
+      : "Use a real quote from healthcare.gov, your COBRA notice, or a current private plan — not a guess.",
+  },
+  {
+    q: "Why does the estimate include a growth rate?",
+    a: "Health insurance premiums historically rise over time — the KFF 2023 Employer Health Benefits Survey found roughly 5%/yr average growth. Adding a growth rate compounds your premium forward year by year using a geometric series, instead of assuming a flat cost for every bridge year, which would understate the total for longer bridges.",
+  },
+  {
+    q: "What if I plan to retire after 65?",
+    a: `Then you don't need this calculator at all — Medicare eligibility starts at ${MEDICARE_ELIGIBILITY_AGE}, so there's no private-insurance bridge period. Entering a retirement age of ${MEDICARE_ELIGIBILITY_AGE} or higher returns "no healthcare bridge needed."`,
+  },
+];
+
 const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://gofirepath.com").replace(/\/$/, "");
 
 const toolJsonLd = {
@@ -75,10 +119,13 @@ export default function HealthcareBridgePage() {
   // not user-supplied — safe for script injection into JSON-LD blocks (same pattern
   // used across /methodology, /guide, and home page in this codebase).
   const toolJson = safeJsonLd(toolJsonLd);
+  // Same developer-authored, safeJsonLd()-sanitized JSON-LD pattern as toolJson above.
+  const faqJson = safeJsonLd(faqJsonLd(HEALTHCARE_BRIDGE_FAQ));
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 space-y-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toolJson }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: faqJson }} />
 
       <Breadcrumbs items={[{ name: "Healthcare Bridge Estimator", path: "/healthcare-bridge" }]} />
 
@@ -134,6 +181,54 @@ export default function HealthcareBridgePage() {
         </p>
         <p>All computation happens entirely in your browser — no data is sent to a server.</p>
 
+        <h3>Worked example</h3>
+        {exampleResult && !exampleResult.noGapNeeded ? (
+          <>
+            <p>
+              Say you&apos;re {EXAMPLE_INPUT.currentAge} years old, planning to retire early at{" "}
+              {EXAMPLE_INPUT.retirementAge}, with a real quote of{" "}
+              ${EXAMPLE_INPUT.annualPremium.toLocaleString()}/yr for private coverage and an
+              assumed {(EXAMPLE_INPUT.annualGrowthRate * 100).toFixed(0)}% annual premium growth
+              rate (roughly matching the KFF-reported historical average). Here is the exact
+              calculation:
+            </p>
+            <ol>
+              <li>
+                Bridge years = {MEDICARE_ELIGIBILITY_AGE} − {EXAMPLE_INPUT.retirementAge} ={" "}
+                <span className="font-mono text-sm">{exampleResult.bridgeYears} years</span> of
+                private coverage needed before Medicare.
+              </li>
+              <li>
+                Since the growth rate is non-zero, the tool applies the geometric series:{" "}
+                <span className="font-mono text-sm">
+                  ${EXAMPLE_INPUT.annualPremium.toLocaleString()} × ((1.05)^
+                  {exampleResult.bridgeYears} − 1) / 0.05
+                </span>
+                .
+              </li>
+              <li>
+                Total estimated bridge cost ={" "}
+                <span className="font-mono text-sm">
+                  {formatCurrencyFull(exampleResult.totalEstimatedCost)}
+                </span>{" "}
+                across all {exampleResult.bridgeYears} years — this is the number the result
+                cards above would show for these exact inputs.
+              </li>
+            </ol>
+            <p>
+              That total is more than{" "}
+              {(
+                exampleResult.totalEstimatedCost /
+                (EXAMPLE_INPUT.annualPremium * exampleResult.bridgeYears)
+              ).toFixed(2)}
+              × the naive flat estimate ($
+              {(EXAMPLE_INPUT.annualPremium * exampleResult.bridgeYears).toLocaleString()}) you&apos;d
+              get by ignoring premium growth — which is why the growth-rate field matters for
+              longer bridges.
+            </p>
+          </>
+        ) : null}
+
         <h2>What this tool does NOT do</h2>
         <ul>
           <li>
@@ -170,6 +265,15 @@ export default function HealthcareBridgePage() {
         </a>
         . No government-benefit amounts are synthesized or implied.
       </p>
+
+      {/* 부속M K01 — entity-level FAQ citing this tool's own worked-example
+          figures (see HEALTHCARE_BRIDGE_FAQ above). */}
+      <FAQSection
+        items={HEALTHCARE_BRIDGE_FAQ}
+        title="Healthcare Bridge FAQ"
+        idPrefix="healthcare-bridge-faq"
+        className="pt-2"
+      />
 
       <DisclaimerBanner />
 

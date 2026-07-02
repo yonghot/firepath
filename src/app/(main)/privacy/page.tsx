@@ -9,7 +9,8 @@ export const metadata: Metadata = {
   description:
     'FIREPath Privacy Policy — how we collect, use, and protect your data. Covers account information, saved calculations, analytics, and your rights under GDPR and CCPA.',
   alternates: { canonical: '/privacy' },
-  robots: { index: true, follow: true },
+  // 부속M K09 — Discover/Images full-size image preview eligibility.
+  robots: { index: true, follow: true, 'max-image-preview': 'large' },
 };
 
 /**

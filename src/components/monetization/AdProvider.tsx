@@ -3,21 +3,30 @@
 /**
  * AdProvider — SINGLE programmatic ad network selector.
  *
- * Reads NEXT_PUBLIC_AD_PROVIDER (adsense|ezoic|raptive|none; default adsense).
- * Loads EXACTLY ONE provider:
+ * Reads NEXT_PUBLIC_AD_PROVIDER (adsense|ezoic|raptive|journey|none; default
+ * adsense). Loads EXACTLY ONE provider:
  *   - adsense  → reuses the existing AdSense <ins> slot (ad-slot.tsx). No second
  *                loader is injected; the loader already lives in layout.tsx <head>.
  *   - ezoic    → injects a <Script strategy="afterInteractive"> via
  *                NEXT_PUBLIC_EZOIC_SITE_ID. Renders null when that var is unset.
  *   - raptive  → injects a <Script> via NEXT_PUBLIC_RAPTIVE_SITE_ID. Renders
  *                null when that var is unset.
+ *   - journey  → Journey by Mediavine head-script injection point, via
+ *                NEXT_PUBLIC_JOURNEY_SITE_ID. Renders null when that var is
+ *                unset (부속M K10 — DORMANT: this repo has not crossed the
+ *                1,000-session/mo Journey eligibility threshold (부속M §6) —
+ *                the owner must both set NEXT_PUBLIC_AD_PROVIDER=journey AND
+ *                supply the site id post-acceptance for this to activate).
  *   - none     → renders nothing.
  *
- * This component NEVER loads two programmatic providers simultaneously.
+ * This component NEVER loads two programmatic providers simultaneously — the
+ * env-driven provider switch is a hard discriminant (resolveAdProvider always
+ * returns exactly one of adsense|ezoic|raptive|journey|none), so adding the
+ * `journey` branch cannot cause it to coexist with adsense/ezoic/raptive.
  *
  * CWV: the wrapper reserves min-height (via slotClassName) so layout doesn't
  * shift when the provider fills. Below-fold activation is handled by AdSlot
- * (for adsense) or by the provider's own lazy-load (ezoic/raptive).
+ * (for adsense) or by the provider's own lazy-load (ezoic/raptive/journey).
  */
 
 import Script from 'next/script';
@@ -35,6 +44,7 @@ interface AdProviderProps {
 const PROVIDER = resolveAdProvider(process.env.NEXT_PUBLIC_AD_PROVIDER);
 const EZOIC_SITE_ID = process.env.NEXT_PUBLIC_EZOIC_SITE_ID?.trim() || null;
 const RAPTIVE_SITE_ID = process.env.NEXT_PUBLIC_RAPTIVE_SITE_ID?.trim() || null;
+const JOURNEY_SITE_ID = process.env.NEXT_PUBLIC_JOURNEY_SITE_ID?.trim() || null;
 
 export function AdProvider({ slot, className }: AdProviderProps) {
   // ── AdSense ──────────────────────────────────────────────────────────────
@@ -73,6 +83,23 @@ export function AdProvider({ slot, className }: AdProviderProps) {
         strategy="afterInteractive"
         src={`https://cdn.raptive.com/raptive.js`}
         data-site={RAPTIVE_SITE_ID}
+      />
+    );
+  }
+
+  // ── Journey by Mediavine (dormant — 부속M K10 / §6) ────────────────────────
+  // Head-script injection point only. Renders null until BOTH
+  // NEXT_PUBLIC_AD_PROVIDER=journey is set AND the owner supplies a site id
+  // post-acceptance (부속M §6: 1,000 sessions/mo eligibility gate, Google
+  // good-standing prerequisite) — never loads speculatively.
+  if (PROVIDER === 'journey') {
+    if (!JOURNEY_SITE_ID) return null;
+    return (
+      <Script
+        id="journey-loader"
+        strategy="afterInteractive"
+        src={`https://ns.mediavine.com/journey.js`}
+        data-site={JOURNEY_SITE_ID}
       />
     );
   }

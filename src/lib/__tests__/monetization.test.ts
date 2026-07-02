@@ -141,6 +141,10 @@ describe('resolveAdProvider', () => {
     expect(resolveAdProvider('raptive')).toBe('raptive');
   });
 
+  it('returns journey', () => {
+    expect(resolveAdProvider('journey')).toBe('journey');
+  });
+
   it('returns none', () => {
     expect(resolveAdProvider('none')).toBe('none');
   });
@@ -149,21 +153,25 @@ describe('resolveAdProvider', () => {
     expect(resolveAdProvider('ADSENSE')).toBe('adsense');
     expect(resolveAdProvider('Ezoic')).toBe('ezoic');
     expect(resolveAdProvider('RAPTIVE')).toBe('raptive');
+    expect(resolveAdProvider('JOURNEY')).toBe('journey');
     expect(resolveAdProvider('None')).toBe('none');
   });
 
   it('returns none for unknown value', () => {
+    // "mediavine" alone is NOT a valid discriminant — Journey by Mediavine
+    // must be selected via the literal 'journey' value, never a bare vendor
+    // name, so this stays a deliberate negative case even after K10.
     expect(resolveAdProvider('mediavine')).toBe('none');
     expect(resolveAdProvider('random')).toBe('none');
   });
 
   it('NEVER returns two providers simultaneously', () => {
-    const providers = ['adsense', 'ezoic', 'raptive', 'none', undefined, ''];
+    const providers = ['adsense', 'ezoic', 'raptive', 'journey', 'none', undefined, ''];
     for (const p of providers) {
       const resolved = resolveAdProvider(p);
       // resolved is a single discriminant — the test asserts it is exactly one
       // of the valid values (not a set or array)
-      expect(['adsense', 'ezoic', 'raptive', 'none']).toContain(resolved);
+      expect(['adsense', 'ezoic', 'raptive', 'journey', 'none']).toContain(resolved);
     }
   });
 });
@@ -216,6 +224,7 @@ describe('buildMonetizationConfig — all env unset', () => {
       'NEXT_PUBLIC_ADSENSE_CLIENT_ID',
       'NEXT_PUBLIC_EZOIC_ENABLED',
       'NEXT_PUBLIC_RAPTIVE_SITE_ID',
+      'NEXT_PUBLIC_JOURNEY_SITE_ID',
       'NEXT_PUBLIC_ADSTXT_REDIRECT_URL',
       'NEXT_PUBLIC_PRIMARY_CTA_TYPE',
       'NEXT_PUBLIC_PPC_NUMBER',
@@ -249,6 +258,11 @@ describe('buildMonetizationConfig — all env unset', () => {
   it('raptiveSiteId is null when unset', () => {
     const cfg = buildMonetizationConfig();
     expect(cfg.raptiveSiteId).toBeNull();
+  });
+
+  it('journeySiteId is null when unset (부속M K10 — stays dormant)', () => {
+    const cfg = buildMonetizationConfig();
+    expect(cfg.journeySiteId).toBeNull();
   });
 
   it('adsTxtRedirectUrl is null when unset', () => {
@@ -388,6 +402,31 @@ describe('buildMonetizationConfig — with env vars set', () => {
       expect(cfg.adProvider).toBe('raptive');
       expect(cfg.raptiveSiteId).toBe('my-site');
     });
+  });
+
+  it('resolves journey provider and reads its site id (부속M K10)', () => {
+    withEnv({ NEXT_PUBLIC_AD_PROVIDER: 'journey', NEXT_PUBLIC_JOURNEY_SITE_ID: 'journey-site-123' }, () => {
+      const cfg = buildMonetizationConfig();
+      expect(cfg.adProvider).toBe('journey');
+      expect(cfg.journeySiteId).toBe('journey-site-123');
+    });
+  });
+
+  it('provider selection is exactly one — journey set alongside adsense/raptive site ids => only journey', () => {
+    withEnv(
+      {
+        NEXT_PUBLIC_AD_PROVIDER: 'journey',
+        NEXT_PUBLIC_ADSENSE_CLIENT_ID: 'ca-pub-9999999999999999',
+        NEXT_PUBLIC_RAPTIVE_SITE_ID: 'raptive-site',
+        NEXT_PUBLIC_JOURNEY_SITE_ID: 'journey-site',
+      },
+      () => {
+        const cfg = buildMonetizationConfig();
+        expect(cfg.adProvider).toBe('journey');
+        expect(cfg.adProvider).not.toBe('adsense');
+        expect(cfg.adProvider).not.toBe('raptive');
+      }
+    );
   });
 
   it('provider selection is exactly one — adsense + ezoic both set, provider=ezoic => only ezoic', () => {
