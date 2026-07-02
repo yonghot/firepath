@@ -6,25 +6,21 @@ import { AuthorByline } from "@/components/common/author-byline";
 import { DisclaimerBanner } from "@/components/common/disclaimer-banner";
 import { AdvisorCta } from "@/components/common/advisor-cta";
 import { SourcesReferences, type SourceItem } from "@/components/common/sources-references";
-import { breadcrumbJsonLd } from "@/components/common/json-ld";
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import { calculateFIRE } from "@/lib/engine/fire-calculator";
 import { DEFAULT_INPUT, FIRE_MULTIPLIERS } from "@/constants/fire-defaults";
 import { FIRE_COLORS, FIRE_LABELS } from "@/constants/fire-colors";
 import { formatCurrencyFull } from "@/lib/utils/format";
+import { buildMeta } from "@/lib/seo";
+import { Breadcrumbs } from "@/components/common/breadcrumbs";
 
-export const metadata: Metadata = {
-  title: "FIRE Types Explained — Coast, Barista, Fat, Lean & Regular FIRE",
+export const metadata: Metadata = buildMeta({
+  title: "FIRE Types Explained: Lean, Fat, Coast and Barista",
   description:
-    "Understand all 5 FIRE types: Coast FIRE, Barista FIRE, Fat FIRE, Lean FIRE, and Regular FIRE. See how each target is calculated with real formulas and examples.",
-  alternates: { canonical: "/fire-types" },
-  openGraph: {
-    title: "FIRE Types Explained — FIREPath",
-    description:
-      "Deep dive into Coast, Barista, Fat, Lean, and Regular FIRE. Real formulas, worked examples, and an interactive calculator.",
-    type: "article",
-  },
-};
+    "Understand all 5 FIRE types — Lean, Regular, Fat, Coast, Barista — with real formulas, worked examples, and computed targets from the FIREPath engine.",
+  path: "/fire-types",
+  ogType: "article",
+});
 
 const LAST_UPDATED = "2026-06-29";
 
@@ -76,11 +72,6 @@ const SOURCES: SourceItem[] = [
     note: "Real-return formula: (1 + nominal) / (1 + inflation) − 1.",
   },
 ];
-
-const breadcrumb = breadcrumbJsonLd([
-  { name: "Home", path: "/" },
-  { name: "FIRE Types", path: "/fire-types" },
-]);
 
 const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://gofirepath.com").replace(/\/$/, "");
 
@@ -193,13 +184,13 @@ function FireTypeCard({
 }
 
 export default function FireTypesPage() {
-  const breadcrumbJson = safeJsonLd(breadcrumb);
   const pageJson = safeJsonLd(pageJsonLd);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 space-y-8">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: breadcrumbJson }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: pageJson }} />
+
+      <Breadcrumbs items={[{ name: "FIRE Types", path: "/fire-types" }]} />
 
       {/* Header */}
       <div>

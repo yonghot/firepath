@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * AdvisorCta — env-gated affiliate / advisor-matching call-to-action.
  *
@@ -21,11 +23,14 @@
  *
  * Design: matches the existing "ready to plan" CTA blocks on guide/result pages.
  * No affiliate URL is hardcoded; no payout or fee is mentioned or fabricated.
+ *
+ * 부속I T04 — click fires outbound_click {link_domain, link_type:'affiliate'}.
  */
 
 import { ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AffiliateDisclosure } from '@/components/compliance/AffiliateDisclosure';
+import { trackEvent } from '@/lib/analytics';
 
 const CTA_URL = process.env.NEXT_PUBLIC_ADVISOR_CTA_URL;
 const CTA_LABEL =
@@ -50,6 +55,15 @@ export function AdvisorCta({ className }: { className?: string }) {
         target="_blank"
         rel="noopener noreferrer sponsored"
         aria-label={`${CTA_LABEL} (opens in new tab)`}
+        onClick={() => {
+          let link_domain = 'unknown';
+          try {
+            link_domain = new URL(CTA_URL as string).hostname;
+          } catch {
+            // Malformed/relative URL — keep 'unknown' rather than throw.
+          }
+          trackEvent('outbound_click', { link_domain, link_type: 'affiliate' });
+        }}
       >
         <Button variant="outline" className="gap-2">
           <ExternalLink className="h-4 w-4" aria-hidden="true" />

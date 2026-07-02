@@ -1,26 +1,19 @@
 import type { Metadata } from 'next';
 import { EmbedSnippet } from '@/components/common/embed-snippet';
-import { breadcrumbJsonLd } from '@/components/common/json-ld';
+import { Breadcrumbs } from '@/components/common/breadcrumbs';
+import { buildMeta } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Embed the FIRE Calculator',
+export const metadata: Metadata = buildMeta({
+  title: 'Embed the FIRE Calculator: Free Widget for Your Site',
   description:
-    'Add the free FIREPath FIRE calculator to your own website or blog with a simple iframe embed. Copy the snippet — includes the attribution link.',
-  alternates: { canonical: '/embed-this' },
-};
-
-const breadcrumb = breadcrumbJsonLd([
-  { name: 'Home', path: '/' },
-  { name: 'Embed the Calculator', path: '/embed-this' },
-]);
+    'Add the free FIREPath calculator to your own website or blog with a simple iframe embed. Copy the snippet — includes the attribution link.',
+  path: '/embed-this',
+});
 
 export default function EmbedThisPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
-      />
+      <Breadcrumbs items={[{ name: 'Embed the Calculator', path: '/embed-this' }]} />
       <h1 className="text-4xl font-bold mb-2">Embed the FIRE Calculator</h1>
       <p className="text-muted-foreground mb-6">
         Add the free FIREPath calculator to your own site or blog. It works on any

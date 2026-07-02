@@ -9,6 +9,10 @@ import type { Metadata } from 'next';
 import { AdSlot } from '@/components/common/ad-slot';
 import { getPremiumStatus } from '@/lib/subscription/premium';
 import { safeJsonLd } from '@/lib/utils/json-ld';
+import { buildMeta } from '@/lib/seo';
+import { GUIDE_PAGES } from '@/lib/content-pages';
+import { Breadcrumbs } from '@/components/common/breadcrumbs';
+import { RelatedGuides } from './related-guides';
 
 interface GuidePageProps {
   params: Promise<{ slug: string }>;
@@ -25,6 +29,20 @@ export async function generateStaticParams() {
   }
 }
 
+/**
+ * 부속I T09 — hasUniqueData gate. Guide content is DB-authored (title/
+ * description come from Supabase, not this codebase), so buildMeta() cannot
+ * enforce the 50-60 char title-length contract on it the way it does for
+ * hardcoded static routes — that enforcement lives in seo.test.ts for the
+ * routes this repo controls directly. What this DOES enforce: any slug not
+ * present in the static GUIDE_PAGES registry (src/lib/content-pages.ts) is
+ * robots-noindexed, so a DB-added guide can never silently bypass the
+ * quality gate that T06/T07 link modules already respect.
+ */
+function isQualityGatedSlug(slug: string): boolean {
+  return GUIDE_PAGES.some((p) => p.canonicalPath === `/guide/${slug}`);
+}
+
 export async function generateMetadata({ params }: GuidePageProps): Promise<Metadata> {
   const { slug } = await params;
   if (!isSupabaseConfigured()) return { title: 'Guide Not Found' };
@@ -39,16 +57,15 @@ export async function generateMetadata({ params }: GuidePageProps): Promise<Meta
 
   if (!guide) return { title: 'Guide Not Found' };
 
-  return {
+  const gated = isQualityGatedSlug(slug);
+
+  return buildMeta({
     title: guide.title,
     description: guide.description,
-    alternates: { canonical: `/guide/${slug}` },
-    openGraph: {
-      title: guide.title,
-      description: guide.description,
-      type: 'article',
-    },
-  };
+    path: `/guide/${slug}`,
+    ogType: 'article',
+    robots: gated ? { index: true, follow: true } : { index: false, follow: true },
+  });
 }
 
 // Sanitize text to prevent XSS
@@ -151,25 +168,17 @@ export default async function GuidePage({ params }: GuidePageProps) {
     ...(guide.updated_at && { dateModified: guide.updated_at }),
   };
 
-  const breadcrumbJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: '/' },
-      { '@type': 'ListItem', position: 2, name: 'FIRE Guides', item: '/guide' },
-      { '@type': 'ListItem', position: 3, name: guide.title, item: `/guide/${slug}` },
-    ],
-  };
-
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(articleJsonLd) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
+      <Breadcrumbs
+        items={[
+          { name: 'FIRE Guides', path: '/guide' },
+          { name: guide.title, path: `/guide/${slug}` },
+        ]}
       />
       <div className="flex flex-col lg:flex-row gap-8">
         <article className="flex-1 min-w-0">
@@ -200,24 +209,8 @@ export default async function GuidePage({ params }: GuidePageProps) {
           {!isPremium && <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_GUIDE} />}
         </article>
 
-        {/* Sidebar */}
-        {related.length > 0 && (
-          <aside className="lg:w-64 shrink-0">
-            <h3 className="font-semibold mb-3">Related Guides</h3>
-            <nav className="space-y-2">
-              {related.map((g) => (
-                <Link
-                  key={g.slug}
-                  href={`/guide/${g.slug}`}
-                  className="block p-3 rounded-xl border hover:bg-muted/50 transition-colors duration-200"
-                >
-                  <p className="text-sm font-medium">{g.title}</p>
-                  <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{g.description}</p>
-                </Link>
-              ))}
-            </nav>
-          </aside>
-        )}
+        {/* Sidebar — sibling cross-links (3rd of the 3 automated link types: breadcrumb parent, hub link, siblings). */}
+        <RelatedGuides guides={related} />
       </div>
     </div>
   );

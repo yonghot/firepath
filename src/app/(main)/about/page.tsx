@@ -2,14 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Flame, BookOpen, Calculator, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { buildMeta } from '@/lib/seo';
+import { Breadcrumbs } from '@/components/common/breadcrumbs';
 
-export const metadata: Metadata = {
-  title: 'About FIREPath',
+export const metadata: Metadata = buildMeta({
+  title: 'About FIREPath: Our Editorial Standards and Sources',
   description:
-    'FIREPath is a free FIRE calculator that compares all five FIRE types — Lean, Regular, Fat, Coast, and Barista — on one interactive timeline. Learn about our mission, editorial standards, and approach to transparent financial education.',
-  alternates: { canonical: '/about' },
-  robots: { index: true, follow: true },
-};
+    'FIREPath is a free FIRE calculator comparing Lean, Regular, Fat, Coast, and Barista FIRE on one timeline. Read our mission, editorial standards, and sourcing.',
+  path: '/about',
+});
 
 /**
  * /about page — publisher identity and E-E-A-T signals for AdSense approval.
@@ -23,6 +24,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
+      <Breadcrumbs items={[{ name: 'About', path: '/about' }]} />
       {/* Header */}
       <div className="mb-10">
         <div className="flex items-center gap-3 mb-4">

@@ -14,6 +14,30 @@ const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://gofirepath.com').r
 const abs = (path: string) =>
   path.startsWith('http') ? path : `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 
+/**
+ * Sitewide editorial Person identity (부속I T11 E-E-A-T linkage).
+ *
+ * Deliberately generic — "FIREPath Editorial Team" — matching the honest
+ * identity already used by AuthorByline (src/components/common/author-byline.tsx).
+ * NO invented name, credential, or license is attached; that would be
+ * fabrication (부속I §6 anti-pattern) and an E&O exposure. When the owner adds
+ * a real named/credentialed reviewer, replace this with their verified identity.
+ */
+export function personJsonLd() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'FIREPath Editorial Team',
+    worksFor: {
+      '@type': 'Organization',
+      name: 'FIREPath',
+      url: SITE_URL,
+    },
+    description:
+      'FIREPath’s editorial team maintains the calculator’s formulas, source citations, and methodology documentation.',
+  };
+}
+
 /** Sitewide Organization identity (rendered once in the root layout). */
 export function organizationJsonLd() {
   return {
@@ -27,8 +51,16 @@ export function organizationJsonLd() {
   };
 }
 
-/** SoftwareApplication for the main calculator tool. No aggregateRating. */
-export function calculatorAppJsonLd() {
+/**
+ * SoftwareApplication for the main calculator tool. No aggregateRating.
+ *
+ * 부속I T11: accepts an optional `dateModified` (ISO date) driven by a REAL
+ * lastVerified field (src/lib/figures.ts) — never a hand-stamped "freshness"
+ * date — plus Person + Organization linkage via `author`/`publisher` so the
+ * calculator page carries the same E-E-A-T identity as the Organization
+ * schema in the root layout.
+ */
+export function calculatorAppJsonLd(options?: { dateModified?: string }) {
   return {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -43,11 +75,16 @@ export function calculatorAppJsonLd() {
       price: '0',
       priceCurrency: 'USD',
     },
+    author: {
+      '@type': 'Person',
+      name: 'FIREPath Editorial Team',
+    },
     publisher: {
       '@type': 'Organization',
       name: 'FIREPath',
       url: SITE_URL,
     },
+    ...(options?.dateModified && { dateModified: options.dateModified }),
   };
 }
 

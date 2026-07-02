@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Vercel injects VERCEL_ENV (server-only: "production" | "preview" |
+  // "development") but does NOT expose it to the client by default. The GA4
+  // production-hostname gate (부속I T01, cookie-consent-banner.tsx) needs it
+  // client-side, so mirror it into a NEXT_PUBLIC_ var at build time. Falls
+  // through to whatever NEXT_PUBLIC_VERCEL_ENV is already set to (e.g. local
+  // .env) when VERCEL_ENV is absent (non-Vercel builds).
+  env: {
+    NEXT_PUBLIC_VERCEL_ENV: process.env.VERCEL_ENV ?? process.env.NEXT_PUBLIC_VERCEL_ENV,
+  },
   async headers() {
     return [
       {

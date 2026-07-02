@@ -81,9 +81,50 @@ function updateConsent(state: typeof GRANTED): void {
 }
 
 /**
+ * True when the current hostname is the canonical production domain
+ * (부속I T01 — gates GA4 initialization to kill preview/localhost/mirror
+ * noise, which was ~96% of measured sessions). Requires BOTH:
+ *   - NEXT_PUBLIC_VERCEL_ENV === 'production' (Vercel-injected; absent on
+ *     Preview/Development builds and on localhost)
+ *   - window.location.hostname matches the canonical host from
+ *     NEXT_PUBLIC_APP_URL (with or without the "www." prefix)
+ */
+function isCanonicalProductionHost(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production') return false;
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!appUrl) return false;
+
+  let canonicalHost: string;
+  try {
+    canonicalHost = new URL(appUrl).hostname;
+  } catch {
+    return false;
+  }
+
+  const host = window.location.hostname;
+  return host === canonicalHost || host === `www.${canonicalHost}`;
+}
+
+/** NEXT_PUBLIC_GA_DEBUG=1 is set only on Vercel Preview deploys — lets GA
+ *  load there in a debug_mode + internal-traffic posture so preview visits
+ *  land in DebugView and the internal filter, never in production reports. */
+function isGaDebugPreview(): boolean {
+  return process.env.NEXT_PUBLIC_GA_DEBUG === '1';
+}
+
+/**
  * Initialize the GA4 config call once consent allows analytics. The gtag.js
  * loader is injected in <head>; here we only fire the config (idempotent guard).
  * No-op when GA env is unset.
+ *
+ * 부속I T01 — gate: only injects gtag.js when running on the canonical
+ * production hostname, OR (on non-production) when NEXT_PUBLIC_GA_DEBUG=1,
+ * in which case it also tags debug_mode + traffic_type:'internal' so the
+ * traffic is visible only in DebugView / the internal filter. This wraps
+ * ONLY the script-injection step below — Consent Mode v2 defaults/updates
+ * are untouched.
  */
 function initGA(): void {
   const measurementId =
@@ -91,12 +132,21 @@ function initGA(): void {
   if (!measurementId) return;
   if (typeof window === 'undefined') return;
 
+  const canonical = isCanonicalProductionHost();
+  const debugPreview = isGaDebugPreview();
+  if (!canonical && !debugPreview) return;
+
   // Ensure gtag exists even if the head loader hasn't defined it yet (it does,
   // via the Consent Mode default snippet, but stay defensive).
   window.dataLayer = window.dataLayer ?? [];
   if (typeof window.gtag !== 'function') {
+    // TS control-flow narrowing on `window.dataLayer` above doesn't extend
+    // into this nested closure (a separate scope, invoked later), so capture
+    // the already-guaranteed-defined array by reference here instead of
+    // re-reading window.dataLayer inside the closure body.
+    const dataLayer = window.dataLayer;
     function gtag(...args: unknown[]): void {
-      window.dataLayer.push(args);
+      dataLayer.push(args);
     }
     window.gtag = gtag;
   }
@@ -115,6 +165,14 @@ function initGA(): void {
   if (w.__firepathGaConfigured) return;
   w.__firepathGaConfigured = true;
   window.gtag('js', new Date());
+
+  if (!canonical && debugPreview) {
+    // Non-production Preview with the debug flag on: mark every hit
+    // debug_mode + internal so it only ever lands in DebugView / the
+    // internal-traffic filter, never in production reports.
+    window.gtag('set', { traffic_type: 'internal' });
+  }
+
   // PRIVACY: GA4's default page_location is document.location.href, which on
   // this app's calculator/result pages includes a URL HASH encoding the
   // user's FIRE scenario (income, net worth, savings rate, expenses — see
@@ -126,6 +184,7 @@ function initGA(): void {
   window.gtag('config', measurementId, {
     anonymize_ip: true,
     page_location: window.location.href.split('#')[0],
+    ...(!canonical && debugPreview ? { debug_mode: true } : {}),
   });
 }
 

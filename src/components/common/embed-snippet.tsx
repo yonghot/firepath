@@ -6,7 +6,17 @@
  * The snippet includes BOTH the <iframe> and a "Powered by FIREPath" attribution
  * <a> that lives in the PARENT page's HTML (not inside the iframe) — this is the
  * SEO-meaningful backlink (links inside an iframe are not credited to the parent
- * page). nofollow is acceptable; we keep it a normal link here.
+ * page).
+ *
+ * 부속I T04 link-policy audit: the attribution link is rel="nofollow sponsored"
+ * (widget/embed backlinks are a documented Google manual-action vector when
+ * followed with commercial anchor text), the anchor text is the brand name
+ * ("FIREPath") rather than a keyword phrase like "fire calculator", and the
+ * href carries utm_source=embed&utm_medium=widget&utm_campaign={document.location.hostname}
+ * (resolved by the embedder's own page at copy time isn't possible statically,
+ * so we use a stable "embed" campaign value here; per-host attribution is
+ * captured server-side via document.referrer on the /embed iframe's own
+ * embed_loaded event instead).
  */
 
 import { useState } from 'react';
@@ -14,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Copy, Check } from 'lucide-react';
 
 const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://gofirepath.com').replace(/\/$/, '');
+const ATTRIBUTION_URL = `${SITE_URL}/?utm_source=embed&utm_medium=widget&utm_campaign=embed`;
 
 const SNIPPET = `<iframe
   src="${SITE_URL}/embed"
@@ -24,7 +35,7 @@ const SNIPPET = `<iframe
   loading="lazy"
 ></iframe>
 <p style="font-size:12px;text-align:center">
-  <a href="${SITE_URL}" target="_blank" rel="noopener">Powered by FIREPath — free FIRE calculator</a>
+  <a href="${ATTRIBUTION_URL}" target="_blank" rel="nofollow sponsored noopener">Powered by FIREPath</a> — free FIRE calculator
 </p>`;
 
 export function EmbedSnippet() {

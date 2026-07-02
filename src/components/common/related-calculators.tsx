@@ -1,4 +1,7 @@
+'use client';
+
 import { Calculator } from 'lucide-react';
+import { trackEvent } from '@/lib/analytics';
 
 /**
  * RelatedCalculators — cross-link module to the four sibling cost-calculator
@@ -6,6 +9,10 @@ import { Calculator } from 'lucide-react';
  * short descriptions, rendered tastefully at the end of a page. External links
  * are rel="noopener" and intentionally not the same identical sitewide block on
  * every surface (keep placement selective to avoid link-scheme signals).
+ *
+ * 부속I T04 — every click fires outbound_click (this is the cross-SITE link
+ * module, not an internal related-content module, so it maps to
+ * outbound_click / link_type:'crosslink' rather than related_click).
  */
 
 const SIBLING_SITES = [
@@ -51,6 +58,12 @@ export function RelatedCalculators() {
             href={site.href}
             target="_blank"
             rel="noopener"
+            onClick={() =>
+              trackEvent('outbound_click', {
+                link_domain: new URL(site.href).hostname,
+                link_type: 'crosslink',
+              })
+            }
             className="block rounded-xl border bg-card p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
           >
             <p className="text-sm font-medium">{site.title}</p>

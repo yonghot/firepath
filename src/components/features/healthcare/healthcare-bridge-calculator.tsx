@@ -12,13 +12,28 @@
  *   src/lib/engine/healthcare-bridge.ts.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { calculateHealthcareBridge, MEDICARE_ELIGIBILITY_AGE } from '@/lib/engine/healthcare-bridge';
 import { formatCurrencyFull } from '@/lib/utils/format';
+import { trackEvent, IS_SENSITIVE_SITE } from '@/lib/analytics';
+
+/** Stable calc_type slug for this calculator (부속I T03). */
+const CALC_TYPE = 'healthcare_bridge';
+/** Minimum ms between calculator_complete events per calc_type (debounce). */
+const COMPLETE_DEBOUNCE_MS = 2000;
+
+/** Coarse, output-derived bucket for total estimated bridge cost — never the
+ *  raw dollar value or user-supplied premium. */
+function bucketTotalCost(totalEstimatedCost: number): string {
+  if (totalEstimatedCost < 10_000) return 'under_10k';
+  if (totalEstimatedCost < 50_000) return '10k_50k';
+  if (totalEstimatedCost < 250_000) return '50k_250k';
+  return 'over_250k';
+}
 
 interface FormState {
   currentAge: string;
@@ -73,6 +88,12 @@ export function HealthcareBridgeCalculator() {
   const [result, setResult] = useState<ReturnType<typeof calculateHealthcareBridge> | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
+  // 부속I T03 — hasUserInteracted guard: calc_input_start fires once on the
+  // first real field edit; calculator_complete fires only when a result
+  // renders AS A CONSEQUENCE of the user's own submit (never on load).
+  const hasStartedRef = useRef(false);
+  const lastCompleteAtRef = useRef(0);
+
   useEffect(() => {
     // Defer the setState call out of the synchronous effect body (avoids
     // cascading-render lint warning; same pattern as CookieConsentBanner).
@@ -80,6 +101,10 @@ export function HealthcareBridgeCalculator() {
   }, []);
 
   const handleChange = (field: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!hasStartedRef.current) {
+      hasStartedRef.current = true;
+      trackEvent('calc_input_start', { calc_type: CALC_TYPE });
+    }
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
   };
 
@@ -92,7 +117,25 @@ export function HealthcareBridgeCalculator() {
       annualPremium: Number(form.annualPremium),
       annualGrowthRate: form.annualGrowthRate === '' ? 0 : Number(form.annualGrowthRate) / 100,
     };
-    setResult(calculateHealthcareBridge(parsed));
+    const computed = calculateHealthcareBridge(parsed);
+    setResult(computed);
+
+    // Only a successful computation (computed.ok) renders an actual RESULT —
+    // a validation-error list is not a "result" per T03, so calculator_complete
+    // stays scoped to real output. Debounced so rapid re-submits (e.g.
+    // double-click) emit at most one event per 2s.
+    if (computed.ok) {
+      const now = Date.now();
+      if (now - lastCompleteAtRef.current >= COMPLETE_DEBOUNCE_MS) {
+        lastCompleteAtRef.current = now;
+        trackEvent('calculator_complete', {
+          calc_type: CALC_TYPE,
+          ...(!IS_SENSITIVE_SITE && !computed.result.noGapNeeded
+            ? { result_bucket: bucketTotalCost(computed.result.totalEstimatedCost) }
+            : {}),
+        });
+      }
+    }
   };
 
   return (

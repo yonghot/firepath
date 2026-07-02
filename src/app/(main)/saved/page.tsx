@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import { SavedCalculationsList } from '@/components/features/saved/saved-list';
+import { Breadcrumbs } from '@/components/common/breadcrumbs';
 
 export const metadata: Metadata = {
   title: 'Saved Calculations',
@@ -25,6 +26,7 @@ export default async function SavedPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
+      <Breadcrumbs items={[{ name: 'Saved Calculations', path: '/saved' }]} />
       <h1 className="text-4xl font-bold mb-6">Saved Calculations</h1>
       <SavedCalculationsList />
     </div>

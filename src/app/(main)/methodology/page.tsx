@@ -4,21 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Calculator } from 'lucide-react';
 import { AuthorByline } from '@/components/common/author-byline';
 import { DisclaimerBanner } from '@/components/common/disclaimer-banner';
-import { breadcrumbJsonLd } from '@/components/common/json-ld';
 import { SourcesReferences, type SourceItem } from '@/components/common/sources-references';
+import { UpdatedBadge } from '@/components/common/updated-badge';
+import { buildMeta } from '@/lib/seo';
+import { Breadcrumbs } from '@/components/common/breadcrumbs';
 
-export const metadata: Metadata = {
-  title: 'How We Calculate — Methodology',
+export const metadata: Metadata = buildMeta({
+  title: 'How We Calculate: FIRE Formulas and Cited Data Sources',
   description:
-    'How FIREPath calculates your FIRE numbers: the 4% rule (Safe Withdrawal Rate), inflation-adjusted real returns, year-by-year compounding, and the five FIRE-type multipliers. Transparent, client-side math.',
-  alternates: { canonical: '/methodology' },
-  openGraph: {
-    title: 'How We Calculate — FIREPath Methodology',
-    description:
-      'Transparent explanation of the FIRE calculator formulas: SWR, real returns, compounding, and FIRE-type multipliers.',
-    type: 'article',
-  },
-};
+    'How FIREPath computes your FIRE numbers: the 4% rule, inflation-adjusted real returns, year-by-year compounding, and the five FIRE-type multipliers.',
+  path: '/methodology',
+  ogType: 'article',
+});
 
 // Last meaningful update to the methodology/engine description.
 const LAST_UPDATED = '2026-06-29';
@@ -145,20 +142,15 @@ const METHODOLOGY_SOURCES: SourceItem[] = [
   },
 ];
 
-const breadcrumb = breadcrumbJsonLd([
-  { name: 'Home', path: '/' },
-  { name: 'Methodology', path: '/methodology' },
-]);
-
 export default function MethodologyPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
-      />
+      <Breadcrumbs items={[{ name: 'Methodology', path: '/methodology' }]} />
 
-      <h1 className="text-4xl font-bold mb-2">How We Calculate</h1>
+      <div className="flex items-center gap-3 mb-2 flex-wrap">
+        <h1 className="text-4xl font-bold">How We Calculate</h1>
+        <UpdatedBadge lastVerified={LAST_UPDATED} />
+      </div>
       <AuthorByline lastUpdated={LAST_UPDATED} className="mb-6" />
 
       <div className="prose prose-neutral dark:prose-invert max-w-none">

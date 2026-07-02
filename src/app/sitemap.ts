@@ -1,84 +1,57 @@
 import type { MetadataRoute } from 'next';
+import { getIndexablePages } from '@/lib/content-pages';
 
+/**
+ * 부속I T09 — sitemap enumerates ONLY pages that pass the hasUniqueData gate
+ * (src/lib/content-pages.ts), plus the few routes below that are core/utility
+ * pages outside that content registry (premium, embed-this, contact) but are
+ * still real, non-templated pages. This keeps sitemap.ts, robots
+ * (generateMetadata on gated routes), and the T06/T07 link modules reading
+ * from the exact same source of truth — see content-pages.test.ts for the
+ * consistency assertion.
+ *
+ * Anchor URLs (e.g. /fire-types#lean) are NOT separate sitemap entries —
+ * search engines index the page, not the fragment — so anchor-kind content
+ * pages collapse to their canonicalPath and de-dupe here.
+ */
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://gofirepath.com';
 
-  const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: baseUrl,
+  const priorityByKind: Record<'core' | 'hub' | 'spoke', number> = {
+    core: 0.6,
+    hub: 0.8,
+    spoke: 0.7,
+  };
+
+  const seenPaths = new Set<string>();
+  const contentPages: MetadataRoute.Sitemap = [];
+  for (const page of getIndexablePages()) {
+    if (seenPaths.has(page.canonicalPath)) continue;
+    seenPaths.add(page.canonicalPath);
+    contentPages.push({
+      url: page.canonicalPath === '/' ? baseUrl : `${baseUrl}${page.canonicalPath}`,
       lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/guide`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/methodology`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/fire-types`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/healthcare-bridge`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/contact`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/embed-this`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/premium`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.6,
-    },
-    // /result is intentionally excluded — it renders personalized content
-    // from a URL hash (shared results), which would duplicate / in search.
+      changeFrequency: page.canonicalPath === '/' ? 'weekly' : 'monthly',
+      priority: page.canonicalPath === '/' ? 1.0 : priorityByKind[page.kind],
+    });
+  }
+
+  // Utility/commercial pages outside the content-pages registry — real,
+  // hand-authored, non-templated pages that aren't part of the
+  // FIRE-education content graph the hasUniqueData gate governs.
+  // /result and /saved are intentionally excluded (personalized /
+  // auth-gated content, already robots-noindexed in their own metadata).
+  const utilityPages: MetadataRoute.Sitemap = [
+    { url: `${baseUrl}/premium`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/contact`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/embed-this`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
   ];
 
-  // Guide slugs — hardcoded since Supabase may not be available at build time
-  const guideSlugs = [
-    'what-is-coastfire',
-    'what-is-leanfire',
-    'what-is-regular-fire',
-    'what-is-fatfire',
-    'lean-vs-fat-fire',
-    'coast-vs-barista-fire',
-    'what-is-baristafire',
-  ];
+  const allEntries = [...contentPages, ...utilityPages];
 
-  const guidePages: MetadataRoute.Sitemap = guideSlugs.map((slug) => ({
-    url: `${baseUrl}/guide/${slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
-  }));
+  // Build-time visibility (부속I T09 acceptance criteria: "count of
+  // indexed-intent URLs logged in build output per site").
+  console.log(`[sitemap] firepath: ${allEntries.length} indexable URLs`);
 
-  return [...staticPages, ...guidePages];
+  return allEntries;
 }

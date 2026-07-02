@@ -20,9 +20,28 @@
  *     loader script is present/loaded.
  *   - Below-the-fold slots are lazy-activated via IntersectionObserver
  *     (rootMargin ~400px). Above-the-fold slots pass `eager` to push on mount.
+ *
+ * SPA re-init (부속I T05): AdSense only auto-fills a unit on a full page
+ * load. Next.js client-side <Link> navigations reuse this same AdSlot
+ * component instance across routes (it typically lives in a persistent
+ * layout/page shell) without ever remounting the <ins> element, so without
+ * this fix, related-link / cross-link navigations could never produce a
+ * second ad impression. Fix:
+ *   (a) key={`${slot}-${pathname}`} passed to the <ins> element itself —
+ *       forces React to unmount/remount JUST the <ins> DOM node per route
+ *       (AdSense stamps data-ad-status on that exact node, so a fresh node
+ *       is required for a fresh fill attempt) while the <aside> wrapper and
+ *       component instance stay mounted.
+ *   (b) on route change, only push a fill request when the (fresh) <ins>
+ *       element's data-ad-status attribute is unset — never re-push an
+ *       element AdSense already marked 'filled' or 'unfilled' (double-push
+ *       throws and can double-count impressions).
+ *   (c) exactly one retry, 750ms after the first attempt, if data-ad-status
+ *       is still unset by then; no further polling, no timer-based refresh.
  */
 
 import { useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 // Normalise: accept values with or without the leading "ca-" prefix.
 // data-ad-client must be in "ca-pub-..." form for AdSense to work.
@@ -37,6 +56,24 @@ const SCRIPT_ID = 'adsense-loader';
 // Reserve space matching the placeholder to prevent CLS when the ad fills.
 const RESERVE = 'min-h-[100px] md:min-h-[280px]';
 
+/** Single-attempt fill: init the array, guard on data-ad-status, push once. */
+function pushFill(el: HTMLModElement): boolean {
+  if (typeof window === 'undefined') return false;
+  // Never re-push an element AdSense already resolved (filled/unfilled) —
+  // double-push throws and can double-count impressions.
+  if (el.getAttribute('data-ad-status')) return true;
+  if (!document.getElementById(SCRIPT_ID)) return false;
+  const w = window as unknown as { adsbygoogle?: unknown[] };
+  w.adsbygoogle = w.adsbygoogle ?? [];
+  try {
+    w.adsbygoogle.push({});
+    return true;
+  } catch {
+    // Blocked / not ready — leave the reserved space, never throw.
+    return false;
+  }
+}
+
 export function AdSlot({
   slot,
   className,
@@ -49,12 +86,30 @@ export function AdSlot({
   /** Above-the-fold slots set this to push on mount instead of lazily. */
   eager?: boolean;
 }) {
+  const pathname = usePathname();
   const insRef = useRef<HTMLModElement>(null);
   const wrapperRef = useRef<HTMLElement>(null);
-  const pushed = useRef(false);
+  const pushedForPath = useRef<string | null>(null);
   // Lazy gate: eager slots are "in view" immediately; others wait for the
-  // IntersectionObserver to fire.
+  // IntersectionObserver to fire. Re-armed on every route change below (부속I
+  // T05) since this component instance persists across client-side
+  // navigations while the <ins> DOM node it targets is remounted per-route
+  // via `key` further down.
   const [inView, setInView] = useState(eager);
+
+  // Route change: re-arm the lazy gate for the new route. Deferred via
+  // queueMicrotask (same pattern as CookieConsentBanner/TermsGate elsewhere
+  // in this repo) to avoid the react-hooks/set-state-in-effect cascading-
+  // render lint warning from a synchronous setState in an effect body.
+  useEffect(() => {
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) setInView(eager);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname, eager]);
 
   // Below-the-fold activation: observe the wrapper and flip inView once it
   // approaches the viewport (rootMargin ~400px). Eager slots skip this.
@@ -83,43 +138,31 @@ export function AdSlot({
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [eager, inView]);
+  }, [eager, inView, pathname]);
 
-  // Push a fill request once: the slot is in view AND the loader is present.
-  // The loader lives in <head> (not consent-gated), so it is typically present
-  // on mount; we still verify and poll briefly to be robust to async load.
+  // Push a fill request once per route: the slot is in view AND the loader
+  // is present AND this route hasn't already been pushed. Exactly one retry
+  // 750ms later if the first attempt didn't resolve data-ad-status yet — no
+  // further polling, no timer-based refresh (AdSense policy).
   useEffect(() => {
-    if (!ADSENSE_CLIENT || !inView || pushed.current) return;
+    if (!ADSENSE_CLIENT || !inView) return;
+    if (pushedForPath.current === pathname) return;
+    const el = insRef.current;
+    if (!el) return;
 
-    const tryPush = (): boolean => {
-      if (pushed.current) return true;
-      if (typeof window === 'undefined') return false;
-      // Loader script must be present before pushing.
-      if (!document.getElementById(SCRIPT_ID)) return false;
-      const w = window as unknown as { adsbygoogle?: unknown[] };
-      // Init the array BEFORE pushing (fixes the ordering bug).
-      w.adsbygoogle = w.adsbygoogle ?? [];
-      try {
-        w.adsbygoogle.push({});
-        pushed.current = true;
-        return true;
-      } catch {
-        // Blocked / not ready — leave the reserved space, never throw.
-        return false;
-      }
+    const attempt = () => {
+      const ok = pushFill(el);
+      if (ok) pushedForPath.current = pathname;
+      return ok;
     };
 
-    if (tryPush()) return;
-    const interval = window.setInterval(() => {
-      if (tryPush()) window.clearInterval(interval);
-    }, 500);
-    // Stop polling after ~15s; keep the reserved placeholder if it never loads.
-    const timeout = window.setTimeout(() => window.clearInterval(interval), 15_000);
-    return () => {
-      window.clearInterval(interval);
-      window.clearTimeout(timeout);
-    };
-  }, [inView]);
+    if (attempt()) return;
+
+    const retry = window.setTimeout(() => {
+      attempt();
+    }, 750);
+    return () => window.clearTimeout(retry);
+  }, [inView, pathname]);
 
   // No client id configured → inert labelled placeholder (no empty grey box).
   if (!ADSENSE_CLIENT) {
@@ -148,6 +191,7 @@ export function AdSlot({
         Advertisement
       </span>
       <ins
+        key={`${slot ?? 'auto'}-${pathname}`}
         ref={insRef}
         className="adsbygoogle block"
         style={{ display: 'block' }}

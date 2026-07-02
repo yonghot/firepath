@@ -1,9 +1,15 @@
+'use client';
+
 /**
  * SourcesReferences — a reusable "Sources & References" block for content pages.
  *
  * Renders a numbered list of citations with clickable external links.
  * All href values must come from the verified brief; never invent a URL.
+ *
+ * 부속I T04 — click fires outbound_click {link_domain, link_type:'citation'}.
  */
+
+import { trackEvent } from '@/lib/analytics';
 
 export interface SourceItem {
   id: number;
@@ -35,6 +41,15 @@ export function SourcesReferences({ sources, className }: SourcesReferencesProps
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-medium text-foreground underline underline-offset-2 hover:text-primary transition-colors duration-150"
+                onClick={() => {
+                  let link_domain = 'unknown';
+                  try {
+                    link_domain = new URL(s.url).hostname;
+                  } catch {
+                    // Malformed/relative URL — keep 'unknown' rather than throw.
+                  }
+                  trackEvent('outbound_click', { link_domain, link_type: 'citation' });
+                }}
               >
                 {s.label}
               </a>

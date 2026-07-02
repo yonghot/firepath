@@ -5,18 +5,15 @@ import { Check, X, Crown } from 'lucide-react';
 import { UpgradeButton } from '@/components/features/subscription/upgrade-button';
 import { isStripeConfigured, isPremiumPriceConfigured } from '@/lib/stripe/server';
 import { getPremiumStatus } from '@/lib/subscription/premium';
+import { buildMeta } from '@/lib/seo';
+import { Breadcrumbs } from '@/components/common/breadcrumbs';
 
-export const metadata: Metadata = {
-  title: 'Premium — Unlock Advanced FIRE Tools',
+export const metadata: Metadata = buildMeta({
+  title: 'Unlock Your FIRE Potential: Go Premium for $4.99/mo',
   description:
     'Upgrade to FIREPath Premium for Monte Carlo simulations, portfolio optimization, unlimited saves, and PDF reports. $4.99/month.',
-  alternates: { canonical: '/premium' },
-  openGraph: {
-    title: 'FIREPath Premium',
-    description: 'Advanced simulations and unlimited saves for serious FIRE planners.',
-    type: 'website',
-  },
-};
+  path: '/premium',
+});
 
 const FEATURES = [
   { name: 'FIRE Calculator', free: true, premium: true },
@@ -50,12 +47,13 @@ export default async function PremiumPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
+      <Breadcrumbs items={[{ name: 'Premium', path: '/premium' }]} />
       <div className="text-center mb-10">
         <Badge className="mb-3" variant="secondary">
           <Crown className="h-3 w-3 mr-1" />
           Premium
         </Badge>
-        <h1 className="text-4xl font-bold">Unlock Your Full FIRE Potential</h1>
+        <h1 className="text-4xl font-bold">Unlock Your FIRE Potential</h1>
         <p className="text-muted-foreground mt-2">
           Advanced simulations and unlimited saves for serious FIRE planners.
         </p>

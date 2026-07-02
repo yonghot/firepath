@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
 import { Mail } from 'lucide-react';
 import { ContactForm } from '@/components/features/contact/contact-form';
+import { buildMeta } from '@/lib/seo';
+import { Breadcrumbs } from '@/components/common/breadcrumbs';
 
-export const metadata: Metadata = {
-  title: 'Contact Us',
+export const metadata: Metadata = buildMeta({
+  title: 'Contact Us: Reach the FIREPath Support Team Directly',
   description:
-    'Questions, corrections, or feedback about FIREPath? Send us a message. We read every submission and aim to respond promptly.',
-  alternates: { canonical: '/contact' },
-  robots: { index: true, follow: true },
-};
+    'Questions, corrections, or feedback about FIREPath? Send us a message — we read every submission and aim to respond promptly.',
+  path: '/contact',
+});
 
 /**
  * /contact page — AdSense-approval-ready contact page.
@@ -23,6 +24,7 @@ export default function ContactPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
+      <Breadcrumbs items={[{ name: 'Contact', path: '/contact' }]} />
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-3">Contact Us</h1>
         <p className="text-muted-foreground">

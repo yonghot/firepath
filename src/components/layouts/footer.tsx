@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Flame } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { ManageConsentLink } from '@/components/common/manage-consent-link';
+import { ClearMyDataLink } from '@/components/common/clear-my-data-link';
 
 export function Footer() {
   return (
@@ -50,6 +51,7 @@ export function Footer() {
                 <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Privacy Policy</Link>
                 <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Terms of Service</Link>
                 <ManageConsentLink />
+                <ClearMyDataLink />
               </nav>
             </div>
           </div>

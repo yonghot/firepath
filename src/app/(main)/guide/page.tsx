@@ -8,19 +8,16 @@ import type { Metadata } from 'next';
 import { AdSlot } from '@/components/common/ad-slot';
 import { getPremiumStatus } from '@/lib/subscription/premium';
 import { safeJsonLd } from '@/lib/utils/json-ld';
+import { buildMeta } from '@/lib/seo';
+import { Breadcrumbs } from '@/components/common/breadcrumbs';
 
-export const metadata: Metadata = {
-  title: 'FIRE Guides',
+export const metadata: Metadata = buildMeta({
+  title: 'FIRE Guides: Learn Every Financial Independence Type',
   description:
-    'Learn about different FIRE types — Lean, Regular, Fat, Coast, and Barista FIRE. Comprehensive guides to help you plan your path to financial independence.',
-  alternates: { canonical: '/guide' },
-  openGraph: {
-    title: 'FIRE Guides — FIREPath',
-    description:
-      'Learn about different FIRE types and find the path to financial independence that fits your lifestyle.',
-    type: 'website',
-  },
-};
+    'Comprehensive guides to Lean, Regular, Fat, Coast, and Barista FIRE — learn the differences and find the path that fits your lifestyle.',
+  path: '/guide',
+  ogType: 'article',
+});
 
 export default async function GuidesIndexPage() {
   // When Supabase is unconfigured, skip the client entirely (don't call cookies())
@@ -40,15 +37,6 @@ export default async function GuidesIndexPage() {
   // Free tier sees ads on guide surfaces; premium subscribers see nothing.
   const { isPremium } = await getPremiumStatus();
 
-  const breadcrumbJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: '/' },
-      { '@type': 'ListItem', position: 2, name: 'FIRE Guides', item: '/guide' },
-    ],
-  };
-
   const itemListJsonLd = guides.length > 0 ? {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
@@ -63,16 +51,13 @@ export default async function GuidesIndexPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
-      />
       {itemListJsonLd && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListJsonLd) }}
         />
       )}
+      <Breadcrumbs items={[{ name: 'FIRE Guides', path: '/guide' }]} />
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
           <BookOpen className="h-6 w-6 text-[var(--brand-primary)]" />

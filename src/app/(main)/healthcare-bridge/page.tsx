@@ -7,21 +7,16 @@ import { DisclaimerBanner } from "@/components/common/disclaimer-banner";
 import { AdvisorCta } from "@/components/common/advisor-cta";
 import { SourcesReferences, type SourceItem } from "@/components/common/sources-references";
 import { HealthcareBridgeCalculator } from "@/components/features/healthcare/healthcare-bridge-calculator";
-import { breadcrumbJsonLd } from "@/components/common/json-ld";
 import { safeJsonLd } from "@/lib/utils/json-ld";
+import { buildMeta } from "@/lib/seo";
+import { Breadcrumbs } from "@/components/common/breadcrumbs";
 
-export const metadata: Metadata = {
-  title: "Healthcare Bridge Cost Estimator",
+export const metadata: Metadata = buildMeta({
+  title: "Healthcare Bridge Estimator: Your Cost Before Medicare",
   description:
-    "Estimate how much private health insurance will cost from early retirement until Medicare at 65. Informational estimate — enter your own premium; no ACA subsidies fabricated.",
-  alternates: { canonical: "/healthcare-bridge" },
-  openGraph: {
-    title: "Healthcare Bridge Cost Estimator — FIREPath",
-    description:
-      "Plan the healthcare gap between early retirement and Medicare. Enter your own premium and see the estimated bridge cost.",
-    type: "website",
-  },
-};
+    "Estimate private health insurance cost from early retirement to Medicare at 65. Enter your own premium — no ACA subsidies fabricated.",
+  path: "/healthcare-bridge",
+});
 
 const LAST_UPDATED = "2026-06-29";
 
@@ -52,11 +47,6 @@ const SOURCES: SourceItem[] = [
   },
 ];
 
-const breadcrumb = breadcrumbJsonLd([
-  { name: "Home", path: "/" },
-  { name: "Healthcare Bridge Estimator", path: "/healthcare-bridge" },
-]);
-
 const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://gofirepath.com").replace(/\/$/, "");
 
 const toolJsonLd = {
@@ -84,13 +74,13 @@ export default function HealthcareBridgePage() {
   // safeJsonLd escapes </> characters. Content is developer-authored structured data,
   // not user-supplied — safe for script injection into JSON-LD blocks (same pattern
   // used across /methodology, /guide, and home page in this codebase).
-  const breadcrumbJson = safeJsonLd(breadcrumb);
   const toolJson = safeJsonLd(toolJsonLd);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 space-y-8">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: breadcrumbJson }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toolJson }} />
+
+      <Breadcrumbs items={[{ name: "Healthcare Bridge Estimator", path: "/healthcare-bridge" }]} />
 
       <div>
         <div className="flex items-center gap-2 mb-2">
