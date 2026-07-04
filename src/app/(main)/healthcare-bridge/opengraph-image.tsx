@@ -2,6 +2,7 @@ import { ImageResponse } from 'next/og';
 import { calculateHealthcareBridge, MEDICARE_ELIGIBILITY_AGE } from '@/lib/engine/healthcare-bridge';
 import { formatCurrencyFull } from '@/lib/utils/format';
 import { buildOgVisual, OG_SIZE, OG_CONTENT_TYPE } from '@/lib/og/og-visual';
+import { CORE_ASSUMPTIONS_LAST_VERIFIED } from '@/lib/figures';
 
 /**
  * opengraph-image.tsx (`/healthcare-bridge`) — 부속M K09.
@@ -42,6 +43,7 @@ export default async function Image() {
       eyebrow: 'FIREPath',
       title: 'Healthcare Bridge Estimator: Cost Before Medicare',
       stats,
+      dataVerifiedDate: CORE_ASSUMPTIONS_LAST_VERIFIED,
     }),
     { ...OG_SIZE }
   );

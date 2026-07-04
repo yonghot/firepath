@@ -21,7 +21,25 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { OG_SIZE, OG_CONTENT_TYPE } from '@/lib/og/og-visual';
+import { OG_SIZE, OG_CONTENT_TYPE, buildOgVisual } from '@/lib/og/og-visual';
+
+/**
+ * Recursively collects all string/number children from a React element tree
+ * into one string, so tests can assert on rendered text without a DOM
+ * renderer (this repo runs vitest in plain `node`, no jsdom — see the file
+ * header comment above). buildOgVisual() returns a plain JSX element graph;
+ * walking `.props.children` is sufficient since next/og's ImageResponse
+ * consumes the same plain-object tree without a browser DOM.
+ */
+function collectText(node: unknown): string {
+  if (node == null || typeof node === 'boolean') return '';
+  if (typeof node === 'string' || typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(collectText).join(' ');
+  if (typeof node === 'object' && node !== null && 'props' in node) {
+    return collectText((node as { props?: { children?: unknown } }).props?.children);
+  }
+  return '';
+}
 
 const OG_VISUAL_SOURCE = readFileSync(join(__dirname, '..', 'og-visual.tsx'), 'utf-8');
 
@@ -62,6 +80,43 @@ describe('og-visual.tsx — design/forbidden.md compliance (부속M K09)', () =>
   });
 });
 
+describe('buildOgVisual — dataVerifiedDate dated freshness marker (부속P CODE-05)', () => {
+  it('renders "As of {date}" in the footer when dataVerifiedDate is provided', () => {
+    const el = buildOgVisual({
+      eyebrow: 'FIREPath',
+      title: 'Test title',
+      stats: [{ label: 'Test stat', value: '$1,000' }],
+      dataVerifiedDate: '2026-06-29',
+    });
+    const text = collectText(el);
+    expect(text).toContain('As of 2026-06-29');
+  });
+
+  it('falls back to the generic tagline when dataVerifiedDate is omitted (no fabricated date)', () => {
+    const el = buildOgVisual({
+      eyebrow: 'FIREPath',
+      title: 'Test title',
+      stats: [{ label: 'Test stat', value: '$1,000' }],
+    });
+    const text = collectText(el);
+    expect(text).not.toContain('As of');
+    expect(text).toContain('Free FIRE calculator');
+  });
+
+  it('never bakes in a superlative/promotional word (부속P CODE-05 "no fake ratings or superlatives")', () => {
+    const el = buildOgVisual({
+      eyebrow: 'FIREPath',
+      title: 'Test title',
+      stats: [{ label: 'Test stat', value: '$1,000' }],
+      dataVerifiedDate: '2026-06-29',
+    });
+    const text = collectText(el).toLowerCase();
+    for (const word of ['best', 'amazing', 'guaranteed', '#1 rated', 'top-rated']) {
+      expect(text).not.toContain(word);
+    }
+  });
+});
+
 describe('opengraph-image.tsx route files — hub/insight pages (부속M K09)', () => {
   const ROUTES: { file: string; expectedImport: RegExp }[] = [
     {
@@ -75,6 +130,10 @@ describe('opengraph-image.tsx route files — hub/insight pages (부속M K09)', 
     {
       file: join(__dirname, '..', '..', '..', 'app', '(main)', 'healthcare-bridge', 'opengraph-image.tsx'),
       expectedImport: /calculateHealthcareBridge/,
+    },
+    {
+      file: join(__dirname, '..', '..', '..', 'app', '(main)', 'fire-statistics', 'opengraph-image.tsx'),
+      expectedImport: /buildFireStatisticsDataset/,
     },
   ];
 
@@ -102,6 +161,10 @@ describe('opengraph-image.tsx route files — hub/insight pages (부속M K09)', 
       it('imports buildOgVisual from the shared og-visual module', () => {
         expect(source).toMatch(/buildOgVisual/);
         expect(source).toMatch(/from '@\/lib\/og\/og-visual'/);
+      });
+
+      it('passes a dataVerifiedDate to buildOgVisual — the 부속P CODE-05 dated freshness marker', () => {
+        expect(source).toMatch(/dataVerifiedDate:/);
       });
     });
   }

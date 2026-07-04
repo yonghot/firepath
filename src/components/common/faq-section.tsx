@@ -77,20 +77,11 @@ export function FAQSection({
   );
 }
 
-// JSON-LD for FAQPage structured data. Accepts the same optional `items` so a
-// page rendering a custom FAQSection can emit matching structured data;
-// defaults to the site-wide FAQ_ITEMS (home page, unchanged behavior).
-export function faqJsonLd(items: readonly FaqItem[] = FAQ_ITEMS) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: items.map((item) => ({
-      '@type': 'Question',
-      name: item.q,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: item.a,
-      },
-    })),
-  };
-}
+// 부속P CODE-02 — FAQPage JSON-LD is deprecated for SERP display in 2026 and
+// is intentionally NOT emitted anywhere in this codebase. FAQSection above
+// still renders the same Q&A as on-page H2/H3 text, which remains valuable
+// for GEO (AI-answer extraction) even without the schema wrapper. A
+// faqJsonLd() builder previously existed here and was removed rather than
+// left unused, so `grep -r FAQPage src` has nothing to find — see
+// src/components/common/__tests__/faq-section.test.ts (부속P CODE-02
+// regression guard) for the enforcement.

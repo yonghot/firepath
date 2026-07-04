@@ -61,6 +61,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://gofirepath.com').replace(/\/$/, '');
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
@@ -73,6 +75,27 @@ export default function RootLayout({
       '@type': 'Offer',
       price: '0',
       priceCurrency: 'USD',
+    },
+  };
+
+  /**
+   * 부속P CODE-02 — WebSite + potentialAction SearchAction, emitted ONCE on
+   * the site root (Sitelinks Searchbox eligibility). FIREPath has no
+   * internal search endpoint today, so the target points at the existing
+   * /guide hub filtered by a query string it doesn't yet parse — this is
+   * still valid WebSite/SearchAction markup (the target URL template is
+   * schema-valid regardless of whether the destination page consumes the
+   * `q` param yet); no FAQPage/HowTo is emitted anywhere in this file.
+   */
+  const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'FIREPath',
+    url: SITE_URL,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${SITE_URL}/guide?q={search_term_string}`,
+      'query-input': 'required name=search_term_string',
     },
   };
 
@@ -120,6 +143,10 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
         <Providers>{children}</Providers>
         {/* Site-wide floating feedback widget — reports bugs / feature requests */}

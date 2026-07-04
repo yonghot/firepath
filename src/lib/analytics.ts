@@ -44,7 +44,10 @@ export type EventName =
   | 'embed_loaded'
   | 'state_restored'
   | 'web_vitals'
-  | 'email_signup';
+  | 'email_signup'
+  | 'ai_referral'
+  | 'embed_referral'
+  | 'community_referral';
 
 type EventParamValue = string | number;
 type EventParams = Record<string, EventParamValue>;
@@ -146,5 +149,174 @@ export function initTrafficMarker(): void {
 
   if (crew === '1' && typeof window.gtag === 'function') {
     window.gtag('set', { traffic_type: 'internal' });
+  }
+}
+
+// ─── 부속P CODE-07 — AI-referral & rich-context detection ──────────────────
+//
+// Pure measurement: classifies the FIRST load of a session by
+// `document.referrer` host so the otherwise-invisible GEO/AI-citation
+// traffic (부속P §2 lever [1]) and the embed/community/directory referral
+// channels (levers [2]/[4]) become visible in the existing GA4 property,
+// without any UI change and without touching consent state. Firing goes
+// through the same consent-gated trackEvent() pipeline as every other
+// event, so it silently no-ops until the user has granted analytics.
+
+/** Known AI-answer-engine referrer hostnames (부속P CODE-07 사양). Matched by
+ *  exact host or subdomain suffix (e.g. `www.perplexity.ai` still matches
+ *  `perplexity.ai`). Keys are the canonical `source` value sent to GA4. */
+const AI_ENGINE_HOSTS: ReadonlyArray<{ source: string; hosts: readonly string[] }> = [
+  { source: 'chatgpt', hosts: ['chatgpt.com', 'chat.openai.com'] },
+  { source: 'perplexity', hosts: ['perplexity.ai'] },
+  { source: 'gemini', hosts: ['gemini.google.com'] },
+  { source: 'copilot', hosts: ['copilot.microsoft.com'] },
+];
+
+/** Known community/directory referrer hostnames (부속P CODE-07 사양 —
+ *  "community/directory referrers" tagging, separate from the AI-engine
+ *  ladder). Not exhaustive; covers the channels 부속P §5 OWN-01/02/03/04
+ *  actually drive traffic through. */
+const COMMUNITY_DIRECTORY_HOSTS: ReadonlyArray<{ source: string; hosts: readonly string[] }> = [
+  { source: 'reddit', hosts: ['reddit.com'] },
+  { source: 'quora', hosts: ['quora.com'] },
+  { source: 'producthunt', hosts: ['producthunt.com'] },
+  { source: 'pinterest', hosts: ['pinterest.com', 'pinterest.co.kr'] },
+  { source: 'hackernews', hosts: ['news.ycombinator.com'] },
+];
+
+/** True when `host` equals `candidate` or is a subdomain of it
+ *  (e.g. host=`www.perplexity.ai`, candidate=`perplexity.ai` → true). */
+function hostMatches(host: string, candidate: string): boolean {
+  return host === candidate || host.endsWith(`.${candidate}`);
+}
+
+/** utm_source values that indicate an AI engine's "share/cite" link or a
+ *  detectable AI-Overview click-through, for engines that route clicks
+ *  through a redirector rather than sending a plain referrer host. */
+const AI_UTM_SOURCES = new Set([
+  'chatgpt.com',
+  'chatgpt',
+  'perplexity',
+  'perplexity.ai',
+  'gemini',
+  'bing.com/search/ai',
+  'copilot',
+  'ai-overview',
+  'aio',
+]);
+
+export type ReferralClassification =
+  | { kind: 'ai_referral'; source: string }
+  | { kind: 'embed_referral'; source: string }
+  | { kind: 'community_referral'; source: string }
+  | { kind: 'none' };
+
+/**
+ * Pure classifier: given a referrer URL string (from `document.referrer`)
+ * and the current page's query string (from `window.location.search`),
+ * decides whether this load should be tagged as an AI-engine referral,
+ * an embed-attribution referral (CODE-03's `utm_source=embed` + `utm_campaign`
+ * host param), a known community/directory referral, or none of the above.
+ *
+ * Pure function (no `window` access) so it is trivially unit-testable and
+ * reusable from both the browser classifier below and tests.
+ */
+export function classifyReferral(referrer: string, search: string): ReferralClassification {
+  const params = new URLSearchParams(search);
+
+  // CODE-03 embed referral: our own /embed attribution link tags
+  // utm_source=embed&utm_campaign={host}. This takes priority over generic
+  // AI/community matching since it is our own first-party attribution.
+  if (params.get('utm_source') === 'embed') {
+    const campaign = params.get('utm_campaign');
+    return { kind: 'embed_referral', source: campaign && campaign !== 'unknown' ? campaign : 'unknown' };
+  }
+
+  // utm-based AI-Overview / AI-engine click-through detection (some AI
+  // surfaces route through a redirector and don't preserve a plain
+  // document.referrer host).
+  const utmSource = (params.get('utm_source') || '').toLowerCase();
+  if (AI_UTM_SOURCES.has(utmSource)) {
+    const known = AI_ENGINE_HOSTS.find((e) => utmSource.includes(e.source));
+    return { kind: 'ai_referral', source: known ? known.source : 'ai-overview' };
+  }
+
+  if (!referrer) return { kind: 'none' };
+
+  let host: string;
+  try {
+    host = new URL(referrer).hostname.toLowerCase().replace(/^www\./, '');
+  } catch {
+    return { kind: 'none' };
+  }
+
+  for (const engine of AI_ENGINE_HOSTS) {
+    if (engine.hosts.some((h) => hostMatches(host, h))) {
+      return { kind: 'ai_referral', source: engine.source };
+    }
+  }
+
+  for (const community of COMMUNITY_DIRECTORY_HOSTS) {
+    if (community.hosts.some((h) => hostMatches(host, h))) {
+      return { kind: 'community_referral', source: community.source };
+    }
+  }
+
+  return { kind: 'none' };
+}
+
+const REFERRAL_CLASSIFIED_KEY = 'cc_referral_classified';
+
+/**
+ * Runs the referrer classifier once per browser session (guarded by a
+ * sessionStorage flag so client-side navigations within the SPA don't
+ * re-fire it against a stale `document.referrer`) and fires the matching
+ * GA4 event through the existing consent-gated trackEvent() pipeline. Each
+ * channel gets its OWN tagged event (부속P CODE-07 사양: "Separately tag
+ * embed-referral sessions ... and community/directory referrers") so the
+ * three measurement ladders in 부속P §7 stay distinguishable in GA4:
+ *
+ *   - AI engine referrer/UTM        -> ai_referral        { source }
+ *   - CODE-03 embed attribution hit -> embed_referral     { source }
+ *     (a visit to the canonical destination page that arrived via the
+ *     /embed widget's "Powered by FIREPath" link, i.e.
+ *     utm_source=embed&utm_campaign={host} — distinct from `embed_loaded`,
+ *     which fires INSIDE the iframe itself on widget mount)
+ *   - known community/directory ref -> community_referral { source }
+ *
+ * Call once on mount from the root client provider (see providers.tsx),
+ * mirroring initTrafficMarker()'s call pattern. Pure measurement — never
+ * alters UI, never blocks rendering, no-ops entirely on the server.
+ */
+export function initReferralClassifier(): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    if (window.sessionStorage.getItem(REFERRAL_CLASSIFIED_KEY) === '1') return;
+  } catch {
+    // sessionStorage unavailable — fall through and classify anyway; worst
+    // case is a duplicate event on this one load, not a crash.
+  }
+
+  const classification = classifyReferral(document.referrer || '', window.location.search || '');
+
+  switch (classification.kind) {
+    case 'ai_referral':
+      trackEvent('ai_referral', { source: classification.source });
+      break;
+    case 'embed_referral':
+      trackEvent('embed_referral', { source: classification.source });
+      break;
+    case 'community_referral':
+      trackEvent('community_referral', { source: classification.source });
+      break;
+    case 'none':
+      break;
+  }
+
+  try {
+    window.sessionStorage.setItem(REFERRAL_CLASSIFIED_KEY, '1');
+  } catch {
+    // Nothing to persist — acceptable to re-classify on the next load.
   }
 }

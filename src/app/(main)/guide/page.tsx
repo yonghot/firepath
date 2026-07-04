@@ -10,6 +10,13 @@ import { getPremiumStatus } from '@/lib/subscription/premium';
 import { safeJsonLd } from '@/lib/utils/json-ld';
 import { buildMeta } from '@/lib/seo';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
+import { AnswerBlock } from '@/components/common/answer-block';
+import { buildAnswerBlock, type GeoAnswerEntity } from '@/lib/seo/geo';
+import { calculateFIRE } from '@/lib/engine/fire-calculator';
+import { DEFAULT_INPUT, FIRE_MULTIPLIERS } from '@/constants/fire-defaults';
+import { FIRE_LABELS } from '@/constants/fire-colors';
+import { formatCurrencyFull, formatPercent } from '@/lib/utils/format';
+import { CORE_ASSUMPTIONS_LAST_VERIFIED } from '@/lib/figures';
 
 export const metadata: Metadata = buildMeta({
   title: 'FIRE Guides: Learn Every Financial Independence Type',
@@ -17,6 +24,57 @@ export const metadata: Metadata = buildMeta({
     'Comprehensive guides to Lean, Regular, Fat, Coast, and Barista FIRE — learn the differences and find the path that fits your lifestyle.',
   path: '/guide',
   ogType: 'article',
+});
+
+/**
+ * 부속P CODE-01 — GEO answer block for the guide hub. Same defaultResults
+ * engine output as /fire-types (calculateFIRE(DEFAULT_INPUT)), reframed for
+ * the "which FIRE guide should I read" query this hub answers.
+ */
+const { annualExpenses, safeWithdrawalRate, currentAge } = DEFAULT_INPUT;
+const { results: guideDefaultResults } = calculateFIRE(DEFAULT_INPUT);
+
+function fmtShortGuide(n: number): string {
+  return n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(2)}M` : `$${Math.round(n / 1000)}K`;
+}
+
+const GUIDE_HUB_ANSWER: GeoAnswerEntity = buildAnswerBlock({
+  query: 'Which FIRE strategy should you learn first?',
+  answer:
+    `At the common defaults (age ${currentAge}, $${annualExpenses.toLocaleString()}/yr expenses, ` +
+    `${formatPercent(safeWithdrawalRate)} SWR), Lean FIRE needs ${fmtShortGuide(guideDefaultResults.lean.targetAmount)}, ` +
+    `Regular FIRE needs ${fmtShortGuide(guideDefaultResults.regular.targetAmount)}, and Fat FIRE needs ` +
+    `${fmtShortGuide(guideDefaultResults.fat.targetAmount)}. As of ${CORE_ASSUMPTIONS_LAST_VERIFIED}, each guide below walks through one FIRE type's formula, assumptions, and a fully worked numeric example.`,
+  dataVerifiedDate: CORE_ASSUMPTIONS_LAST_VERIFIED,
+  tableHeaders: ['FIRE Type', 'Multiplier', 'Target Amount', 'Best Guide'],
+  tableRows: (['lean', 'regular', 'fat', 'barista'] as const).map((type) => ({
+    label: FIRE_LABELS[type],
+    values: [
+      `${(FIRE_MULTIPLIERS[type] * 100).toFixed(0)}%`,
+      formatCurrencyFull(guideDefaultResults[type].targetAmount),
+      `/guide/what-is-${type === 'regular' ? 'regular-fire' : `${type}fire`}`,
+    ],
+  })),
+  factors: [
+    'Annual living expenses — the base every FIRE multiplier applies to',
+    'Safe withdrawal rate (SWR), typically 3.7%-4%',
+    'Expected annual investment return and inflation, which set the real return',
+    'Current age and target retirement age',
+    'Whether you plan to keep any part-time income (Barista FIRE) or stop contributing early (Coast FIRE)',
+    'Current net worth and savings rate, which determine how fast you reach any target',
+  ],
+  stats: [
+    {
+      text: `${formatPercent(safeWithdrawalRate)} default Safe Withdrawal Rate`,
+      sourceLabel: 'Trinity Study (1998)',
+      sourceUrl: 'https://en.wikipedia.org/wiki/Trinity_study',
+    },
+    {
+      text: '7% default nominal expected return',
+      sourceLabel: 'NYU Stern historical U.S. equity return data',
+      sourceUrl: 'https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html',
+    },
+  ],
 });
 
 export default async function GuidesIndexPage() {
@@ -68,6 +126,13 @@ export default async function GuidesIndexPage() {
           Explore different FIRE strategies and find the path that fits your lifestyle.
         </p>
       </div>
+
+      {/* 부속P CODE-01 — GEO answer block, FIRST content block after the
+          header/breadcrumb chrome: query-phrased H2, 40-60 word answer,
+          data table, factor list, and >=2 sourced stats — server-rendered.
+          DB-authored guide bodies (guide/[slug]) are out of code scope; this
+          hub page itself is fully static/hardcoded, so it is in scope. */}
+      <AnswerBlock entity={GUIDE_HUB_ANSWER} idPrefix="guide-hub-geo" className="mb-8" />
 
       {guides.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2">

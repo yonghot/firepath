@@ -4,6 +4,7 @@ import { DEFAULT_INPUT } from '@/constants/fire-defaults';
 import { FIRE_COLORS } from '@/constants/fire-colors';
 import { formatCurrencyFull } from '@/lib/utils/format';
 import { buildOgVisual, OG_SIZE, OG_CONTENT_TYPE } from '@/lib/og/og-visual';
+import { CORE_ASSUMPTIONS_LAST_VERIFIED } from '@/lib/figures';
 
 /**
  * opengraph-image.tsx (home, `/`) — 부속M K09.
@@ -36,6 +37,7 @@ export default async function Image() {
         },
         { label: 'Fat FIRE target', value: formatCurrencyFull(results.fat.targetAmount), accent: FIRE_COLORS.fat },
       ],
+      dataVerifiedDate: CORE_ASSUMPTIONS_LAST_VERIFIED,
     }),
     { ...OG_SIZE }
   );

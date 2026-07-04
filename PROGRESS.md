@@ -770,3 +770,438 @@ pnpm build      — PASS (27 routes; [sitemap] firepath: 16 indexable URLs — u
 - `ads.txt`, the AdSense loader script (`app/layout.tsx` `<script id="adsense-loader">`), and all Auto-ads/ad-provider *behavior* (only the dormant `journey` option was added, gated off by default) are unchanged.
 - Owner-console actions (P01-P09, 부속M §10) — not attempted, per mandate. `docs/adsense-day1.md` is documentation for P05, not an execution of it.
 - No commit was made — per mandate, the orchestrator handles commit/deploy.
+
+---
+
+## Wave P0 (부속P Traffic Maximization) — 2026-07-04
+
+Implemented CODE-01, CODE-02, CODE-03 from `부속P_트래픽극대화_딥리서치.md` §4, building
+strictly on top of the existing 부속I SEO infra (breadcrumbs, thin-page gate,
+meta, IndexNow, Web Vitals) and 부속F/H monetization+compliance without
+re-speccing them. No owner-deployment/outreach tasks (OWN-01..07) attempted —
+code only, per mandate.
+
+### CODE-01 — GEO passage-level answer blocks
+
+- **New `src/lib/seo/geo.ts`** — `GeoAnswerEntity` type + `buildAnswerBlock()`
+  (typed pass-through shaping function) + `validateGeoAnswerEntity()` (dev-time
+  shape checker: 40-60 word answer, 5-10 table rows, 3-4 table cols, 5-10
+  factors, >=2 stats, freshness-marker presence). Coexists with the pre-existing
+  `src/lib/seo.ts` file (buildMeta) — `@/lib/seo` and `@/lib/seo/geo` resolve
+  independently under this repo's `bundler` moduleResolution; no existing
+  `@/lib/seo` import site needed to change.
+- **New `src/components/common/answer-block.tsx`** — pure server component
+  (`AnswerBlock`) rendering a `GeoAnswerEntity` as: query-phrased `<h2>`,
+  40-60 word answer `<p>`, a "Data verified {date}" freshness marker, a
+  compact `<table>` (3-4 cols x 5-10 rows), a "Factors that affect this
+  number" `<ul>` (5-10 items), and a sourced-stats `<ul>` (>=2 items, each
+  with inline attribution and an optional link). No `'use client'` — lands in
+  the initial server-rendered HTML.
+- **New `src/lib/seo/geo-entities.ts`** — `MAIN_CALCULATOR_ANSWER`, the shared
+  entity for the main FIRE calculator, extracted once so `/` (home) and
+  `/embed` render byte-identical GEO content and can never drift.
+- **Wired as the first content block** (after header/breadcrumb chrome, before
+  longer-form prose/FAQ) on: `/fire-types` (per-FIRE-type target table),
+  `/healthcare-bridge` (5 real retirement-age bridge scenarios computed via
+  `calculateHealthcareBridge`), `/guide` hub (FIRE-type overview table — DB-authored
+  guide bodies at `/guide/[slug]` are explicitly out of code scope per the
+  task brief), `/` (main calculator), and `/embed` (same `MAIN_CALCULATOR_ANSWER`
+  as home, so cited embeds carry the same passage).
+- Every number in every answer/table/stat traces to `calculateFIRE()` /
+  `calculateHealthcareBridge()` / `figures.ts` — no fabricated figures.
+  Verified via `curl` (JS disabled) against a local `next start` build: all
+  five pages return 200 and contain the query-phrased H2, the answer
+  paragraph, `<table>`, the factors `<ul>`, >=2 distinct sourced stats
+  (Trinity Study / NYU Stern / Social Security Act §226 / KFF 2023), and the
+  "Data verified" freshness marker in server-rendered HTML.
+
+### CODE-02 — 2026-valid schema set (drop FAQPage/HowTo)
+
+- **Removed `faqJsonLd()`** from `src/components/common/faq-section.tsx`
+  entirely (was unused after this wave's call-site removals) — `grep -r
+  FAQPage src` now returns nothing except comments documenting the removal.
+  `FAQSection` (the on-page accordion text) is unchanged and still renders on
+  `/`, `/fire-types`, `/healthcare-bridge` for GEO.
+- Removed the three `<script type="application/ld+json">` FAQPage emissions
+  that called it (`src/app/(main)/page.tsx`, `.../fire-types/page.tsx`,
+  `.../healthcare-bridge/page.tsx`).
+- **New: WebSite + `potentialAction` SearchAction** in `src/app/layout.tsx`,
+  emitted once at the site root alongside the existing `WebApplication` +
+  `organizationJsonLd()` (Organization) scripts.
+- Confirmed already-compliant (no change needed): `Article` on DB-authored
+  guide pages (`guide/[slug]/page.tsx`, out of code scope), `SoftwareApplication`
+  on `/`, `/fire-types`, `/healthcare-bridge` via `calculatorAppJsonLd()` /
+  inline `pageJsonLd`/`toolJsonLd` (author Person + publisher Organization +
+  `offers.price=0`, no `aggregateRating` anywhere — verified real data does
+  not exist for one), `BreadcrumbList` via the shared `<Breadcrumbs>` component
+  (already wired on every entity page).
+- No `software.ts`/`article.ts`/`person.ts`/`organization.ts`/`website.ts`
+  files were created — this repo already consolidates that logic into
+  `src/components/common/json-ld.ts` (`calculatorAppJsonLd`, `personJsonLd`,
+  `organizationJsonLd`, `breadcrumbJsonLd`); reused rather than duplicated.
+
+### CODE-03 — embed backlink hardening + copy-embed UX
+
+- **`rel="nofollow sponsored"` → `rel="nofollow ugc"`** in
+  `src/app/embed/embed-attribution.tsx` (in-iframe attribution link) and
+  `src/components/common/embed-snippet.tsx` (copy-paste snippet's parent-page
+  attribution anchor). "ugc" rather than "sponsored" per Google's
+  distinction — no payment changes hands for an embed install.
+- **New `src/app/embed/embed-resize-script.tsx`** (`EmbedResizeScript`) —
+  posts `{ type: 'firepath:resize', height }` to `window.parent` on mount, on
+  `ResizeObserver`-detected content changes, and on window resize. Wired into
+  `/embed`. `EmbedSnippet`'s copy-paste markup now includes a small inline
+  `<script>` that listens for this message and sets the iframe's height.
+- **"Embed this calculator" panel added to the main calculator page (`/`)** —
+  reuses the existing `EmbedSnippet` component (previously only on the
+  standalone `/embed-this` page), placed after the FAQ section.
+- `/embed` route metadata `robots: { index: false, follow: false }` was
+  already in place — confirmed unchanged (noindex preserved).
+- `embed_loaded` GA4 event with `host_domain` param was already implemented
+  in `EmbedAttribution` — confirmed unchanged (fires on every `/embed` mount).
+- Verified via `curl` (JS disabled): `/embed` returns `noindex, nofollow` and
+  the attribution anchor's `rel` attribute contains `nofollow ugc noopener`.
+  Grep-verified every `rel="..."` in the embed source files contains
+  `nofollow` (no followed link emitted from any embed source).
+
+### New tests (40 added: 462 total, was 422)
+
+- `src/lib/seo/__tests__/geo.test.ts` — `buildAnswerBlock`/`validateGeoAnswerEntity`
+  shape checks + `MAIN_CALCULATOR_ANSWER` acceptance-criteria assertions
+  (word count, table shape, factor count, stat count, freshness marker,
+  no-superlative tone).
+- `src/components/common/__tests__/answer-block.test.ts` — source-level check
+  that all 5 required pages import and render `<AnswerBlock>` and remain
+  server components (no top-level `'use client'`).
+- `src/components/common/__tests__/faq-section.test.ts` — repo-wide grep guard
+  that no source file constructs a `FAQPage`/`HowTo` `@type` literal.
+- `src/app/__tests__/code-02-schema.test.ts` — WebSite+SearchAction presence
+  in `layout.tsx`, no fabricated `aggregateRating` in `json-ld.ts` or its
+  builder outputs, `BreadcrumbList` shape + wiring confirmation.
+- `src/app/embed/__tests__/embed-hardening.test.ts` — `nofollow ugc` on both
+  embed attribution surfaces (never `sponsored`), `noindex` robots on
+  `/embed`, postMessage resize wiring both sides, `embed_loaded` host param,
+  and a blanket "every `rel=` in embed source contains nofollow" check.
+
+### Gate results (all green)
+
+```
+pnpm lint       — PASS (0 errors, 9 pre-existing warnings, none in files this wave touched)
+pnpm typecheck  — PASS
+pnpm test       — 462 tests, all passed (+40 new this wave)
+pnpm build      — PASS (27 routes; [sitemap] firepath: 16 indexable URLs — unchanged, CODE-01/02/03 add no new indexable pages)
+```
+
+### New files (9)
+- `src/lib/seo/geo.ts`
+- `src/lib/seo/geo-entities.ts`
+- `src/lib/seo/__tests__/geo.test.ts`
+- `src/components/common/answer-block.tsx`
+- `src/components/common/__tests__/answer-block.test.ts`
+- `src/components/common/__tests__/faq-section.test.ts`
+- `src/app/embed/embed-resize-script.tsx`
+- `src/app/embed/__tests__/embed-hardening.test.ts`
+- `src/app/__tests__/code-02-schema.test.ts`
+
+### Modified files (8)
+- `src/app/layout.tsx` — added `websiteJsonLd` (WebSite + SearchAction) script tag.
+- `src/app/(main)/page.tsx` — dropped `faqJsonLd()` script; added `<AnswerBlock>` + `<EmbedSnippet>`.
+- `src/app/(main)/fire-types/page.tsx` — dropped `faqJsonLd()` script; added `<AnswerBlock>`.
+- `src/app/(main)/healthcare-bridge/page.tsx` — dropped `faqJsonLd()` script; added `<AnswerBlock>` (5 real bridge-scenario rows).
+- `src/app/(main)/guide/page.tsx` — added `<AnswerBlock>` (guide hub only; DB guide bodies untouched).
+- `src/app/embed/page.tsx` — added `<EmbedResizeScript>` + `<AnswerBlock>`.
+- `src/app/embed/embed-attribution.tsx` — `nofollow sponsored` → `nofollow ugc`.
+- `src/components/common/embed-snippet.tsx` — `nofollow sponsored` → `nofollow ugc`; added resize-listener `<script>` to the copy-paste snippet.
+- `src/components/common/faq-section.tsx` — removed `faqJsonLd()` (FAQPage builder).
+
+### Explicitly out of scope / not touched this wave
+- **CODE-04-07 (P1/P2)** — not attempted this wave; this wave was scoped to P0 only (CODE-01/02/03) per mandate.
+- **OWN-01..07** — owner-deployment/outreach checklist items; Claude Code execution is explicitly prohibited for these per 부속P §0/§3/§8. Not attempted.
+- **DB-authored guide bodies** (`/guide/[slug]`) — out of code scope per the task brief (Supabase content, not this codebase); their existing `Article` JSON-LD was confirmed compliant and left untouched.
+- **llms.txt** — untouched, per anti-pattern #5 (not a GEO growth lever; no further investment).
+- No commit was made — per mandate, the orchestrator handles commit/deploy.
+
+## 부속P Wave P1 — CODE-04/05/06 (statistics page, dated OG images, information-gain gate)
+
+Repo reality confirmed by grep before implementing: `src/lib/seo/geo.ts` +
+`geo-entities.ts` (CODE-01), `src/lib/og/og-visual.tsx` + 3 existing
+`opengraph-image.tsx` routes (K09/CODE-05 foundation), `src/lib/figures.ts`
+(`CORE_ASSUMPTIONS_LAST_VERIFIED`), `src/lib/content-pages.ts` (T09
+`hasUniqueData` gate), `src/app/sitemap.ts`, `src/app/embed/embed-attribution.tsx`
+(rel already `nofollow ugc` from the P0 wave — reconciliation confirmed, no
+change needed), `src/lib/seo.ts` `buildMeta()` (already sets
+`twitter.card=summary_large_image` sitewide).
+
+### CODE-04 — `/fire-statistics` linkable-asset page + `/data.json` + `/data.csv`
+
+- **New `src/lib/seo/statistics.ts`** — `buildFireStatisticsDataset()`
+  aggregates `calculateFIRE(DEFAULT_INPUT)` across all 5 FIRE types (ranked
+  descending by target amount) and a fixed 5-scenario retirement-age matrix
+  (40/45/50/55/60 — deliberately small, not a combinatorial explosion per
+  §8 anti-pattern #11) into: a headline stat/range, a ranked table, a
+  cross-scenario table, and 5 pull-quote-ready findings (Fat-vs-Lean spread,
+  Regular-vs-Barista gap, Coast seed reduction by retirement age, Regular
+  FIRE's age-invariance, SWR sensitivity) — every figure traced directly to
+  `calculateFIRE()`/`CORE_FIGURES` (figures.ts), nothing fabricated.
+- **New `src/app/(main)/fire-statistics/page.tsx`** — headline stat, ranked
+  table, cross-scenario table, findings list, a CODE-06 data-derived
+  synthesis sentence (`buildSynthesisSentence`), download links, sources,
+  disclaimer. Emits `Dataset` JSON-LD via the new
+  `fireStatisticsDatasetJsonLd()` builder (`src/components/common/json-ld.ts`)
+  pointing at `/data.json` + `/data.csv` as `DataDownload` distributions.
+- **New `src/app/data.json/route.ts`** and **`src/app/data.csv/route.ts`** —
+  static (`force-static`, revalidate 1d) exports of the exact same
+  `buildFireStatisticsDataset()` figures the page renders — one JSON object,
+  one flattened CSV (retirement_age × fire_type × target_amount_usd rows).
+- **Registered in `src/lib/content-pages.ts`** as a `kind: 'spoke'` page with
+  4 `differentiatingFacts` (see CODE-06 below) so it flows through the
+  existing `getIndexablePages()` → `sitemap.ts` pipeline automatically —
+  confirmed via build: sitemap indexable count went from 16 → 17.
+- **New OG image** `src/app/(main)/fire-statistics/opengraph-image.tsx`
+  (CODE-05, see below).
+
+### CODE-05 — dated freshness marker baked into OG images
+
+- **`src/lib/og/og-visual.tsx`** — `buildOgVisual()` gained an optional
+  `dataVerifiedDate` param; when provided, the footer line renders
+  `"gofirepath.com — As of {date}, real computed figures"` instead of the
+  prior undated generic tagline. No fabricated ratings/superlatives (tested).
+- Wired `dataVerifiedDate: CORE_ASSUMPTIONS_LAST_VERIFIED` into all 3
+  existing `opengraph-image.tsx` routes (`/`, `/fire-types`,
+  `/healthcare-bridge`) plus the new `/fire-statistics` one (which passes
+  `dataset.dataVerifiedDate` from the same aggregate dataset the page uses).
+- `twitter:card=summary_large_image` + `og:image` were **already** emitted
+  sitewide via `buildMeta()` (`src/lib/seo.ts`) and the Next.js
+  `opengraph-image.tsx` file convention — confirmed via curl, no code change
+  needed beyond wiring the new route into that existing convention.
+- Verified via `curl` against a local `next start` build: the `/fire-statistics`
+  OG image route returns `200 image/png`, and the page `<head>` carries
+  `og:image` (pointing at the versioned OG route) and
+  `twitter:card=summary_large_image`.
+
+### CODE-06 — information-gain guard strengthening (`content-pages.ts`)
+
+- **Added `differentiatingFacts: string[]`** to every `kind: 'spoke'` page in
+  `src/lib/content-pages.ts` (5 FIRE-type anchors, 7 guide articles,
+  healthcare-bridge, the new fire-statistics page) — each carries >=4 real,
+  sibling-differing facts (computed target/monthly figures, formula
+  distinctions, cross-entity comparisons, sourced citations), never a
+  noun-swapped template string.
+- **New `MIN_DIFFERENTIATING_FACTS = 4`**, **`passesInformationGainGate(page)`**
+  (spoke pages must carry >= the threshold; core/hub pages exempt by design
+  per 부속I T09), and **`computeHasUniqueData(page)`** (the single function
+  every registry entry's `hasUniqueData` flag must equal — asserted in
+  `content-pages.test.ts` for every entry, so the flag can never silently
+  drift from the fact count).
+- **`getIndexablePages()` now gates on `passesInformationGainGate(p)`
+  directly** (defense in depth), not only the hand-set `hasUniqueData` flag,
+  so `sitemap.ts` can never include a page that fails the fact-count even if
+  a future edit mistakenly left `hasUniqueData: true`.
+- **New conditional-phrasing + synthesis-sentence helpers**:
+  `aboveOrBelowBenchmark(value, benchmark)` (returns `'above'|'below'|'equal to'`
+  — never a hardcoded direction) and `buildSynthesisSentence(...)` (builds a
+  `>=1 analytical-synthesis sentence` referencing the actual computed
+  values). Wired live into the new `/fire-statistics` page (Lean vs. Regular
+  FIRE comparison sentence) — not just library functions nobody calls.
+- **New regression test** (`content-pages.test.ts`): a deliberately thin
+  `EXAMPLE_THIN_PAGE_FIXTURE` (1 fact, below the 4-fact threshold) asserts
+  `passesInformationGainGate()` returns `false`, `hasUniqueData` is `false`,
+  and it is absent from `getIndexablePages()` even when spliced into the
+  registry with `hasUniqueData` forced back to `true` — proving the
+  fact-count (not the hand-set flag) is the actual gate.
+- Did **not** re-spec breadcrumbs/meta/IndexNow/Web Vitals per the mandate —
+  only the gating math and the sitemap/robots consequence of failing it were
+  touched.
+
+### New tests (46 added: 508 total, was 462)
+
+- `src/lib/seo/__tests__/statistics.test.ts` — headline/ranked-table/findings
+  shape, every figure traced to `calculateFIRE()`, determinism, real sources.
+- `src/app/data.json/__tests__/route.test.ts`,
+  `src/app/data.csv/__tests__/route.test.ts` — content-type, figures match
+  `buildFireStatisticsDataset()` exactly, no fabricated `aggregateRating`.
+- `src/app/(main)/fire-statistics/__tests__/page.test.ts` — server-component
+  guard, headline/table/findings sections present, Dataset JSON-LD +
+  data.json/data.csv links wired, synthesis sentence rendered.
+- Extended `src/lib/og/__tests__/og-visual.test.ts` — `dataVerifiedDate`
+  renders "As of {date}" (or falls back cleanly when omitted), no
+  superlative words, every `opengraph-image.tsx` route (incl. the new
+  fire-statistics one) passes `dataVerifiedDate:`.
+- Extended `src/components/common/__tests__/json-ld.test.ts` —
+  `fireStatisticsDatasetJsonLd()` shape, `dateModified` fidelity, both
+  `DataDownload` distributions present, no fabricated `aggregateRating`/`review`.
+- Extended `src/lib/__tests__/content-pages.test.ts` — CODE-06 information-gain
+  guard: fact-count enforcement on every spoke, `hasUniqueData` ===
+  `passesInformationGainGate()` consistency for every registry entry,
+  core/hub exemption, the thin-page regression test above, and the new
+  conditional-phrasing/synthesis-sentence helper unit tests.
+
+### Gate results (all green)
+
+```
+pnpm lint       — PASS (0 errors, 9 pre-existing warnings, none in files this wave touched)
+pnpm typecheck  — PASS
+pnpm test       — 508 tests, all passed (+46 new this wave)
+pnpm build      — PASS (30 routes; [sitemap] firepath: 17 indexable URLs, was 16 — the new
+                  /fire-statistics page is the only new indexable URL this wave)
+```
+
+Manually verified against a local `next start` build (curl, JS disabled):
+`/fire-statistics` renders the headline stat, ranked table, cross-scenario
+table, findings, Dataset JSON-LD, and `/data.json`/`/data.csv` links in
+server-rendered HTML; `/data.json` and `/data.csv` return the matching
+content-types and figures; the `/fire-statistics` OG image route returns
+`200 image/png`; `sitemap.xml` lists `/fire-statistics`; no `FAQPage`/`HowTo`
+schema is emitted anywhere; the embed attribution link still carries
+`nofollow ugc` (P0 wave's CODE-03 fix confirmed still intact, not reverted).
+
+### New files (10)
+- `src/lib/seo/statistics.ts`
+- `src/lib/seo/__tests__/statistics.test.ts`
+- `src/app/(main)/fire-statistics/page.tsx`
+- `src/app/(main)/fire-statistics/opengraph-image.tsx`
+- `src/app/(main)/fire-statistics/__tests__/page.test.ts`
+- `src/app/data.json/route.ts`
+- `src/app/data.json/__tests__/route.test.ts`
+- `src/app/data.csv/route.ts`
+- `src/app/data.csv/__tests__/route.test.ts`
+
+### Modified files (7)
+- `src/lib/og/og-visual.tsx` — added optional `dataVerifiedDate` param + dated footer text.
+- `src/app/(main)/opengraph-image.tsx`, `src/app/(main)/fire-types/opengraph-image.tsx`, `src/app/(main)/healthcare-bridge/opengraph-image.tsx` — pass `dataVerifiedDate: CORE_ASSUMPTIONS_LAST_VERIFIED`.
+- `src/components/common/json-ld.ts` — added `fireStatisticsDatasetJsonLd()`.
+- `src/lib/content-pages.ts` — `differentiatingFacts` field, `MIN_DIFFERENTIATING_FACTS`, `passesInformationGainGate()`, `computeHasUniqueData()`, `aboveOrBelowBenchmark()`, `buildSynthesisSentence()`, `EXAMPLE_THIN_PAGE_FIXTURE`, registered `/fire-statistics`.
+- `src/app/sitemap.ts` — header comment updated to reference the strengthened information-gain gate (no logic change — already read from `getIndexablePages()`).
+
+### Explicitly out of scope / not touched this wave
+- **CODE-07 (P2)** — not attempted; this wave was scoped to P1 only (CODE-04/05/06) per mandate.
+- **OWN-01..07** — owner-deployment/outreach checklist items; Claude Code execution is explicitly prohibited per 부속P §0/§3/§8. Not attempted.
+- **Breadcrumbs/meta/IndexNow/Web Vitals** — 부속I T09 infra confirmed untouched; CODE-06 only strengthened the fact-count gating math per the mandate.
+
+---
+
+## Wave P2 — CODE-07: AI-referral & rich-context GA4 detection (2026-07-04)
+
+### What was done
+
+Added a pure-measurement, first-load referrer classifier to the existing GA4
+event pipeline in `src/lib/analytics.ts` (부속I T02 / 부속P CODE-07). No UI
+change; no new page; nothing added to the sitemap.
+
+- **`EventName` union** gained three new literals: `ai_referral`,
+  `embed_referral`, `community_referral` — each its own GA4 event so the
+  three referral ladders in 부속P §7 (AI-citation / embed / community-
+  directory) stay distinguishable, per the CODE-07 사양's explicit
+  "Separately tag embed-referral sessions ... and community/directory
+  referrers" instruction (folding everything into a single `ai_referral{type}`
+  event would have collapsed that distinction).
+- **`classifyReferral(referrer, search)`** — a pure function (no `window`
+  access, trivially unit-testable) that takes `document.referrer` and
+  `location.search` and returns a discriminated union:
+  - `utm_source=embed&utm_campaign={host}` (CODE-03's own attribution link)
+    → `{ kind: 'embed_referral', source: host }` — checked FIRST since it's
+    first-party attribution and must win over any coincidental
+    community/AI-looking referrer.
+  - Known AI-engine `utm_source` redirector patterns (`ai-overview`, `aio`,
+    engine names) → `ai_referral`.
+  - `document.referrer` hostname matches (exact or subdomain suffix, e.g.
+    `www.perplexity.ai` still matches `perplexity.ai`) one of
+    `chatgpt.com`/`chat.openai.com`, `perplexity.ai`, `gemini.google.com`,
+    `copilot.microsoft.com` → `ai_referral` with `source` = engine name.
+  - Known community/directory hosts (`reddit.com`, `quora.com`,
+    `producthunt.com`, `pinterest.com`/`.co.kr`, `news.ycombinator.com`) →
+    `community_referral`.
+  - Anything else (empty, malformed URL, unrelated host) → `{ kind: 'none' }`
+    — never throws.
+- **`initReferralClassifier()`** — the browser-side wiring, mirroring the
+  existing `initTrafficMarker()` pattern exactly: no-ops on the server,
+  reads `document.referrer` + `window.location.search` once, calls
+  `classifyReferral()`, and fires the matching event through the EXISTING
+  consent-gated `trackEvent()` (so it silently no-ops pre-consent, same as
+  every other event — no new consent logic). Guarded by a `sessionStorage`
+  flag (`cc_referral_classified`) so client-side re-renders/navigations
+  within the same browser session don't re-fire against a stale
+  `document.referrer`.
+- **Wired into `src/components/providers.tsx`** — called once on mount
+  alongside `initTrafficMarker()`, same `useEffect`, same lifecycle. Pure
+  measurement; no UI change.
+- **`embed_loaded` is untouched** — it already fires *inside* the /embed
+  iframe on widget mount (CODE-03, unchanged). `embed_referral` is the
+  separate, complementary signal: a load of the *canonical destination*
+  page that arrived via a click on the embed's "Powered by FIREPath"
+  attribution link. The two together close the loop CODE-03 → CODE-07
+  the spec describes ("host param from CODE-03").
+
+### New tests (17 added: 525 total, was 508)
+
+Extended `src/lib/__tests__/analytics.test.ts` (no new test file — same
+module, same existing DOM-stub pattern since this repo's vitest runs in
+plain `node`, no jsdom):
+- `classifyReferral` (10 tests): perplexity.ai / chatgpt.com+chat.openai.com
+  / gemini.google.com / copilot.microsoft.com referrer → correct
+  `ai_referral` source; subdomain-suffix matching; `utm_source=embed`+
+  `utm_campaign` → `embed_referral`; reddit.com → `community_referral`;
+  empty/unrelated/malformed referrer → `none` (never throws); AI-Overview
+  utm pattern → `ai_referral/ai-overview`; embed-utm priority over a
+  simultaneously-community-looking referrer.
+- `initReferralClassifier` (7 tests): fires `ai_referral` for a spoofed
+  `perplexity.ai` referrer; fires `embed_referral` for an
+  `utm_source=embed` load; fires `community_referral` for a reddit.com
+  referrer; does NOT fire for an unrelated/direct referrer (e.g. Google
+  organic); session-storage guard prevents a second call in the same
+  session from re-firing; no-op (never throws) on the server.
+
+### Gate results (all green)
+
+```
+pnpm lint       — PASS (0 errors, 9 pre-existing warnings, none in files this wave touched)
+pnpm typecheck  — PASS
+pnpm test       — 525 tests, all passed (+17 new this wave)
+pnpm build      — PASS (30 routes; [sitemap] firepath: 17 indexable URLs, unchanged —
+                  CODE-07 is pure measurement code, no new page)
+```
+
+Manually re-confirmed still intact (not reverted by this wave): embed
+attribution link still carries `rel="nofollow ugc"` (never `sponsored`);
+no `FAQPage`/`HowTo` JSON-LD emitted anywhere in `src/`.
+
+### DebugView verification steps (owner, manual — Claude cannot drive a real
+browser session against a live GA4 property)
+
+1. Set `NEXT_PUBLIC_GA_DEBUG=1` on the Preview deploy (existing
+   `isGaDebugPreview()` gate — same flag other events already rely on) so
+   hits land in DebugView tagged `debug_mode`/`traffic_type:internal`.
+2. **Referrer-based paths** (`ai_referral` engine hosts, `community_referral`):
+   easiest is a browser extension that overrides the `Referer` header
+   (e.g. "Referer Control" / "ModHeader") set to `https://www.perplexity.ai/`
+   (or `https://www.reddit.com/`), then load the Preview URL. Alternatively,
+   host a one-line HTML redirector (`<a href="{preview-url}">go</a>`) on any
+   domain you control whose hostname matches one of the classified hosts,
+   and click through — the real `document.referrer` will be set by the
+   browser on navigation.
+3. **UTM-based paths** (`embed_referral`, AI-Overview `ai_referral`): no
+   spoofing needed — append the query string directly, e.g.
+   `{preview-url}/?utm_source=embed&utm_campaign=example.com` or
+   `{preview-url}/?utm_source=ai-overview`, and load it.
+4. In GA4 Admin → DebugView, confirm:
+   - Perplexity referrer → `ai_referral` event, `source=perplexity`.
+   - Reddit referrer → `community_referral` event, `source=reddit`.
+   - `?utm_source=embed&utm_campaign=example.com` → `embed_referral` event,
+     `source=example.com`.
+   - `?utm_source=ai-overview` → `ai_referral` event, `source=ai-overview`.
+   - A plain/organic-Google load fires none of the four new events.
+   - Every event still carries the existing `site` dimension (automatic via
+     `trackEvent()`), so results stay filterable per-site in the shared GA4
+     property.
+5. Reload the SAME tab a second time without clearing `sessionStorage` and
+   confirm the event does NOT fire again (the `cc_referral_classified`
+   session guard) — this matches the unit test but is worth eyeballing
+   once live.
+
+### Explicitly out of scope / not touched this wave
+- **OWN-01..07** — owner-deployment/outreach checklist items; Claude Code
+  execution is explicitly prohibited per 부속P §0/§3/§8. Not attempted.
+- **UI** — no visible change anywhere; CODE-07 is pure measurement code per
+  the mandate ("no UI change").
+- No commit was made — per mandate, the orchestrator handles commit/deploy.
+- No commit was made — per mandate, the orchestrator handles commit/deploy.

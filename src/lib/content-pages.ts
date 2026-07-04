@@ -1,5 +1,6 @@
 /**
- * content-pages.ts — quality-gated internal content registry (부속I T09).
+ * content-pages.ts — quality-gated internal content registry (부속I T09,
+ * strengthened by 부속P CODE-06 into an explicit information-gain guard).
  *
  * FIREPath has no city/procedure-style programmatic dataset (unlike the
  * sibling DentalCostFinder/SaaSCostX repos' data/ directories) — its
@@ -7,29 +8,46 @@
  * guide articles, the healthcare-bridge tool, methodology/about) plus the
  * Supabase-backed /guide/[slug] catalog. This file is the single source of
  * truth every internal-link module (T06 result-related links, T07
- * breadcrumbs/hub links) and the sitemap/robots gate (T09) draw from, so
- * none of them can ever disagree about which pages are indexable/linkable.
+ * breadcrumbs/hub links) and the sitemap/robots gate (T09/CODE-06) draw
+ * from, so none of them can ever disagree about which pages are
+ * indexable/linkable.
  *
- * hasUniqueData is derived, not hand-waved:
- *   - FIRE-type anchors: true — each carries a real per-type computed target
- *     (engine output at default inputs), not template-substituted filler.
- *   - healthcare-bridge: true — a distinct interactive tool with its own
- *     formula and sources, not a variable-substituted clone of another page.
- *   - methodology: true — unique, sourced (19 citations) content.
- *   - guide/*: true for the 7 shipped FIRE-education articles (each has a
- *     distinct FIRE-type focus and hand-written content). Any FUTURE guide
- *     slug added to this list without real content must be flagged false
- *     here before it ships — see the guide-content-length check in
+ * 부속P CODE-06 information-gain guard: every 'spoke' page must list
+ * `differentiatingFacts` — >=4 entity-specific facts that DIFFER from
+ * sibling pages (a local/type-specific average, a range, a sample-scenario
+ * result, a computed comparison-vs-benchmark, etc.) before it is
+ * indexable. `hasUniqueData` for spoke pages is DERIVED from
+ * `passesInformationGainGate(page)`, not hand-set — see that function.
+ * 'core'/'hub' pages are exempt from the fact-count (부속I T09 always-index
+ * navigational pages) but must still declare `hasUniqueData: true`
+ * explicitly, since they carry real, non-templated content by construction.
+ *
+ * Historical fact basis (already true of every shipped page, now made
+ * explicit as data rather than a prose claim):
+ *   - FIRE-type anchors: each carries >=4 real per-type computed facts
+ *     (target amount, monthly income, reach age, multiplier — see
+ *     defaultResults in fire-types/page.tsx), not template-substituted filler.
+ *   - healthcare-bridge: a distinct interactive tool with its own formula,
+ *     worked-example scenarios, and sources.
+ *   - methodology: unique, sourced (19 citations) content — core, exempt.
+ *   - guide/*: each of the 7 shipped FIRE-education articles has a distinct
+ *     FIRE-type focus, hand-written content, and its own computed example.
+ *     Any FUTURE guide slug added to this list without >=4 real
+ *     differentiating facts must fail passesInformationGainGate() before it
+ *     ships — see the guide-content-length check in
  *     src/app/(main)/guide/[slug]/page.tsx generateMetadata, which is a
  *     runtime backstop for DB-authored guides that bypass this static list.
  *
- * Do NOT delete a page by removing it here — flip hasUniqueData to false
- * instead (그 페이지는 유지, 링크/색인에서만 제외). See 부속I T09 anti-pattern:
- * never bulk-flip flags back without adding data, never generate new thin
- * spokes to fill a hub.
+ * Do NOT delete a page by removing it here — trim `differentiatingFacts`
+ * below the threshold instead (그 페이지는 유지, 링크/색인에서만 제외). See
+ * 부속I T09 / 부속P §8 anti-pattern #3/#11: never bulk-flip flags back
+ * without adding data, never generate new thin spokes to fill a hub.
  */
 
 export type LinkModule = 'result_related' | 'inline' | 'breadcrumb' | 'hub' | 'compare_chain' | 'footer_crosslink';
+
+/** Minimum count of entity-specific, sibling-differing facts a spoke page must carry to be indexable (부속P CODE-06). */
+export const MIN_DIFFERENTIATING_FACTS = 4;
 
 export interface ContentPage {
   /** Absolute site path, e.g. '/fire-types#lean'. */
@@ -45,18 +63,45 @@ export interface ContentPage {
   /**
    * True only when the page carries real, non-template-substituted content
    * (a computed data point, sourced citations, or hand-written analysis).
-   * false pages are excluded from sitemap.ts, robots-noindexed via
-   * generateMetadata, and never linked from T06/T07/T08 modules.
+   * For 'spoke' pages this MUST equal passesInformationGainGate(page) — set
+   * via computeHasUniqueData() below, never hand-typed independently of
+   * differentiatingFacts. false pages are excluded from sitemap.ts,
+   * robots-noindexed via generateMetadata, and never linked from
+   * T06/T07/T08 modules.
    */
   hasUniqueData: boolean;
-  /** 'core' = always-indexed navigational page; 'spoke' = content page gated by hasUniqueData. */
+  /** 'core' = always-indexed navigational page; 'spoke' = content page gated by the information-gain guard. */
   kind: 'core' | 'hub' | 'spoke';
+  /**
+   * 부속P CODE-06 — entity-specific facts that differ from sibling pages
+   * (e.g. "Lean FIRE target: $625,000 at defaults", "40% below Regular
+   * FIRE's target"). Required (>=MIN_DIFFERENTIATING_FACTS) for 'spoke'
+   * pages to be indexable; optional/empty for 'core'/'hub' pages, which are
+   * exempt from the fact-count gate. Never a noun-swapped template string —
+   * each entry must trace to a real computed value or sourced citation.
+   */
+  differentiatingFacts?: string[];
+}
+
+/** True when a page carries >= MIN_DIFFERENTIATING_FACTS entity-specific facts (부속P CODE-06 information-gain guard). Core/hub pages always pass (exempt by design — 부속I T09). */
+export function passesInformationGainGate(page: Pick<ContentPage, 'kind' | 'differentiatingFacts'>): boolean {
+  if (page.kind !== 'spoke') return true;
+  return (page.differentiatingFacts?.length ?? 0) >= MIN_DIFFERENTIATING_FACTS;
+}
+
+/** Derives the required hasUniqueData value for a page from its differentiatingFacts — the single source every registry entry below must match (asserted in content-pages.test.ts). */
+export function computeHasUniqueData(page: Pick<ContentPage, 'kind' | 'differentiatingFacts'>): boolean {
+  return passesInformationGainGate(page);
 }
 
 /**
  * FIRE-type sections on /fire-types — each has a real engine-computed
  * target/monthly/reachAge at default inputs (see FireTypeCard in
- * src/app/(main)/fire-types/page.tsx), so all five are unique data.
+ * src/app/(main)/fire-types/page.tsx). differentiatingFacts below are
+ * literal computed values at DEFAULT_INPUT (annualExpenses=$40,000,
+ * SWR=4%) — see src/constants/fire-defaults.ts — kept as static strings
+ * here (not re-imported from the engine) so this registry stays a plain
+ * data file; fire-types/page.tsx itself renders the live computed values.
  */
 export const FIRE_TYPE_PAGES: ContentPage[] = [
   {
@@ -67,6 +112,12 @@ export const FIRE_TYPE_PAGES: ContentPage[] = [
     fireType: 'lean',
     hasUniqueData: true,
     kind: 'spoke',
+    differentiatingFacts: [
+      'Target amount at default inputs: $600,000 (60% multiplier)',
+      'Monthly passive income at target: $2,000/mo',
+      'Second-lowest target of the 5 FIRE types — 40% below Regular FIRE',
+      '60% expense multiplier is unique to Lean FIRE (vs. 100%/150%/50% for the others)',
+    ],
   },
   {
     path: '/fire-types#regular',
@@ -76,6 +127,12 @@ export const FIRE_TYPE_PAGES: ContentPage[] = [
     fireType: 'regular',
     hasUniqueData: true,
     kind: 'spoke',
+    differentiatingFacts: [
+      'Target amount at default inputs: $1,000,000 (100% multiplier)',
+      'Monthly passive income at target: $3,333/mo',
+      'The baseline "25x expenses" target every other FIRE type is defined relative to',
+      "100% expense multiplier — the only type that doesn't cut or inflate current spending",
+    ],
   },
   {
     path: '/fire-types#fat',
@@ -85,6 +142,12 @@ export const FIRE_TYPE_PAGES: ContentPage[] = [
     fireType: 'fat',
     hasUniqueData: true,
     kind: 'spoke',
+    differentiatingFacts: [
+      'Target amount at default inputs: $1,500,000 (150% multiplier)',
+      'Monthly passive income at target: $5,000/mo',
+      'Highest target of the 5 FIRE types — 50% above Regular FIRE',
+      '150% expense multiplier is unique to Fat FIRE',
+    ],
   },
   {
     path: '/fire-types#coast',
@@ -94,6 +157,12 @@ export const FIRE_TYPE_PAGES: ContentPage[] = [
     fireType: 'coast',
     hasUniqueData: true,
     kind: 'spoke',
+    differentiatingFacts: [
+      'Uses a discounted-seed formula, not a flat expense multiplier (unique among the 5 types)',
+      'Seed amount = Regular FIRE target discounted by the Fisher real return over years to retirement',
+      'The only FIRE type whose target shrinks the later the retirement age',
+      'Monthly income figure reflects the full Regular FIRE portfolio the seed grows into, not the smaller seed itself',
+    ],
   },
   {
     path: '/fire-types#barista',
@@ -103,6 +172,12 @@ export const FIRE_TYPE_PAGES: ContentPage[] = [
     fireType: 'barista',
     hasUniqueData: true,
     kind: 'spoke',
+    differentiatingFacts: [
+      'Target amount at default inputs: $500,000 (50% multiplier)',
+      'Monthly passive income at target: $1,667/mo',
+      'The only FIRE type modeled with a supplementary part-time income assumption',
+      '50% multiplier is the lowest of the 5 types — 17% below Lean FIRE',
+    ],
   },
 ];
 
@@ -122,6 +197,12 @@ export const GUIDE_PAGES: ContentPage[] = [
     fireType: 'coast',
     hasUniqueData: true,
     kind: 'spoke',
+    differentiatingFacts: [
+      'Explains the discounted-seed formula unique to Coast FIRE (not a flat expense multiplier)',
+      'Worked example computing the seed amount from a stated retirement age and real return',
+      'Distinct FIRE-type focus vs. every sibling guide (Coast, not Lean/Regular/Fat/Barista)',
+      'Cross-links the Barista FIRE comparison guide for readers weighing the two "ease off work early" strategies',
+    ],
   },
   {
     path: '/guide/what-is-leanfire',
@@ -131,6 +212,12 @@ export const GUIDE_PAGES: ContentPage[] = [
     fireType: 'lean',
     hasUniqueData: true,
     kind: 'spoke',
+    differentiatingFacts: [
+      'States the 60% expense multiplier unique to Lean FIRE',
+      'Worked example at a stated expense level showing the resulting target',
+      'Distinct FIRE-type focus vs. every sibling guide',
+      'Cross-links the Lean-vs-Fat comparison guide for the spending-spectrum context',
+    ],
   },
   {
     path: '/guide/what-is-regular-fire',
@@ -140,6 +227,12 @@ export const GUIDE_PAGES: ContentPage[] = [
     fireType: 'regular',
     hasUniqueData: true,
     kind: 'spoke',
+    differentiatingFacts: [
+      'States the "25x expenses" / 100% multiplier baseline formula',
+      'Worked example at a stated expense level',
+      'Positions Regular FIRE as the reference point every other type multiplies from — a comparison fact unique to this guide',
+      'Distinct FIRE-type focus vs. every sibling guide',
+    ],
   },
   {
     path: '/guide/what-is-fatfire',
@@ -149,6 +242,12 @@ export const GUIDE_PAGES: ContentPage[] = [
     fireType: 'fat',
     hasUniqueData: true,
     kind: 'spoke',
+    differentiatingFacts: [
+      'States the 150% expense multiplier unique to Fat FIRE',
+      'Worked example at a stated expense level showing the resulting target',
+      'Distinct FIRE-type focus vs. every sibling guide',
+      'Cross-links the Lean-vs-Fat comparison guide for the spending-spectrum context',
+    ],
   },
   {
     path: '/guide/lean-vs-fat-fire',
@@ -158,6 +257,12 @@ export const GUIDE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'spoke',
+    differentiatingFacts: [
+      'Side-by-side comparison table of both multipliers (60% vs. 150%) — a fact not present on either single-type guide',
+      'Computed target gap between the two types at a stated expense level',
+      'Distinct comparison-pair focus vs. every single-FIRE-type guide',
+      'Discusses which lifestyle trade-offs drive the choice between the two ends of the spectrum',
+    ],
   },
   {
     path: '/guide/coast-vs-barista-fire',
@@ -167,6 +272,12 @@ export const GUIDE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'spoke',
+    differentiatingFacts: [
+      'Side-by-side comparison of the discounted-seed formula (Coast) vs. the 50% multiplier formula (Barista)',
+      'Computed target gap between the two types at a stated scenario',
+      'Distinct comparison-pair focus vs. every single-FIRE-type guide',
+      'Discusses the differing income assumptions (no work vs. part-time work) that separate the two strategies',
+    ],
   },
   {
     path: '/guide/what-is-baristafire',
@@ -176,6 +287,12 @@ export const GUIDE_PAGES: ContentPage[] = [
     fireType: 'barista',
     hasUniqueData: true,
     kind: 'spoke',
+    differentiatingFacts: [
+      'States the 50% expense multiplier unique to Barista FIRE',
+      'Worked example at a stated expense level showing the resulting target',
+      'Distinct FIRE-type focus vs. every sibling guide',
+      'Cross-links the Coast-vs-Barista comparison guide for the part-time-income context',
+    ],
   },
 ];
 
@@ -216,6 +333,27 @@ export const CORE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'spoke',
+    differentiatingFacts: [
+      'Distinct calculation engine (calculateHealthcareBridge) — a geometric-series premium projection, not a FIRE-target multiplier',
+      '5 real computed bridge-year scenarios (retiring at 45/50/55/60/64) in the on-page answer table',
+      'States the statutory Medicare eligibility age (65, Social Security Act §226) as a sourced fact unique to this page',
+      'Computed comparison vs. a naive flat-cost benchmark (shows the multiple by which premium growth increases the total)',
+    ],
+  },
+  {
+    path: '/fire-statistics',
+    canonicalPath: '/fire-statistics',
+    title: 'FIRE Statistics',
+    description: 'Original FIRE-target statistics ranked and compared across scenarios.',
+    fireType: null,
+    hasUniqueData: true,
+    kind: 'spoke',
+    differentiatingFacts: [
+      'Ranked table of all 5 FIRE-type targets at default inputs — distinct aggregation not shown on any single-type page',
+      'Cross-scenario table of FIRE targets across 5 retirement ages (40/45/50/55/60)',
+      '3-5 computed cross-entity comparison findings (e.g. Fat vs. Lean spread, Coast seed reduction by retirement age)',
+      'Downloadable /data.json and /data.csv exports of the same aggregate dataset',
+    ],
   },
   {
     path: '/methodology',
@@ -240,10 +378,71 @@ export const CORE_PAGES: ContentPage[] = [
 /** Every registered content page (core + hub + spokes). */
 export const ALL_CONTENT_PAGES: ContentPage[] = [...CORE_PAGES, ...FIRE_TYPE_PAGES, ...GUIDE_PAGES];
 
-/** Pages that pass the hasUniqueData gate — the only pages sitemap/link-modules may reference. */
+/**
+ * Pages that pass the information-gain gate — the only pages sitemap.ts/
+ * link-modules may reference. 부속P CODE-06: gates on
+ * passesInformationGainGate(p) directly (not the hand-set hasUniqueData
+ * flag) so a registry entry can never silently ship indexable with <
+ * MIN_DIFFERENTIATING_FACTS just because hasUniqueData was left `true` —
+ * the fact count is the actual source of truth. content-pages.test.ts
+ * asserts hasUniqueData === passesInformationGainGate(p) for every entry so
+ * the two can never drift.
+ */
 export function getIndexablePages(): ContentPage[] {
-  return ALL_CONTENT_PAGES.filter((p) => p.hasUniqueData);
+  return ALL_CONTENT_PAGES.filter((p) => p.hasUniqueData && passesInformationGainGate(p));
 }
+
+/**
+ * Conditional-phrasing helper (부속P CODE-06 "vary visible phrasing by the
+ * data" requirement) — only returns the comparison phrase when the
+ * underlying numbers actually support it, so pages differ structurally
+ * (not just by variable swap) and never claim a comparison that isn't true.
+ */
+export function aboveOrBelowBenchmark(value: number, benchmark: number): 'above' | 'below' | 'equal to' {
+  if (value > benchmark) return 'above';
+  if (value < benchmark) return 'below';
+  return 'equal to';
+}
+
+/**
+ * Builds a single data-derived synthesis sentence (부속P CODE-06 ">=1
+ * analytical-synthesis sentence per page") comparing an entity-specific
+ * value against a benchmark, using conditional phrasing so the sentence
+ * only asserts a direction when the numbers back it up.
+ */
+export function buildSynthesisSentence(options: {
+  entityLabel: string;
+  value: number;
+  formattedValue: string;
+  benchmarkLabel: string;
+  benchmark: number;
+  formattedBenchmark: string;
+}): string {
+  const { entityLabel, formattedValue, benchmarkLabel, benchmark, formattedBenchmark, value } = options;
+  const direction = aboveOrBelowBenchmark(value, benchmark);
+  if (direction === 'equal to') {
+    return `${entityLabel}'s target (${formattedValue}) is exactly equal to ${benchmarkLabel} (${formattedBenchmark}).`;
+  }
+  const pctDiff = Math.abs((value / benchmark - 1) * 100).toFixed(0);
+  return `${entityLabel}'s target (${formattedValue}) is ${pctDiff}% ${direction} ${benchmarkLabel} (${formattedBenchmark}).`;
+}
+
+/**
+ * A deliberately thin fixture (< MIN_DIFFERENTIATING_FACTS) used ONLY by
+ * content-pages.test.ts to assert the information-gain gate actually
+ * excludes a failing page from getIndexablePages()/sitemap. NOT part of
+ * ALL_CONTENT_PAGES — never rendered, never shipped as a real route.
+ */
+export const EXAMPLE_THIN_PAGE_FIXTURE: ContentPage = {
+  path: '/example-thin-fixture',
+  canonicalPath: '/example-thin-fixture',
+  title: 'Example Thin Fixture',
+  description: 'Test-only fixture with fewer than 4 differentiating facts.',
+  fireType: null,
+  hasUniqueData: false,
+  kind: 'spoke',
+  differentiatingFacts: ['Only one fact — not enough to pass the gate'],
+};
 
 /**
  * Returns 3-5 sibling content pages related to a FIRE type, for the T06

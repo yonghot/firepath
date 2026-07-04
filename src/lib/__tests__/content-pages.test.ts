@@ -18,8 +18,14 @@ import {
   CORE_PAGES,
   FIRE_TYPE_PAGES,
   GUIDE_PAGES,
+  MIN_DIFFERENTIATING_FACTS,
   getIndexablePages,
   getRelatedContentPages,
+  passesInformationGainGate,
+  computeHasUniqueData,
+  aboveOrBelowBenchmark,
+  buildSynthesisSentence,
+  EXAMPLE_THIN_PAGE_FIXTURE,
 } from '@/lib/content-pages';
 
 describe('content-pages — T09 hasUniqueData registry', () => {
@@ -109,6 +115,86 @@ describe('content-pages — T06 getRelatedContentPages()', () => {
   it('caps the result at the requested max', () => {
     const links = getRelatedContentPages('regular', 3);
     expect(links.length).toBeLessThanOrEqual(3);
+  });
+});
+
+describe('content-pages — 부속P CODE-06 information-gain guard', () => {
+  it('MIN_DIFFERENTIATING_FACTS is 4 (spec: ">=4 entity-specific facts")', () => {
+    expect(MIN_DIFFERENTIATING_FACTS).toBe(4);
+  });
+
+  it('every registered "spoke" page carries >= MIN_DIFFERENTIATING_FACTS differentiating facts', () => {
+    const spokes = ALL_CONTENT_PAGES.filter((p) => p.kind === 'spoke');
+    expect(spokes.length).toBeGreaterThan(0);
+    for (const page of spokes) {
+      expect(page.differentiatingFacts?.length ?? 0).toBeGreaterThanOrEqual(MIN_DIFFERENTIATING_FACTS);
+    }
+  });
+
+  it('every registered page\'s hasUniqueData flag equals passesInformationGainGate(page) — can never silently drift', () => {
+    for (const page of ALL_CONTENT_PAGES) {
+      expect(page.hasUniqueData).toBe(passesInformationGainGate(page));
+      expect(page.hasUniqueData).toBe(computeHasUniqueData(page));
+    }
+  });
+
+  it('core/hub pages are exempt from the fact-count gate (always pass regardless of differentiatingFacts)', () => {
+    const coreAndHub = ALL_CONTENT_PAGES.filter((p) => p.kind !== 'spoke');
+    expect(coreAndHub.length).toBeGreaterThan(0);
+    for (const page of coreAndHub) {
+      expect(passesInformationGainGate(page)).toBe(true);
+    }
+  });
+
+  it('REGRESSION: a page with < 4 differentiating facts fails the gate, is excluded from getIndexablePages(), and would be noindex+absent-from-sitemap', () => {
+    // EXAMPLE_THIN_PAGE_FIXTURE carries exactly 1 fact — below MIN_DIFFERENTIATING_FACTS.
+    expect(EXAMPLE_THIN_PAGE_FIXTURE.differentiatingFacts).toHaveLength(1);
+    expect(passesInformationGainGate(EXAMPLE_THIN_PAGE_FIXTURE)).toBe(false);
+    expect(EXAMPLE_THIN_PAGE_FIXTURE.hasUniqueData).toBe(false);
+
+    // Simulate injecting it into the registry the way sitemap.ts/getIndexablePages() consume it —
+    // it must never appear in the indexable set even if hasUniqueData were mistakenly left true,
+    // because getIndexablePages() ALSO re-checks passesInformationGainGate() directly (defense in depth).
+    const withFixture = [...ALL_CONTENT_PAGES, { ...EXAMPLE_THIN_PAGE_FIXTURE, hasUniqueData: true }];
+    const indexableSimulated = withFixture.filter((p) => p.hasUniqueData && passesInformationGainGate(p));
+    expect(indexableSimulated.some((p) => p.canonicalPath === '/example-thin-fixture')).toBe(false);
+
+    // And the real getIndexablePages() (which does NOT include the fixture) never contains it either.
+    expect(getIndexablePages().some((p) => p.canonicalPath === '/example-thin-fixture')).toBe(false);
+  });
+
+  it('aboveOrBelowBenchmark returns conditional phrasing that matches the actual numbers (never a hardcoded direction)', () => {
+    expect(aboveOrBelowBenchmark(600000, 1000000)).toBe('below');
+    expect(aboveOrBelowBenchmark(1500000, 1000000)).toBe('above');
+    expect(aboveOrBelowBenchmark(1000000, 1000000)).toBe('equal to');
+  });
+
+  it('buildSynthesisSentence produces a data-derived synthesis sentence with the correct direction and percentage', () => {
+    const sentence = buildSynthesisSentence({
+      entityLabel: 'Lean FIRE',
+      value: 600000,
+      formattedValue: '$600,000',
+      benchmarkLabel: 'the Regular FIRE target',
+      benchmark: 1000000,
+      formattedBenchmark: '$1,000,000',
+    });
+    expect(sentence).toContain('below');
+    expect(sentence).toContain('40%');
+    expect(sentence).toContain('$600,000');
+    expect(sentence).toContain('$1,000,000');
+  });
+
+  it('buildSynthesisSentence never asserts a direction the numbers don\'t support (equal case)', () => {
+    const sentence = buildSynthesisSentence({
+      entityLabel: 'A',
+      value: 100,
+      formattedValue: '$100',
+      benchmarkLabel: 'B',
+      benchmark: 100,
+      formattedBenchmark: '$100',
+    });
+    expect(sentence).toContain('exactly equal to');
+    expect(sentence).not.toMatch(/\d+% (above|below)/);
   });
 });
 

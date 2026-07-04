@@ -2,13 +2,16 @@ import type { MetadataRoute } from 'next';
 import { getIndexablePages } from '@/lib/content-pages';
 
 /**
- * 부속I T09 — sitemap enumerates ONLY pages that pass the hasUniqueData gate
- * (src/lib/content-pages.ts), plus the few routes below that are core/utility
- * pages outside that content registry (premium, embed-this, contact) but are
- * still real, non-templated pages. This keeps sitemap.ts, robots
- * (generateMetadata on gated routes), and the T06/T07 link modules reading
- * from the exact same source of truth — see content-pages.test.ts for the
- * consistency assertion.
+ * 부속I T09 (strengthened by 부속P CODE-06) — sitemap enumerates ONLY pages
+ * that pass the information-gain gate (getIndexablePages() in
+ * src/lib/content-pages.ts requires >=MIN_DIFFERENTIATING_FACTS
+ * entity-specific facts for every 'spoke' page), plus the few routes below
+ * that are core/utility pages outside that content registry (premium,
+ * embed-this, contact) but are still real, non-templated pages. This keeps
+ * sitemap.ts, robots (generateMetadata on gated routes), and the T06/T07
+ * link modules reading from the exact same source of truth — see
+ * content-pages.test.ts for the consistency assertion, including the
+ * <4-fact-page-is-excluded regression test.
  *
  * Anchor URLs (e.g. /fire-types#lean) are NOT separate sitemap entries —
  * search engines index the page, not the fragment — so anchor-kind content

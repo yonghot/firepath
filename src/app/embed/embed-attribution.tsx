@@ -2,14 +2,16 @@
 
 /**
  * EmbedAttribution — the "Powered by FIREPath" backlink shown inside the
- * /embed iframe, plus the embed_loaded mount event (부속I T04).
+ * /embed iframe, plus the embed_loaded mount event (부속I T04 / 부속P CODE-03).
  *
- * Link-policy audit (부속I T04 / anti-pattern #8): the attribution link is
- * rel="nofollow sponsored" (an embed backlink is neither editorially earned
- * nor a plain follow — Google's guidance treats widget/badge links as a
- * manual-action vector, so we mark it sponsored+nofollow), uses a
- * brand-name anchor ("FIREPath", never a commercial keyword phrase like
- * "fire calculator"), and carries utm_source=embed&utm_medium=widget&
+ * Link-policy audit (부속I T04 / anti-pattern #8, reconciled per 부속P §4
+ * CODE-03 + §8 anti-pattern #2): the attribution link is rel="nofollow ugc"
+ * — Google's explicit guidance is that widget/embed-distributed links MUST
+ * be nofollow or they are a link-scheme violation; "ugc" (rather than
+ * "sponsored") because no payment/compensation changes hands for an embed
+ * install, matching Google's ugc-vs-sponsored distinction. The anchor uses a
+ * brand-name ("FIREPath", never a commercial keyword phrase like "fire
+ * calculator"), and carries utm_source=embed&utm_medium=widget&
  * utm_campaign={host_domain} so referral traffic from embeds is attributable
  * without relying on a followed link for SEO credit.
  */
@@ -44,7 +46,7 @@ export function EmbedAttribution() {
       <a
         href={href}
         target="_blank"
-        rel="nofollow sponsored noopener"
+        rel="nofollow ugc noopener"
         className="underline hover:text-foreground"
       >
         Powered by FIREPath

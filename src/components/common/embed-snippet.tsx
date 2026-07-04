@@ -8,15 +8,20 @@
  * SEO-meaningful backlink (links inside an iframe are not credited to the parent
  * page).
  *
- * 부속I T04 link-policy audit: the attribution link is rel="nofollow sponsored"
- * (widget/embed backlinks are a documented Google manual-action vector when
- * followed with commercial anchor text), the anchor text is the brand name
- * ("FIREPath") rather than a keyword phrase like "fire calculator", and the
- * href carries utm_source=embed&utm_medium=widget&utm_campaign={document.location.hostname}
+ * 부속I T04 / 부속P CODE-03 link-policy audit: the attribution link is
+ * rel="nofollow ugc" (Google's explicit stance: widget/embed-distributed
+ * links must be nofollow or they are a link-scheme violation; "ugc" rather
+ * than "sponsored" because no payment changes hands for an embed install),
+ * the anchor text is the brand name ("FIREPath") rather than a keyword
+ * phrase like "fire calculator", and the href carries
+ * utm_source=embed&utm_medium=widget&utm_campaign={document.location.hostname}
  * (resolved by the embedder's own page at copy time isn't possible statically,
  * so we use a stable "embed" campaign value here; per-host attribution is
  * captured server-side via document.referrer on the /embed iframe's own
- * embed_loaded event instead).
+ * embed_loaded event instead). A small inline script listens for the
+ * `firepath:resize` postMessage from the iframe (EmbedResizeScript) and
+ * updates the iframe's height so the widget never clips or leaves dead
+ * space on the host page.
  */
 
 import { useState } from 'react';
@@ -27,6 +32,7 @@ const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://gofirepath.com').r
 const ATTRIBUTION_URL = `${SITE_URL}/?utm_source=embed&utm_medium=widget&utm_campaign=embed`;
 
 const SNIPPET = `<iframe
+  id="firepath-embed"
   src="${SITE_URL}/embed"
   title="FIREPath — Free FIRE Calculator"
   width="100%"
@@ -35,8 +41,17 @@ const SNIPPET = `<iframe
   loading="lazy"
 ></iframe>
 <p style="font-size:12px;text-align:center">
-  <a href="${ATTRIBUTION_URL}" target="_blank" rel="nofollow sponsored noopener">Powered by FIREPath</a> — free FIRE calculator
-</p>`;
+  <a href="${ATTRIBUTION_URL}" target="_blank" rel="nofollow ugc noopener">Powered by FIREPath</a> — free FIRE calculator
+</p>
+<script>
+  window.addEventListener('message', function (e) {
+    if (!e.data || e.data.type !== 'firepath:resize') return;
+    var frame = document.getElementById('firepath-embed');
+    if (frame && typeof e.data.height === 'number') {
+      frame.style.height = e.data.height + 'px';
+    }
+  });
+</script>`;
 
 export function EmbedSnippet() {
   const [copied, setCopied] = useState(false);

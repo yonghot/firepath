@@ -7,12 +7,15 @@ import { DisclaimerBanner } from "@/components/common/disclaimer-banner";
 import { AdvisorCta } from "@/components/common/advisor-cta";
 import { SourcesReferences, type SourceItem } from "@/components/common/sources-references";
 import { HealthcareBridgeCalculator } from "@/components/features/healthcare/healthcare-bridge-calculator";
-import { FAQSection, faqJsonLd, type FaqItem } from "@/components/common/faq-section";
+import { FAQSection, type FaqItem } from "@/components/common/faq-section";
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import { buildMeta } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/common/breadcrumbs";
 import { calculateHealthcareBridge, MEDICARE_ELIGIBILITY_AGE } from "@/lib/engine/healthcare-bridge";
 import { formatCurrencyFull } from "@/lib/utils/format";
+import { AnswerBlock } from "@/components/common/answer-block";
+import { buildAnswerBlock, type GeoAnswerEntity } from "@/lib/seo/geo";
+import { CORE_ASSUMPTIONS_LAST_VERIFIED } from "@/lib/figures";
 
 export const metadata: Metadata = buildMeta({
   title: "Healthcare Bridge Estimator: Your Cost Before Medicare",
@@ -66,6 +69,66 @@ const EXAMPLE_INPUT = {
 const exampleComputed = calculateHealthcareBridge(EXAMPLE_INPUT);
 const exampleResult = exampleComputed.ok ? exampleComputed.result : null;
 
+/**
+ * 부속P CODE-01 — GEO answer block scenarios. Same $7,200/yr example premium
+ * and 5% growth rate as EXAMPLE_INPUT/exampleResult above, run through the
+ * SAME calculateHealthcareBridge() engine at five different retirement ages
+ * so the table shows real per-scenario totals, not template substitution.
+ */
+const BRIDGE_SCENARIO_AGES = [45, 50, 55, 60, 64] as const;
+const bridgeScenarios = BRIDGE_SCENARIO_AGES.map((retirementAge) => {
+  const computed = calculateHealthcareBridge({
+    currentAge: EXAMPLE_INPUT.currentAge,
+    retirementAge,
+    annualPremium: EXAMPLE_INPUT.annualPremium,
+    annualGrowthRate: EXAMPLE_INPUT.annualGrowthRate,
+  });
+  return { retirementAge, result: computed.ok ? computed.result : null };
+});
+
+const HEALTHCARE_BRIDGE_ANSWER: GeoAnswerEntity | null = exampleResult
+  ? buildAnswerBlock({
+      query: "How much do you need to retire early with a healthcare bridge before Medicare?",
+      answer:
+        `At a $${EXAMPLE_INPUT.annualPremium.toLocaleString()}/yr premium with ${(EXAMPLE_INPUT.annualGrowthRate * 100).toFixed(0)}% ` +
+        `annual growth, retiring at ${EXAMPLE_INPUT.retirementAge} means ${exampleResult.bridgeYears} bridge years and ` +
+        `${formatCurrencyFull(exampleResult.totalEstimatedCost)} total before Medicare at ${MEDICARE_ELIGIBILITY_AGE}. ` +
+        `As of ${CORE_ASSUMPTIONS_LAST_VERIFIED}, later retirement ages shorten the bridge and lower the total — retiring at 64 needs just 1 year of coverage.`,
+      dataVerifiedDate: CORE_ASSUMPTIONS_LAST_VERIFIED,
+      tableHeaders: ["Retirement Age", "Bridge Years", "Total Estimated Cost", "Medicare At"],
+      tableRows: bridgeScenarios
+        .filter((s) => s.result)
+        .map((s) => ({
+          label: `Retire at ${s.retirementAge}`,
+          values: [
+            `${s.result!.bridgeYears} yrs`,
+            formatCurrencyFull(s.result!.totalEstimatedCost),
+            `${MEDICARE_ELIGIBILITY_AGE}`,
+          ],
+        })),
+      factors: [
+        "Your annual health insurance premium (user-supplied, never fabricated)",
+        "Annual premium growth rate — historically ~5%/yr per KFF survey data",
+        "Number of bridge years between your retirement age and Medicare eligibility at 65",
+        "Whether you have access to COBRA continuation coverage (18-36 months, employer-specific)",
+        "ACA marketplace subsidy eligibility, which depends on income and household size (not modeled here)",
+        "State of residence, which affects marketplace plan pricing",
+      ],
+      stats: [
+        {
+          text: `Medicare eligibility begins at age ${MEDICARE_ELIGIBILITY_AGE}`,
+          sourceLabel: "Social Security Act §226",
+          sourceUrl: "https://www.ssa.gov/OP_Home/ssact/title18/1836.htm",
+        },
+        {
+          text: "~5%/yr historical premium growth assumption",
+          sourceLabel: "KFF 2023 Employer Health Benefits Survey",
+          sourceUrl: "https://www.kff.org/health-costs/report/2023-employer-health-benefits-survey/",
+        },
+      ],
+    })
+  : null;
+
 const HEALTHCARE_BRIDGE_FAQ: FaqItem[] = [
   {
     q: "At what age does Medicare start?",
@@ -117,15 +180,14 @@ const toolJsonLd = {
 export default function HealthcareBridgePage() {
   // safeJsonLd escapes </> characters. Content is developer-authored structured data,
   // not user-supplied — safe for script injection into JSON-LD blocks (same pattern
-  // used across /methodology, /guide, and home page in this codebase).
+  // used across /methodology, /guide, and home page in this codebase). 부속P
+  // CODE-02: FAQPage JSON-LD is no longer emitted (deprecated for SERP display
+  // in 2026) — the FAQSection below still renders the same Q&A as on-page text.
   const toolJson = safeJsonLd(toolJsonLd);
-  // Same developer-authored, safeJsonLd()-sanitized JSON-LD pattern as toolJson above.
-  const faqJson = safeJsonLd(faqJsonLd(HEALTHCARE_BRIDGE_FAQ));
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 space-y-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: toolJson }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: faqJson }} />
 
       <Breadcrumbs items={[{ name: "Healthcare Bridge Estimator", path: "/healthcare-bridge" }]} />
 
@@ -142,6 +204,15 @@ export default function HealthcareBridgePage() {
           subsidy amounts.
         </p>
       </div>
+
+      {/* 부속P CODE-01 — GEO answer block, FIRST content block after the
+          header/breadcrumb chrome: query-phrased H2, 40-60 word answer,
+          data table of real per-retirement-age scenarios, factor list, and
+          >=2 sourced stats — server-rendered. Absent only if the example
+          computation somehow errors (defensive; not expected at build time). */}
+      {HEALTHCARE_BRIDGE_ANSWER && (
+        <AnswerBlock entity={HEALTHCARE_BRIDGE_ANSWER} idPrefix="healthcare-bridge-geo" />
+      )}
 
       <section aria-labelledby="calculator-heading">
         <h2 id="calculator-heading" className="text-2xl font-semibold mb-4">

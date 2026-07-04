@@ -8,7 +8,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { personJsonLd, organizationJsonLd, calculatorAppJsonLd } from '@/components/common/json-ld';
+import {
+  personJsonLd,
+  organizationJsonLd,
+  calculatorAppJsonLd,
+  fireStatisticsDatasetJsonLd,
+} from '@/components/common/json-ld';
 import { CORE_ASSUMPTIONS_LAST_VERIFIED, getFiguresLastUpdated } from '@/lib/figures';
 
 describe('personJsonLd — T11 E-E-A-T Person identity', () => {
@@ -56,5 +61,39 @@ describe('calculatorAppJsonLd — T11 dateModified + Person/Organization linkage
     expect(result.dateModified).toBe(lastVerified);
     // Never a hand-typed date drifting from the real figures registry.
     expect(result.dateModified).toBe(CORE_ASSUMPTIONS_LAST_VERIFIED);
+  });
+});
+
+describe('fireStatisticsDatasetJsonLd — 부속P CODE-04 Dataset schema', () => {
+  const result = fireStatisticsDatasetJsonLd({
+    dateModified: CORE_ASSUMPTIONS_LAST_VERIFIED,
+    description: 'Test description',
+  });
+
+  it('emits a valid schema.org Dataset', () => {
+    expect(result['@context']).toBe('https://schema.org');
+    expect(result['@type']).toBe('Dataset');
+    expect(result.name).toBeTruthy();
+    expect(result.description).toBe('Test description');
+  });
+
+  it('sets dateModified to the exact value passed in — never a fabricated freshness stamp', () => {
+    expect(result.dateModified).toBe(CORE_ASSUMPTIONS_LAST_VERIFIED);
+  });
+
+  it('declares a DataDownload distribution for both /data.json and /data.csv', () => {
+    expect(result.distribution).toHaveLength(2);
+    const formats = result.distribution.map((d) => d.encodingFormat).sort();
+    expect(formats).toEqual(['application/json', 'text/csv']);
+    for (const d of result.distribution) {
+      expect(d['@type']).toBe('DataDownload');
+      expect(typeof d.contentUrl).toBe('string');
+      expect(d.contentUrl).toMatch(/\/data\.(json|csv)$/);
+    }
+  });
+
+  it('has no aggregateRating/review fields (never fabricated)', () => {
+    expect(result).not.toHaveProperty('aggregateRating');
+    expect(result).not.toHaveProperty('review');
   });
 });

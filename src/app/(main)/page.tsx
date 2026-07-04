@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Flame } from 'lucide-react';
 import { CalculatorClient } from '@/components/features/calculator/calculator-client';
-import { FAQSection, faqJsonLd } from '@/components/common/faq-section';
+import { FAQSection } from '@/components/common/faq-section';
 import { RelatedCalculators } from '@/components/common/related-calculators';
 import { calculatorAppJsonLd, personJsonLd, breadcrumbJsonLd } from '@/components/common/json-ld';
 import { ResultMonetization } from '@/components/monetization/ResultMonetization';
@@ -9,6 +9,9 @@ import { EmailMyResultsGate } from '@/components/features/calculator/email-my-re
 import { HowItWorksFire } from '@/components/common/how-it-works-fire';
 import { UpdatedBadge } from '@/components/common/updated-badge';
 import { RecentCalculations } from '@/components/common/recent-calculations';
+import { EmbedSnippet } from '@/components/common/embed-snippet';
+import { AnswerBlock } from '@/components/common/answer-block';
+import { MAIN_CALCULATOR_ANSWER } from '@/lib/seo/geo-entities';
 import { getPremiumStatus } from '@/lib/subscription/premium';
 import { getFiguresLastUpdated } from '@/lib/figures';
 import { buildMeta } from '@/lib/seo';
@@ -39,10 +42,9 @@ export default async function CalculatorPage() {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd()) }}
-      />
+      {/* 부속P CODE-02: FAQPage JSON-LD is no longer emitted here (deprecated
+          for SERP display in 2026) — FAQSection below still renders the same
+          Q&A as on-page H2/H3 text for GEO. */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -91,12 +93,25 @@ export default async function CalculatorPage() {
         </div>
       </div>
 
+      {/* 부속P CODE-01 — GEO answer block, server-rendered, placed right
+          after the calculator/monetization block (before the longer-form
+          HowItWorksFire prose) so it stays a high, extractable passage. */}
+      <div className="mx-auto max-w-7xl px-4">
+        <AnswerBlock entity={MAIN_CALCULATOR_ANSWER} idPrefix="home-geo" className="mb-8" />
+      </div>
+
       {/* 부속M K01 — on-page editorial depth (how-it-works + worked example),
           server-rendered, placed below the calculator/monetization block so
           LCP and the TermsGate overlay above are unaffected. */}
       <HowItWorksFire />
 
       <FAQSection />
+
+      {/* 부속P CODE-03 — "Embed this calculator" copy-to-clipboard panel on
+          the main calculator page (same component as /embed-this). */}
+      <div className="mx-auto max-w-3xl px-4 pb-12">
+        <EmbedSnippet />
+      </div>
 
       <RelatedCalculators />
     </>

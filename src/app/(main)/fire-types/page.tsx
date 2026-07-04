@@ -6,14 +6,17 @@ import { AuthorByline } from "@/components/common/author-byline";
 import { DisclaimerBanner } from "@/components/common/disclaimer-banner";
 import { AdvisorCta } from "@/components/common/advisor-cta";
 import { SourcesReferences, type SourceItem } from "@/components/common/sources-references";
-import { FAQSection, faqJsonLd, type FaqItem } from "@/components/common/faq-section";
+import { FAQSection, type FaqItem } from "@/components/common/faq-section";
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import { calculateFIRE } from "@/lib/engine/fire-calculator";
 import { DEFAULT_INPUT, FIRE_MULTIPLIERS } from "@/constants/fire-defaults";
 import { FIRE_COLORS, FIRE_LABELS } from "@/constants/fire-colors";
-import { formatCurrencyFull } from "@/lib/utils/format";
+import { formatCurrencyFull, formatPercent } from "@/lib/utils/format";
 import { buildMeta } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/common/breadcrumbs";
+import { AnswerBlock } from "@/components/common/answer-block";
+import { buildAnswerBlock, type GeoAnswerEntity } from "@/lib/seo/geo";
+import { CORE_ASSUMPTIONS_LAST_VERIFIED } from "@/lib/figures";
 
 export const metadata: Metadata = buildMeta({
   title: "FIRE Types Explained: Lean, Fat, Coast and Barista",
@@ -29,6 +32,58 @@ const LAST_UPDATED = "2026-06-29";
 const defaultOutput = calculateFIRE(DEFAULT_INPUT);
 const defaultResults = defaultOutput.results;
 const { annualExpenses, safeWithdrawalRate, currentAge, retirementAge } = DEFAULT_INPUT;
+
+/**
+ * 부속P CODE-01 — GEO answer block, the FIRST content block on this page.
+ * Query-phrased H2 + 40-60 word answer paragraph + data table + factor list
+ * + >=2 source-attributed stats, all built from the SAME defaultResults
+ * engine output the rest of this page (and its FAQ/cards) already uses.
+ */
+const FIRE_TYPES_ANSWER: GeoAnswerEntity = buildAnswerBlock({
+  query: "How much do you need to retire early with each FIRE type?",
+  answer:
+    `At the common defaults (age ${currentAge}, $${annualExpenses.toLocaleString()}/yr expenses, ` +
+    `${formatPercent(safeWithdrawalRate)} SWR), Lean FIRE needs ${fmtShort(defaultResults.lean.targetAmount)}, ` +
+    `Regular FIRE needs ${fmtShort(defaultResults.regular.targetAmount)}, Fat FIRE needs ` +
+    `${fmtShort(defaultResults.fat.targetAmount)}, Coast FIRE needs a ${fmtShort(defaultResults.coast.targetAmount)} seed today, ` +
+    `and Barista FIRE needs ${fmtShort(defaultResults.barista.targetAmount)}. As of ${CORE_ASSUMPTIONS_LAST_VERIFIED}, each target is annual expenses times a fixed multiplier, divided by the SWR.`,
+  dataVerifiedDate: CORE_ASSUMPTIONS_LAST_VERIFIED,
+  tableHeaders: ["FIRE Type", "Multiplier", "Target Amount", "Monthly Income"],
+  tableRows: (["lean", "regular", "fat", "coast", "barista"] as const).map((type) => ({
+    label: FIRE_LABELS[type],
+    values: [
+      type === "coast" ? "discounted seed" : `${(FIRE_MULTIPLIERS[type] * 100).toFixed(0)}%`,
+      formatCurrencyFull(defaultResults[type].targetAmount),
+      `${formatCurrencyFull(defaultResults[type].monthlyPassiveIncome)}/mo`,
+    ],
+  })),
+  factors: [
+    "Annual living expenses used as the base for the multiplier",
+    "Safe withdrawal rate (SWR) — the percentage drawn from the portfolio each year",
+    "Expected annual investment return (nominal)",
+    "Expected annual inflation rate, which sets the real (inflation-adjusted) return",
+    "Current age and target retirement age, which set the Coast FIRE discount period",
+    "The FIRE type's fixed expense multiplier (0.5x-1.5x)",
+    "Current net worth and annual savings rate, which drive how fast the timeline reaches each target",
+  ],
+  stats: [
+    {
+      text: `${formatPercent(safeWithdrawalRate)} default Safe Withdrawal Rate`,
+      sourceLabel: "Trinity Study (1998)",
+      sourceUrl: "https://en.wikipedia.org/wiki/Trinity_study",
+    },
+    {
+      text: "7% default nominal expected return",
+      sourceLabel: "NYU Stern historical U.S. equity return data",
+      sourceUrl: "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html",
+    },
+  ],
+});
+
+/** Format a dollar amount as a short label for the answer paragraph (e.g. "$625K"). */
+function fmtShort(n: number): string {
+  return n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(2)}M` : `$${Math.round(n / 1000)}K`;
+}
 
 /** Helper: format a dollar amount for body text */
 function fmt(n: number) {
@@ -219,16 +274,16 @@ function FireTypeCard({
 }
 
 export default function FireTypesPage() {
-  const pageJson = safeJsonLd(pageJsonLd);
   // safeJsonLd escapes </> characters — same developer-authored (not
-  // user-supplied) JSON-LD pattern already used for pageJson above and on
-  // every other page in this codebase (home, healthcare-bridge, guide).
-  const faqJson = safeJsonLd(faqJsonLd(FIRE_TYPES_FAQ));
+  // user-supplied) JSON-LD pattern already used across this codebase (home,
+  // healthcare-bridge, guide). 부속P CODE-02: FAQPage JSON-LD is no longer
+  // emitted here (deprecated for SERP display in 2026) — the FAQSection
+  // below still renders the same Q&A as on-page H2/H3 text for GEO.
+  const pageJson = safeJsonLd(pageJsonLd);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 space-y-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: pageJson }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: faqJson }} />
 
       <Breadcrumbs items={[{ name: "FIRE Types", path: "/fire-types" }]} />
 
@@ -243,6 +298,11 @@ export default function FireTypesPage() {
           target so you can see how the numbers connect.
         </p>
       </div>
+
+      {/* 부속P CODE-01 — GEO answer block, FIRST content block after the
+          header/breadcrumb chrome: query-phrased H2, 40-60 word answer,
+          data table, factor list, and >=2 sourced stats — server-rendered. */}
+      <AnswerBlock entity={FIRE_TYPES_ANSWER} idPrefix="fire-types-geo" />
 
       {/* Quick-navigation */}
       <nav aria-label="FIRE type sections" className="rounded-xl border bg-card p-4">

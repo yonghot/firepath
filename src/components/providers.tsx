@@ -7,7 +7,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
 import { CookieConsentBanner } from '@/components/common/cookie-consent-banner';
 import { WebVitalsReporter } from '@/components/common/web-vitals-reporter';
-import { initTrafficMarker } from '@/lib/analytics';
+import { initTrafficMarker, initReferralClassifier } from '@/lib/analytics';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -27,6 +27,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // a GA4 data filter without any further code changes.
   useEffect(() => {
     initTrafficMarker();
+    // 부속P CODE-07 — first-load AI-referral / embed-referral /
+    // community-directory classifier. Pure measurement through the same
+    // consent-gated trackEvent() pipeline; no-op until gtag exists.
+    initReferralClassifier();
   }, []);
 
   return (
