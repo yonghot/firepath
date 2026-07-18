@@ -97,6 +97,26 @@ describe('Ad exclusion zones — buffer components sit between results and the a
   });
 });
 
+describe('Ad exclusion zones — CalculatorPresets (부속U U-01) never mounts an ad and stays visually distinct from AdSlot', () => {
+  const src = readFileSync(
+    join(__dirname, '..', '..', 'features', 'calculator', 'calculator-presets.tsx'),
+    'utf-8'
+  );
+
+  it('does not import or render AdSlot/AdProvider/ResultMonetization', () => {
+    expect(src).not.toMatch(/from ['"]@\/components\/(common\/ad-slot|monetization\/(AdProvider|ResultMonetization))['"]/);
+    expect(src).not.toMatch(/<(AdSlot|AdProvider|ResultMonetization)\b/);
+  });
+
+  it('never uses AdSlot\'s dashed-placeholder styling ("border-dashed"), so presets stay visually distinct from ad units', () => {
+    // Strip block comments first — the file's own JSDoc explains (in prose)
+    // that it must NOT use this class, which would otherwise false-positive
+    // a raw substring match against the documentation itself.
+    const codeOnly = src.replace(/\/\*[\s\S]*?\*\//g, '');
+    expect(codeOnly).not.toMatch(/border-dashed/);
+  });
+});
+
 describe('Ad exclusion zones — guide pages have no calculator inputs adjacent to the ad (부속M K05)', () => {
   it('/guide/[slug] renders AdSlot only after the article body and CTA block, and never mounts a calculator input', () => {
     const src = readFileSync(

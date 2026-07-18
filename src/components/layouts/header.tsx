@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Calculator' },
+  { href: '/fire-guide', label: 'FIRE Guide' },
   { href: '/guide', label: 'Guides' },
   { href: '/premium', label: 'Premium' },
 ];

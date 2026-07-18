@@ -31,6 +31,7 @@ export function Footer() {
             <div className="space-y-2">
               <h4 className="text-sm font-semibold">Guides</h4>
               <nav className="flex flex-col gap-1">
+                <Link href="/fire-guide" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">The Complete FIRE Guide</Link>
                 <Link href="/guide" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">All Guides</Link>
                 <Link href="/methodology" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">How We Calculate</Link>
                 <Link href="/guide/what-is-coastfire" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">CoastFIRE</Link>

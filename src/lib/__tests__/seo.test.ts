@@ -31,6 +31,10 @@ const ROUTE_MATRIX: Record<string, { title: string; h1: string }> = {
     title: 'How We Calculate: FIRE Formulas and Cited Data Sources',
     h1: 'How We Calculate',
   },
+  '/fire-guide': {
+    title: 'The Complete FIRE Guide (2026): 4% Rule, 5 FIRE Types',
+    h1: 'The Complete FIRE Guide (2026)',
+  },
   '/fire-types': {
     title: 'FIRE Types Explained: Lean, Fat, Coast and Barista',
     h1: 'FIRE Types Explained',

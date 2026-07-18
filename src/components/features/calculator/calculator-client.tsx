@@ -5,6 +5,7 @@ import { useCalculatorStore } from '@/stores/calculator.store';
 import { useScenarioStore } from '@/stores/scenario.store';
 import { useUrlState } from '@/hooks/use-url-state';
 import { CalculatorPanel } from '@/components/features/calculator/calculator-panel';
+import { CalculatorPresets } from '@/components/features/calculator/calculator-presets';
 import { FIRETimelineChart } from '@/components/features/calculator/fire-timeline-chart';
 import { FIREResultCards } from '@/components/features/calculator/fire-result-cards';
 import { ScenarioManager } from '@/components/features/scenario/scenario-manager';
@@ -116,6 +117,11 @@ export function CalculatorClient() {
 
   return (
     <div className="space-y-4">
+      {/* 부속U U-01 — one-click preset scenarios, above-fold and adjacent to
+          the calculator inputs on EVERY viewport (unlike CalculatorPanel,
+          which lives inside a collapsed bottom sheet on mobile). */}
+      <CalculatorPresets />
+
       {/* 부속I T16 — "Continue where you left off" banner */}
       {pendingRestore !== null && (
         <ContinueBanner onApply={applyRestore} onDismiss={dismissRestore} />

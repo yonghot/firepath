@@ -1205,3 +1205,436 @@ browser session against a live GA4 property)
   the mandate ("no UI change").
 - No commit was made — per mandate, the orchestrator handles commit/deploy.
 - No commit was made — per mandate, the orchestrator handles commit/deploy.
+
+---
+
+## Wave A — 2026-07-18 (부속U U-01, U-04, U-06 — GA4 근본진단 개선)
+
+Implemented the Wave A tasks from 부속U_GA4근본진단_개선스펙.md §4/§5 for
+this repo (firepath): U-01 (preset one-click scenarios), U-04 (T15/T16
+wiring audit + season badge), U-06 (measurement-interpretation doc). No
+owner-console actions, no CMP/Consent Mode changes, no commit/deploy — per
+mandate.
+
+### U-01 — Preset one-click scenarios (funnel: 481 views → 6 calc_input_start = 1.2%)
+
+**New files:**
+- `src/constants/calculator-presets.ts` — `CALCULATOR_PRESETS`: 3 scenarios
+  from 부속U §5 ("30, $80k income, 30% savings" / "40, $120k income, 25%
+  savings" / "Coast FIRE at 35"). Every value is either the app's own
+  `DEFAULT_INPUT` (SLIDER_CONFIGS defaults) or a direct override of
+  age/income/savings-rate spread onto `DEFAULT_INPUT` for every other
+  field — no fabricated figures. Preset 1 is, field for field, literally
+  `DEFAULT_INPUT`.
+- `src/components/features/calculator/calculator-presets.tsx` —
+  `<CalculatorPresets />`: renders the 3 "Try:" buttons. On click, calls
+  `updateInput()` (never `setInput()`) for every field of the preset — the
+  exact same store action a manual slider drag uses — so the existing 부속I
+  T03 `interactionCount`/hasUserInteracted guard in `CalculatorClient` fires
+  `calc_input_start` once and (debounced) `calculator_complete` with only
+  `{ calc_type, result_bucket }`, no `preset` param, no new event, no change
+  to `analytics.ts`. Never calls `trackEvent()` itself; never touches
+  TermsGate's consent flag (results stay behind the clickwrap).
+- `src/constants/__tests__/calculator-presets.test.ts` — pins every preset
+  value against `DEFAULT_INPUT`/`SLIDER_CONFIGS` bounds and against the real
+  `calculateFIRE()` engine output (the "matches the dataset/engine" U-01
+  acceptance criterion).
+- `src/components/features/calculator/__tests__/calculator-presets.test.ts` —
+  source-level regression guard (this repo has no jsdom/RTL — see
+  ad-slot.test.ts): asserts the component uses `updateInput()` and never
+  `setInput()`/`resetToDefaults()`/`trackEvent()`/a `preset` param, never
+  mounts an ad component, and is wired above `CalculatorPanel`/the mobile
+  sheet trigger in `CalculatorClient`.
+
+**Modified:**
+- `src/components/features/calculator/calculator-client.tsx` — mounts
+  `<CalculatorPresets />` as the first element, above the
+  ContinueBanner/desktop-sidebar/mobile-sheet split, so it's above-fold and
+  adjacent to the inputs on EVERY viewport (not just the desktop sidebar,
+  where `CalculatorPanel` is otherwise hidden inside a collapsed sheet on
+  mobile).
+- `src/components/common/__tests__/ad-exclusion-zones.test.ts` (부속M K05) —
+  extended with a new describe block asserting `calculator-presets.tsx`
+  never mounts AdSlot/AdProvider/ResultMonetization and never uses AdSlot's
+  `border-dashed` placeholder styling (stays visually distinct from an ad
+  unit; K05 already guarantees the nearest ad, ResultMonetization, is a
+  page-level sibling rendered after the entire chart+cards+MonteCarlo+
+  Portfolio block — far more than the 150px minimum).
+
+### U-04 — T15/T16 wiring audit + season badge
+
+**Audit finding: both T15 (share) and T16 (Continue banner) were ALREADY
+fully wired** in this repo — no re-implementation needed:
+- `ShareResultButtons` (T15) renders in the result-cards header on both
+  `CalculatorClient` (home) and `ResultClient` (/result), firing
+  `result_share` on copy-link and Web Share.
+- `ContinueBanner` (T16) renders above the calculator whenever
+  `useCalculatorPersistence()` finds a saved state, firing `state_restored`
+  on apply.
+
+**New file:** `src/components/common/__tests__/t15-t16-wiring-audit.test.ts`
+— locks in that audit finding as a source-level regression guard (matching
+this repo's no-jsdom "render test" convention) so a future change can't
+silently un-wire either component from the result area.
+
+**Season badge (real IRS regulatory date, no fabrication):**
+- `src/components/common/season-badge.tsx` — `<SeasonBadge />`, styled
+  identically to `UpdatedBadge` (`border-border bg-muted/40`, subtle
+  token pill — NOT AdSlot's dashed placeholder). Text: "IRS typically
+  announces {limitsYear} retirement limits in Nov {announceYear} — bookmark
+  your plan", computed from the REAL current date via `nextAnnouncement()`
+  (exported, pure, unit-tested) so it never needs a manual yearly edit.
+  Source verified via WebSearch (2026-07-18, no fabrication per 부속U §7):
+  IRS announced 2026 retirement-plan COLA limits on 2025-11-13 (IR-2025-111
+  / Notice 2025-67 — https://www.irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500),
+  and 2025 limits on 2024-11-01 — a confirmed recurring November cadence
+  (https://www.irs.gov/retirement-plans/cola-increases-for-dollar-limitations-on-benefits-and-contributions).
+  Framed as "typically announces" (an expectation grounded in the cited
+  historical pattern), never as a confirmed IRS date for a year not yet
+  announced.
+- `src/components/common/__tests__/season-badge.test.ts` — unit-tests
+  `nextAnnouncement()` date math (incl. the November-rollover boundary) and
+  source-inspects the component for token styling + the cited IRS URL/release
+  number.
+- `src/app/(main)/page.tsx` — mounts `<SeasonBadge />` in the hero, directly
+  below the tagline (home page top, subtle, not ad-like).
+
+### U-06 — GA4 measurement-interpretation doc (zero code change)
+
+**New file:** `docs/ga4-measurement-interpretation.md` — 3-rule reading
+guide per 부속U §4 U-06: (1) sessions/user < 1 = consent-denied cookieless
+pings, not a CMP bug — do not touch the CMP/Consent Mode implementation;
+(2) datacenter-city traffic (Council Bluffs/Ashburn/Boardman) = bots,
+exclude from analysis; (3) the funnel KPI is
+`calc_input_start`→`calculator_complete` only, not raw page views. No
+source code touched for this task.
+
+### Gate results (all green)
+
+```
+pnpm lint       — PASS (0 errors, 9 pre-existing warnings, none from this wave's files)
+pnpm typecheck  — PASS
+pnpm test       — 556 tests passed, 45 files (+31 new: 525 → 556)
+pnpm build      — PASS (Next.js 16.2.2/Turbopack, 30 routes unchanged;
+                  [sitemap] firepath: 17 indexable URLs, unchanged — no new
+                  route/page added this wave, components/docs only)
+```
+
+### Explicitly out of scope / not touched this wave
+
+- U-02, U-03, U-05 — assigned to later waves per the orchestrator's Wave A
+  scope (U-01, U-04, U-06 only).
+- Owner-console actions (O-1..O-5, 부속U §6) — not attempted, per mandate.
+- CMP/Consent Mode — untouched, per 부속U §7 guardrail.
+- No commit was made — per mandate, the orchestrator handles commit/deploy.
+
+## Wave B — 2026-07-18 (부속U U-02 — original editorial "Complete FIRE Guide")
+
+### Scope
+
+Single task: U-02 (§4), 사이트 파라미터 §5 row: *"The Complete FIRE Guide
+(2026): 5 FIRE types, the 4% rule, sequence risk"*. Modeled structurally on
+LaunchCostCalc's `/how-to-start-an-llc` (commit 2746a0a) per the orchestrator's
+instruction, adapted to this repo's design tokens/components. U-01/U-03/U-04/
+U-06 already applied in Wave A; U-05 (guide↔calculator↔stats cross-linking)
+remains for a later wave, though this page already ships 4 internal deep
+links (see below) ahead of that formal task.
+
+### Fact verification (WebSearch, before writing any copy)
+
+8 real web searches run against official/primary sources before drafting —
+no figure below was written from model memory:
+
+1. IRS — 2026 401(k)/IRA limits: `irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500`
+   + primary Notice 2025-67 PDF. $24,500 401(k), $7,500 IRA, $11,250 age
+   60-63 "super catch-up".
+2. Morningstar — 2025/2026 safe withdrawal rate research:
+   `morningstar.com/retirement/whats-safe-retirement-withdrawal-rate-2026`.
+   3.9% base case (up from a 2024 low of 3.7%); ~5.7%-6% for flexible/
+   "guardrails" spending. Matches (does not contradict) the existing
+   `/methodology` citation "4.0% (2023), 3.7% (2024), 3.9% (2025/2026)".
+3. SSA — 2026 COLA: `ssa.gov/news/en/press/releases/2025-10-24.html`. 2.8%
+   benefit increase, announced 2025-10-24, effective Jan 2026.
+4. KFF — 2025 Employer Health Benefits Survey:
+   `kff.org/health-costs/2025-employer-health-benefits-survey/`. $9,325/yr
+   single, $26,993/yr family average premium.
+5. Bengen 1994 / Trinity Study / sequence-of-returns risk (Bankrate, CNBC,
+   Wikipedia) — corroborates the same 1994 Journal of Financial Planning
+   origin and "red zone" framing already used site-wide.
+6. IRS — 2026 HSA/HDHP limits: primary Rev. Proc. 2025-19 PDF
+   (`irs.gov/pub/irs-drop/rp-25-19.pdf`). $4,400 self-only / $8,750 family.
+7. Investor.gov (SEC) — compound-interest/retirement-savings education page.
+8. HealthCare.gov — `healthcare.gov/retirees/` (Marketplace Special
+   Enrollment Period on job loss) + a KFF FAQ on Marketplace-vs-retiree-plan
+   subsidy eligibility.
+
+All 14 citations that made it into the shipped page trace to one of these 8
+searches or to this repo's own already-verified `/methodology` citations
+(Bengen/Trinity/NYU Stern, reused for internal consistency, not re-verified
+again this wave since they were already fact-checked in a prior session —
+see MEMORY.md credibility-factcheck-2026-06 note). Volatile items (IRS/SSA/
+KFF/ACA figures, which reset annually) are called out by name in
+`GUIDE_VERIFY_NOTES` in `content.ts` with a "reverify at {official source}"
+instruction — never asserted as permanent.
+
+### What was built
+
+**New route:** `/fire-guide` (`src/app/(main)/fire-guide/page.tsx` +
+`content.ts`) — a static, hardcoded repo page (NOT the Supabase-backed
+`/guide/[slug]` system; registered separately in `content-pages.ts`).
+
+- **13 original prose sections** (H2 each, 3-6+ sentences + a bulleted
+  takeaway list): FIRE overview/scope · the 4% rule's real 1994 Bengen
+  origin + 1998 Trinity Study · the 5 FIRE types · how to compute your own
+  number · newer 2024-2026 withdrawal-rate research · sequence-of-returns
+  risk · savings-rate sensitivity (see live-computed table below) · 2026
+  IRS 401(k)/IRA/HSA limits · Social Security & FIRE · the healthcare
+  bridge before Medicare · common FIRE mistakes · is FIRE right for you ·
+  staying on track after reaching FIRE.
+- **Key-facts block** ("FIRE at a glance (2026)") — 8 fact/detail/source
+  entries, each with an inline outbound source link, same visual pattern as
+  LaunchCostCalc's `GUIDE_FACTS` block.
+- **Live-computed savings-rate table** — NOT a hardcoded figure: renders
+  `calculateFIRE({ ...DEFAULT_INPUT, savingsRate })` for 10%-60% savings
+  rates at build/render time, using the exact same engine every other page
+  on this site draws from (부속U §7 "no fabrication" — this is the
+  strongest possible guarantee against fabricated FIRE-timeline numbers).
+- **14 cited sources** (`SourcesReferences`), covering IRS (3 docs), SSA (2),
+  Morningstar, KFF (2), healthcare.gov, investor.gov, Bankrate, CNBC, and
+  Wikipedia (Bengen/Trinity) — well above the >=8 acceptance floor.
+- **E-E-A-T/compliance:** `AuthorByline` + `UpdatedBadge` (both reading
+  `GUIDE_UPDATED = '2026-07-18'`), `DisclaimerBanner` (same component used
+  on `/methodology`/`/fire-types`), `AdvisorCta` (env-gated, renders nothing
+  without an owner-configured URL — no fabricated affiliate link).
+- **Structured data:** `Article` JSON-LD (headline/description/
+  datePublished/dateModified/author+publisher Organization/
+  mainEntityOfPage/isAccessibleForFree) rendered via `safeJsonLd()`, plus
+  `BreadcrumbList` JSON-LD emitted automatically by the shared
+  `<Breadcrumbs>` component. **No FAQPage/HowTo** anywhere on the page
+  (verified: `grep -c FAQPage` / `grep -c '"HowTo"'` on the rendered HTML
+  both return 0) — 부속P CODE-02 stays intact.
+- **4 internal deep links** spliced into specific sections via a
+  `GuideSection.key` marker (`fire-types-link` → `/fire-types`, `calc-link`
+  → `/` calculator, `healthcare-link` → `/healthcare-bridge`,
+  `methodology-link` → `/methodology`) — gets ahead of the formal U-05 task
+  without duplicating its full scope.
+- **No AdSlot** on this page — matches this repo's own established
+  convention: `/fire-types`, `/methodology`, `/fire-statistics`, and
+  `/healthcare-bridge` (every other static content page) render no ad unit
+  either; only the Supabase-backed `/guide` hub and `/guide/[slug]` do
+  (they alone call `getPremiumStatus()`, which requires `cookies()`/
+  Supabase — deliberately NOT wired into this static page, keeping it
+  fully static/SSG and independent of Supabase configuration).
+
+**Registered for discovery (부속I T09 / 부속P CODE-06):**
+- `src/lib/content-pages.ts` — new `kind: 'spoke'` entry for `/fire-guide`
+  with 4 real `differentiatingFacts` (13-section original prose no other
+  page carries; the only page citing 2026 IRS/SSA figures; the live-computed
+  savings-rate table; 14 sources — more than any sibling page), so it passes
+  `passesInformationGainGate()` on real content, not an exemption.
+  `sitemap.ts` picks it up automatically via `getIndexablePages()` — build
+  log confirms **18 indexable URLs** (was 17 before this wave).
+- `src/components/layouts/header.tsx` — new "FIRE Guide" nav item (desktop +
+  mobile sheet), pointing at `/fire-guide`, distinct from the existing
+  "Guides" hub link.
+- `src/components/layouts/footer.tsx` — new "The Complete FIRE Guide" link
+  in the footer's Guides column.
+- `src/lib/__tests__/seo.test.ts` — added `/fire-guide` to the T10
+  title-contract `ROUTE_MATRIX` (title 50-60 chars, leading phrase matches
+  H1 exactly, keyword within the first 30 chars) — this is what added the 3
+  new passing tests this wave (no separate test file needed; the matrix
+  test parametrizes over every entry).
+
+### Acceptance verification (curl, JS off, against a real `next build` + `next start`)
+
+```
+H2 count:                       16  (>= 10 required)
+Outbound source <a href="https  22  (>= 8 required; 8 key-facts + 14 sources)
+"Disclaimer:" text present:      1  (required)
+FAQPage schema occurrences:      0  (must be 0)
+HowTo schema occurrences:        0  (must be 0)
+Article JSON-LD present:         1
+BreadcrumbList JSON-LD present:  1
+/sitemap.xml contains "fire-guide":        yes
+Header nav contains /fire-guide:           yes ("FIRE Guide")
+<title>: "The Complete FIRE Guide (2026): 4% Rule, 5 FIRE Types | FIREPath"
+<meta name="robots">: "index, follow, max-image-preview:large"
+```
+
+### Gate results (all green)
+
+```
+pnpm lint       — PASS (0 errors, 9 pre-existing warnings, none from this wave's files)
+pnpm typecheck  — PASS
+pnpm test       — 559 tests passed, 45 files (+3 new: 556 → 559, via the
+                  seo.test.ts ROUTE_MATRIX addition)
+pnpm build      — PASS (Next.js 16.2.2/Turbopack, 31 routes — was 30, new
+                  static ○ /fire-guide route added;
+                  [sitemap] firepath: 18 indexable URLs, was 17)
+```
+
+### New files (2)
+- `src/app/(main)/fire-guide/page.tsx`
+- `src/app/(main)/fire-guide/content.ts`
+
+### Modified files (5)
+- `src/lib/content-pages.ts` — new `/fire-guide` spoke entry.
+- `src/components/layouts/header.tsx` — nav link.
+- `src/components/layouts/footer.tsx` — footer link.
+- `src/lib/__tests__/seo.test.ts` — ROUTE_MATRIX entry (T10 title-contract
+  coverage for the new route).
+
+### Explicitly out of scope / not touched this wave
+
+- U-03, U-05 (full cross-link task, beyond the 4 deep links this page
+  already ships) — later waves.
+- Owner-console actions (O-1..O-5, 부속U §6) — not attempted, per mandate.
+- CMP/Consent Mode, TermsGate clickwrap — untouched, per 부속U §7 guardrail
+  (this page has no calculator input, so no consent-gated result surface
+  applies to it).
+- No AdSlot added to this page — see rationale above (matches existing
+  static-content-page convention; avoids coupling a static page to
+  Supabase/cookies()).
+- No commit was made — per mandate, the orchestrator handles commit/deploy.
+
+## Wave C — 2026-07-18 (부속U U-03, U-05 — Bing/IndexNow verification + guide↔calculator↔stats circulation)
+
+### Scope
+
+Two tasks: U-03 (verify IndexNow/sitemap freshness for the new `/fire-guide`
+URL) and U-05 (internal circulation: guide→calculator/stats deep links,
+calculator-result→guide link, nav "Guide" entry). Per 부속U §4 execution
+order, U-01/U-02/U-04/U-06 were already applied in Waves A/B (see above) —
+this wave builds on that state without duplicating it.
+
+### U-03 — IndexNow/sitemap verification (audit only, no fix needed)
+
+Verified against a real `next build` + a simulated production postbuild run
+(the actual Vercel production submission requires the live `INDEXNOW_KEY`
+env var the task states is already set there — not reproducible from this
+sandbox, so this wave verifies the mechanism end-to-end short of the live
+network call landing on Bing's index):
+
+1. **`scripts/indexnow.mjs` (already wired from T14/prior wave) reads the
+   real prerendered sitemap** — confirmed `.next/server/app/sitemap.xml.body`
+   after `pnpm build` contains all **18** URLs including
+   `https://gofirepath.com/fire-guide`.
+2. **Postbuild correctly no-ops locally**: `pnpm build` → `postbuild` logged
+   `[indexnow] skipping: VERCEL_ENV=(unset) (production only)` — the
+   documented, correct local-dev behavior (never a false submission outside
+   Vercel prod).
+3. **Simulated a production run** against the same build output:
+   `VERCEL_ENV=production INDEXNOW_KEY=test-fake-key-for-verification
+   NEXT_PUBLIC_APP_URL=https://gofirepath.com node scripts/indexnow.mjs` →
+   logged `[indexnow] submitted 18 urls` — proves the script's env-gate,
+   sitemap-read, and IndexNow POST path all function correctly end-to-end
+   and that all 18 URLs (including `/fire-guide`) are the exact candidate
+   set that will be submitted the next time a real production build runs
+   with the real Vercel-configured `INDEXNOW_KEY`.
+4. **Sitemap URL confirmed**: `grep -A1 'fire-guide<' sitemap.xml.body` →
+   `<loc>https://gofirepath.com/fire-guide</loc>` present — satisfies the
+   "가이드 신규 URL이 sitemap+IndexNow에 포함" acceptance line.
+5. **`lastmod` audit**: `sitemap.ts` sets `lastModified: new Date()` (build
+   time) uniformly for every content page, including `/fire-guide` — build
+   output shows `<lastmod>2026-07-18T02:41:42.884Z</lastmod>`, i.e. today's
+   real build timestamp, not a stale/placeholder/fabricated date. This is a
+   legitimate (if simplistic) freshness signal — it always reflects the most
+   recent regeneration and will advance automatically on every future
+   production build — so **no fix was made**; per the task's "verify...fix
+   only if wrong" instruction, this was verified correct-and-non-fabricated
+   rather than "wrong." (A future enhancement could thread each page's real
+   last-content-change date — e.g. `GUIDE_UPDATED = '2026-07-18'` for
+   `/fire-guide` — into a per-page `lastModified` field on `ContentPage`,
+   but that's a `ContentPage` schema change beyond this wave's "minimal
+   fixes only" mandate and wasn't required by the acceptance criteria.)
+
+**No code changes for U-03** — the IndexNow pipeline (from a prior wave,
+predating even the Wave A/B summary handed to this session) was already
+correctly wired; this wave's job was verification, and it passed.
+
+### U-05 — Guide↔calculator↔statistics internal circulation
+
+**Guide → calculator/stats (≥3 calculator deep links + ≥1 stats link,
+in-context):**
+
+Wave B's `/fire-guide` already shipped 3 in-context calculator deep links
+(verified via `curl` against `next start`, anchor text extracted):
+- "Use your own numbers in the calculator" → `/` (savings-rate table
+  footnote)
+- "interactive FIRE calculator" → `/` (spliced after "How to Calculate Your
+  Own FIRE Number")
+- "Healthcare Bridge Estimator" → `/healthcare-bridge` (spliced after "The
+  Healthcare Bridge" section; `/healthcare-bridge` is itself a distinct
+  calculator — its own `calculateHealthcareBridge` engine, per
+  `content-pages.ts`)
+
+…but had **zero** link to `/fire-statistics` (the "통계 페이지"), so this
+wave added the missing piece:
+- `src/app/(main)/fire-guide/content.ts` — added `key: 'stats-link'` to the
+  "Is FIRE Right for You? Weighing the Trade-offs" `GuideSection` (a section
+  already about comparing all 5 types side by side — the natural contextual
+  fit for a link to the ranked cross-type comparison page).
+- `src/app/(main)/fire-guide/page.tsx` — added a `'stats-link'` case to
+  `SectionLinkout`: "See a ranked, side-by-side comparison of all 5
+  FIRE-type targets on the **FIRE Statistics** page" → `/fire-statistics`.
+
+`curl` verification (`next start`, JS off) against the rendered
+`/fire-guide` HTML confirms all 4 in-context links present with the correct
+anchor text: `interactive FIRE calculator`→`/`, `Use your own numbers in the
+calculator`→`/`, `Healthcare Bridge Estimator`→`/healthcare-bridge`, `FIRE
+Statistics`→`/fire-statistics`.
+
+**Calculator result area → guide (≥1 link):** already satisfied, **zero
+code change needed**. `ResultRelated` (부속I T06, `src/components/features/
+calculator/result-related.tsx`) draws from `getRelatedContentPages()` in
+`content-pages.ts`, and Wave B registered `/fire-guide` there as a `kind:
+'spoke'` entry with `fireType: null`. Traced the selection logic
+(`matching` + `others`, sliced to 5): because `/fire-guide` sits early in
+`ALL_CONTENT_PAGES` (inside `CORE_PAGES`, before `FIRE_TYPE_PAGES`/
+`GUIDE_PAGES`), it lands in the `others` pool immediately after
+`/healthcare-bridge` and `/fire-statistics` for **every** FIRE type
+(matching only ever removes 0-3 items), so it appears in the "More
+calculators" module regardless of which FIRE type reaches earliest.
+Confirmed live via `curl` against `/result` (`next start`, JS off — this
+route always renders `<ResultRelated hasResult .../>` unconditionally, no
+interaction required, per `result-client.tsx`'s doc comment): the rendered
+HTML contains `<a href="/fire-guide" class="block rounded-xl border
+bg-background p-4 shadow-sm ...">` inside the "More calculators" section.
+
+**Nav "Guide" entry:** already present from Wave A/B — `header.tsx`
+`NAV_ITEMS` includes `{ href: '/fire-guide', label: 'FIRE Guide' }` (desktop
++ mobile sheet) and `footer.tsx` links "The Complete FIRE Guide" — both
+re-confirmed present in this wave's `curl` output. No change needed.
+
+**No new files this wave; 2 files modified** (both in the existing
+`/fire-guide` route, adding one contextual link):
+- `src/app/(main)/fire-guide/content.ts`
+- `src/app/(main)/fire-guide/page.tsx`
+
+### Gate results (all green)
+
+```
+pnpm lint       — PASS (0 errors, 9 pre-existing warnings, none from this wave's files)
+pnpm typecheck  — PASS
+pnpm test       — 559 tests passed, 45 files (unchanged — no new test file needed;
+                  pure content/link addition, covered by existing structural tests)
+pnpm build      — PASS (Next.js 16.2.2/Turbopack, 31 routes unchanged;
+                  [sitemap] firepath: 18 indexable URLs, unchanged —
+                  no new route this wave)
+postbuild (local)       — [indexnow] skipping: VERCEL_ENV=(unset) (production only) — correct
+postbuild (simulated prod) — [indexnow] submitted 18 urls — verified end-to-end
+```
+
+### Explicitly out of scope / not touched this wave
+
+- U-06 GA4 measurement-interpretation doc — already shipped in Wave A,
+  untouched.
+- Owner-console actions (O-1..O-5, 부속U §6), including the actual live
+  IndexNow submission landing on Bing (requires the real Vercel-configured
+  `INDEXNOW_KEY` at a real production deploy) — not attempted, per mandate;
+  this wave verified the mechanism, not the live outcome.
+- `ContentPage.lastModified` per-page schema addition (see U-03 note above)
+  — considered and explicitly deferred as beyond "minimal fixes only."
+- CMP/Consent Mode, TermsGate clickwrap — untouched; this wave's only
+  content is plain internal `<Link>` anchors, no consent surface involved.
+- No commit was made — per mandate, the orchestrator handles commit/deploy.

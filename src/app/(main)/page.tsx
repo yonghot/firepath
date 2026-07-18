@@ -8,6 +8,7 @@ import { ResultMonetization } from '@/components/monetization/ResultMonetization
 import { EmailMyResultsGate } from '@/components/features/calculator/email-my-results-gate';
 import { HowItWorksFire } from '@/components/common/how-it-works-fire';
 import { UpdatedBadge } from '@/components/common/updated-badge';
+import { SeasonBadge } from '@/components/common/season-badge';
 import { RecentCalculations } from '@/components/common/recent-calculations';
 import { EmbedSnippet } from '@/components/common/embed-snippet';
 import { AnswerBlock } from '@/components/common/answer-block';
@@ -72,6 +73,11 @@ export default async function CalculatorPage() {
           <p className="text-muted-foreground max-w-xl mx-auto lg:mx-0">
             Compare 5 FIRE types — Lean, Regular, Fat, Coast &amp; Barista — on one interactive timeline. Adjust the sliders and see your path to financial independence in real time.
           </p>
+          {/* 부속U U-04 — season/re-visit hook, real IRS COLA announcement
+              cadence (see season-badge.tsx for the cited source). */}
+          <div className="mt-3 flex justify-center lg:justify-start">
+            <SeasonBadge />
+          </div>
         </div>
 
         {/* 부속I T16 — renders nothing until localStorage has entries (client-only, no hydration mismatch). */}
