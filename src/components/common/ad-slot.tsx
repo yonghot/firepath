@@ -42,6 +42,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { isValidSlotId } from '@/lib/ad-slots';
 
 // Normalise: accept values with or without the leading "ca-" prefix.
 // data-ad-client must be in "ca-pub-..." form for AdSense to work.
@@ -164,21 +165,18 @@ export function AdSlot({
     return () => window.clearTimeout(retry);
   }, [inView, pathname]);
 
-  // No client id configured → inert labelled placeholder (no empty grey box).
-  if (!ADSENSE_CLIENT) {
-    return (
-      <aside
-        aria-label="Advertisement placeholder"
-        className={`my-6 ${RESERVE} flex flex-col justify-center rounded-xl border border-dashed bg-muted/30 px-4 py-6 text-center ${className ?? ''}`}
-      >
-        <span className="block text-[10px] uppercase tracking-wide text-muted-foreground">
-          Advertisement
-        </span>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Ads support the free version of FIREPath.
-        </p>
-      </aside>
-    );
+  // CODE-01 (부속W): a manual unit needs a REAL numeric slot id. Without one,
+  // emitting <ins data-ad-slot={undefined}> produces an invalid unit that can
+  // never fill. Auto ads (driven solely by the loader script in the layout)
+  // are unaffected by this branch.
+  if (!ADSENSE_CLIENT || !isValidSlotId(slot)) {
+    // Render NOTHING. 부속W flagged empty ad-shaped boxes as a low-quality
+    // signal in their own right: an AdSense/crawler review that meets a dashed
+    // grey "Advertisement" frame with no ad in it reads the page as having more
+    // ad furniture than publisher content. Omitting the region entirely is both
+    // honest and review-safe (CODE-01 acceptance: 0 <ins> AND 0 empty boxes
+    // when the slot is unconfigured).
+    return null;
   }
 
   return (

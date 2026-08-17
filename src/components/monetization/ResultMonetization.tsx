@@ -24,6 +24,7 @@
 
 import { ExternalLink, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { resolveAdSlot } from '@/lib/ad-slots';
 import { AdProvider } from '@/components/monetization/AdProvider';
 import { EmailResultCapture } from '@/components/common/email-result-capture';
 import { AffiliateDisclosure } from '@/components/compliance/AffiliateDisclosure';
@@ -156,7 +157,10 @@ function PrimaryIntentCTA() {
 // ─── (b) DisplaySlot ─────────────────────────────────────────────────────────
 
 function DisplaySlot() {
-  const slot = process.env.NEXT_PUBLIC_ADSENSE_SLOT_RESULT;
+  // CODE-01: single resolver (legacy NEXT_PUBLIC_ADSENSE_SLOT_RESULT still wins,
+  // otherwise the canonical NEXT_PUBLIC_ADSENSE_SLOT_ID). Non-numeric values are
+  // rejected so no invalid <ins data-ad-slot> ever ships.
+  const slot = resolveAdSlot('result');
   // AdProvider handles the null-when-unset case for each provider internally.
   return (
     <div className="min-h-[100px] md:min-h-[280px]">

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { BookOpen, Calculator } from 'lucide-react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { resolveAdSlot } from '@/lib/ad-slots';
 import { AdSlot } from '@/components/common/ad-slot';
 import { getPremiumStatus } from '@/lib/subscription/premium';
 import { safeJsonLd } from '@/lib/utils/json-ld';
@@ -170,7 +171,7 @@ export default async function GuidesIndexPage() {
       )}
 
       {/* Ad (free tier only) */}
-      {!isPremium && <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_GUIDE} />}
+      {!isPremium && <AdSlot slot={resolveAdSlot('guide')} />}
 
       {/* CTA */}
       <div className="mt-10 p-6 rounded-xl bg-primary/5 border border-primary/20 text-center">

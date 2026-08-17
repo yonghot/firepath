@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calculator } from 'lucide-react';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { resolveAdSlot } from '@/lib/ad-slots';
 import { AdSlot } from '@/components/common/ad-slot';
 import { getPremiumStatus } from '@/lib/subscription/premium';
 import { safeJsonLd } from '@/lib/utils/json-ld';
@@ -206,7 +207,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
           </div>
 
           {/* Ad (free tier only) — below the article content, never inline. */}
-          {!isPremium && <AdSlot slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT_GUIDE} />}
+          {!isPremium && <AdSlot slot={resolveAdSlot('guide')} />}
         </article>
 
         {/* Sidebar — sibling cross-links (3rd of the 3 automated link types: breadcrumb parent, hub link, siblings). */}
