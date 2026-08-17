@@ -81,6 +81,28 @@ export interface ContentPage {
    * each entry must trace to a real computed value or sourced citation.
    */
   differentiatingFacts?: string[];
+  /**
+   * True when the page's BODY CONTENT lives in Supabase rather than this
+   * codebase (today: every /guide/[slug] article). Such a page cannot be
+   * statically verified to exist at build time — `generateStaticParams`
+   * returns [] when Supabase is unreachable and the route calls notFound(),
+   * so the URL 404s in any deploy whose database lacks the row.
+   *
+   * These pages are therefore EXCLUDED from getIndexablePages(), i.e. from
+   * sitemap.ts and from every T06/T07 link module. Advertising a URL we
+   * cannot prove resolves is worse than omitting it: it puts 404s in the
+   * sitemap and broken links in the UI, which reads as a low-quality site to
+   * crawlers and ad-network reviewers alike (this is exactly what happened —
+   * 7 of gofirepath's 18 sitemap URLs were 404, 부속W §2.4).
+   *
+   * The registry entry itself is KEPT (never delete a page by removing it —
+   * see the header note) because GUIDE_PAGES still serves as the
+   * quality-gate allowlist for DB-authored guides: /guide/[slug] noindexes
+   * any slug absent from it (isQualityGatedSlug). To make such a page
+   * indexable again, move its content into this repo as a static route and
+   * drop this flag.
+   */
+  requiresDbContent?: boolean;
 }
 
 /** True when a page carries >= MIN_DIFFERENTIATING_FACTS entity-specific facts (부속P CODE-06 information-gain guard). Core/hub pages always pass (exempt by design — 부속I T09). */
@@ -197,6 +219,8 @@ export const GUIDE_PAGES: ContentPage[] = [
     fireType: 'coast',
     hasUniqueData: true,
     kind: 'spoke',
+    // Body content is DB-authored (Supabase) → not statically verifiable; see requiresDbContent.
+    requiresDbContent: true,
     differentiatingFacts: [
       'Explains the discounted-seed formula unique to Coast FIRE (not a flat expense multiplier)',
       'Worked example computing the seed amount from a stated retirement age and real return',
@@ -212,6 +236,8 @@ export const GUIDE_PAGES: ContentPage[] = [
     fireType: 'lean',
     hasUniqueData: true,
     kind: 'spoke',
+    // Body content is DB-authored (Supabase) → not statically verifiable; see requiresDbContent.
+    requiresDbContent: true,
     differentiatingFacts: [
       'States the 60% expense multiplier unique to Lean FIRE',
       'Worked example at a stated expense level showing the resulting target',
@@ -227,6 +253,8 @@ export const GUIDE_PAGES: ContentPage[] = [
     fireType: 'regular',
     hasUniqueData: true,
     kind: 'spoke',
+    // Body content is DB-authored (Supabase) → not statically verifiable; see requiresDbContent.
+    requiresDbContent: true,
     differentiatingFacts: [
       'States the "25x expenses" / 100% multiplier baseline formula',
       'Worked example at a stated expense level',
@@ -242,6 +270,8 @@ export const GUIDE_PAGES: ContentPage[] = [
     fireType: 'fat',
     hasUniqueData: true,
     kind: 'spoke',
+    // Body content is DB-authored (Supabase) → not statically verifiable; see requiresDbContent.
+    requiresDbContent: true,
     differentiatingFacts: [
       'States the 150% expense multiplier unique to Fat FIRE',
       'Worked example at a stated expense level showing the resulting target',
@@ -257,6 +287,8 @@ export const GUIDE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'spoke',
+    // Body content is DB-authored (Supabase) → not statically verifiable; see requiresDbContent.
+    requiresDbContent: true,
     differentiatingFacts: [
       'Side-by-side comparison table of both multipliers (60% vs. 150%) — a fact not present on either single-type guide',
       'Computed target gap between the two types at a stated expense level',
@@ -272,6 +304,8 @@ export const GUIDE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'spoke',
+    // Body content is DB-authored (Supabase) → not statically verifiable; see requiresDbContent.
+    requiresDbContent: true,
     differentiatingFacts: [
       'Side-by-side comparison of the discounted-seed formula (Coast) vs. the 50% multiplier formula (Barista)',
       'Computed target gap between the two types at a stated scenario',
@@ -287,6 +321,8 @@ export const GUIDE_PAGES: ContentPage[] = [
     fireType: 'barista',
     hasUniqueData: true,
     kind: 'spoke',
+    // Body content is DB-authored (Supabase) → not statically verifiable; see requiresDbContent.
+    requiresDbContent: true,
     differentiatingFacts: [
       'States the 50% expense multiplier unique to Barista FIRE',
       'Worked example at a stated expense level showing the resulting target',
@@ -404,7 +440,23 @@ export const ALL_CONTENT_PAGES: ContentPage[] = [...CORE_PAGES, ...FIRE_TYPE_PAG
  * the two can never drift.
  */
 export function getIndexablePages(): ContentPage[] {
-  return ALL_CONTENT_PAGES.filter((p) => p.hasUniqueData && passesInformationGainGate(p));
+  return ALL_CONTENT_PAGES.filter(
+    // `!p.requiresDbContent`: a page whose body lives in Supabase cannot be
+    // proven to resolve at build time, so it is never advertised in the
+    // sitemap nor linked from T06/T07 modules — see the field's doc comment
+    // and 부속W §2.4 (7 of 18 sitemap URLs were 404 before this guard).
+    (p) => p.hasUniqueData && passesInformationGainGate(p) && !p.requiresDbContent,
+  );
+}
+
+/**
+ * Pages excluded from indexing/linking ONLY because their content is
+ * DB-authored (not because they failed the information-gain gate). Exposed so
+ * tests can assert the exclusion is deliberate and so a future static
+ * migration has a single list to work from.
+ */
+export function getDbContentPages(): ContentPage[] {
+  return ALL_CONTENT_PAGES.filter((p) => p.requiresDbContent === true);
 }
 
 /**

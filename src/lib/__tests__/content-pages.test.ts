@@ -20,6 +20,7 @@ import {
   GUIDE_PAGES,
   MIN_DIFFERENTIATING_FACTS,
   getIndexablePages,
+  getDbContentPages,
   getRelatedContentPages,
   passesInformationGainGate,
   computeHasUniqueData,
@@ -38,10 +39,16 @@ describe('content-pages — T09 hasUniqueData registry', () => {
     expect(flaggedFalse).toEqual([]);
   });
 
-  it('getIndexablePages() returns exactly the hasUniqueData:true subset', () => {
+  it('getIndexablePages() returns exactly the hasUniqueData:true AND statically-routable subset', () => {
+    // 부속W §2.4: the indexable set is hasUniqueData MINUS requiresDbContent
+    // pages (DB-authored bodies can't be proven to resolve at build time, and
+    // advertising them put 7 404s in the sitemap).
     const indexable = getIndexablePages();
     expect(indexable.every((p) => p.hasUniqueData)).toBe(true);
-    expect(indexable.length).toBe(ALL_CONTENT_PAGES.filter((p) => p.hasUniqueData).length);
+    expect(indexable.every((p) => !p.requiresDbContent)).toBe(true);
+    expect(indexable.length).toBe(
+      ALL_CONTENT_PAGES.filter((p) => p.hasUniqueData && !p.requiresDbContent).length,
+    );
   });
 
   it('every content page has a canonicalPath starting with "/"', () => {
@@ -57,11 +64,12 @@ describe('content-pages — T09 hasUniqueData registry', () => {
     }
   });
 
-  it('GUIDE_PAGES slugs match the hardcoded fallback list in sitemap.ts', () => {
-    // sitemap.ts documents that Supabase may be unavailable at build time and
-    // keeps its own hardcoded slug list for that reason. This test is the
-    // T09 "sitemap/robots/link-module consistency" assertion: if someone
-    // updates one list without the other, this fails loudly.
+  it('GUIDE_PAGES holds exactly the DB-authored guide allowlist (noindex gate for /guide/[slug])', () => {
+    // GUIDE_PAGES no longer feeds the sitemap (부속W §2.4 — those URLs 404
+    // without Supabase rows, so they are requiresDbContent and excluded from
+    // getIndexablePages()). Its remaining job is the quality allowlist that
+    // /guide/[slug] uses to noindex any slug absent from it. This assertion
+    // pins the allowlist so a slug can't be added/removed unnoticed.
     const sitemapGuideSlugs = [
       'what-is-coastfire',
       'what-is-leanfire',
@@ -207,10 +215,34 @@ describe('content-pages — 부속M K02 indexable-page-depth audit', () => {
   // trivially re-deriving it from the same source.
   const SITEMAP_UTILITY_PAGE_COUNT = 3;
 
-  it('deduped canonical-path count from getIndexablePages() + utility pages is >= 15 (부속M K02 acceptance: indexable-count >= 15/site)', () => {
+  // 부속W §2.4 correction: the original assertion here was ">= 15 indexable
+  // URLs", which the registry satisfied only by counting the 7 DB-authored
+  // /guide/[slug] entries — every one of which returned 404 in production
+  // (Supabase holds the bodies; generateStaticParams returns [] and the route
+  // notFound()s). A URL count is the wrong acceptance criterion when it can be
+  // met with dead URLs: an AdSense/crawler review that follows a sitemap where
+  // 39% of entries 404 reads the site as low quality. The criterion is now
+  // "every advertised URL is statically routable", and the count floor is set
+  // to what the repo can actually prove resolves.
+  it('every advertised (indexable) page is statically routable — no DB-content page is ever advertised', () => {
+    for (const page of getIndexablePages()) {
+      expect(page.requiresDbContent ?? false).toBe(false);
+    }
+  });
+
+  it('the DB-authored guide pages are excluded from indexing/linking (they 404 without Supabase rows)', () => {
+    const dbPages = getDbContentPages();
+    expect(dbPages.length).toBeGreaterThan(0);
+    const indexablePaths = new Set(getIndexablePages().map((p) => p.canonicalPath));
+    for (const page of dbPages) {
+      expect(indexablePaths.has(page.canonicalPath)).toBe(false);
+    }
+  });
+
+  it('deduped canonical-path count from getIndexablePages() + utility pages is >= 11 (statically routable pages only)', () => {
     const uniqueCanonicalPaths = new Set(getIndexablePages().map((p) => p.canonicalPath));
     const totalIndexable = uniqueCanonicalPaths.size + SITEMAP_UTILITY_PAGE_COUNT;
-    expect(totalIndexable).toBeGreaterThanOrEqual(15);
+    expect(totalIndexable).toBeGreaterThanOrEqual(11);
   });
 
   it('every indexable page is hasUniqueData:true (never a flag-forced/bypassed thin page — 부속M K02 anti-pattern guard)', () => {
