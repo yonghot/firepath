@@ -47,7 +47,8 @@ export type EventName =
   | 'email_signup'
   | 'ai_referral'
   | 'embed_referral'
-  | 'community_referral';
+  | 'community_referral'
+  | 'human_session';
 
 type EventParamValue = string | number;
 type EventParams = Record<string, EventParamValue>;
@@ -319,4 +320,93 @@ export function initReferralClassifier(): void {
   } catch {
     // Nothing to persist — acceptable to re-classify on the next load.
   }
+}
+
+// ─── 부속W CODE-07 — human_session engagement signal ────────────────────────
+
+const HUMAN_SESSION_KEY = 'cc_human_session';
+
+/**
+ * `human_session` — an engagement-qualified signal that separates people from
+ * noise IN REPORTING.
+ *
+ * The problem it solves: this site's GA4 city breakdown is dominated by
+ * cloud-provider POPs (Council Bluffs / Ashburn / Boardman — see
+ * docs/ga4-measurement-interpretation.md §2), i.e. bot traffic that is
+ * indistinguishable from a visitor in raw session and page_view counts. Rather
+ * than only filtering it out after the fact, this adds a positive signal for
+ * "a human engaged with this page". FIREPath is especially exposed because its
+ * whole payload is a calculator: a load-and-leave hit produces the same
+ * page_view as a real reader.
+ *
+ * Definition (deliberately cheap and honest): fires ONCE per browser session,
+ * on the first of either
+ *   - a scroll reaching 25% of the scrollable page, or
+ *   - a real input interaction (keydown / pointerdown on the document).
+ * A load-and-leave session never fires it. Listeners detach as soon as it fires.
+ * No timers: a time-on-page threshold would fire for an idle bot holding the
+ * page open. Flows through the same consent-gated trackEvent() pipeline as every
+ * other event, so it is a no-op until gtag exists.
+ *
+ * ══ NEVER USE THIS TO CHANGE WHAT IS SERVED / NO CLOAKING ══
+ * This is a MEASUREMENT signal only. Branching ad rendering, ad type, or page
+ * content on user agent, IP, or any bot heuristic is CLOAKING — serving
+ * different content to crawlers than to people — and all ten domains in this
+ * portfolio share ONE publisher id (ca-pub-1378312299412437), so a single
+ * violation can end every site at once (부속W §7 anti-pattern 11). Bots get
+ * byte-identical pages to humans. Bot handling belongs in GA4 reporting filters
+ * and WAF rules (owner scope), never in the render path.
+ * `src/lib/__tests__/ad-density.test.ts` pins this by asserting that no ad
+ * module in this repo reads `navigator.userAgent` or a user-agent header.
+ *
+ * Call once on mount from the root client provider (see providers.tsx),
+ * alongside initTrafficMarker() / initReferralClassifier().
+ */
+export function initHumanSessionSignal(): void {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
+  try {
+    if (window.sessionStorage.getItem(HUMAN_SESSION_KEY) === '1') return;
+  } catch {
+    // sessionStorage unavailable (private mode / quota) — continue without the
+    // once-per-session guard rather than dropping the signal entirely.
+  }
+
+  let fired = false;
+
+  const cleanup = (): void => {
+    window.removeEventListener('scroll', onScroll);
+    document.removeEventListener('keydown', onInteract, true);
+    document.removeEventListener('pointerdown', onInteract, true);
+  };
+
+  const fire = (trigger: 'scroll_depth' | 'interaction'): void => {
+    if (fired) return;
+    fired = true;
+    cleanup();
+    try {
+      window.sessionStorage.setItem(HUMAN_SESSION_KEY, '1');
+    } catch {
+      // Non-fatal: worst case the event can fire again on a later mount.
+    }
+    trackEvent('human_session', { engagement_trigger: trigger });
+  };
+
+  function onScroll(): void {
+    const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+    // A page shorter than the viewport cannot be scrolled 25% — such pages
+    // qualify through interaction only, which is the honest reading.
+    if (scrollable <= 0) return;
+    if (window.scrollY / scrollable >= 0.25) fire('scroll_depth');
+  }
+
+  function onInteract(): void {
+    fire('interaction');
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  // Capture phase: the signal must observe the interaction regardless of what
+  // any component's own handler does with the event afterwards.
+  document.addEventListener('keydown', onInteract, true);
+  document.addEventListener('pointerdown', onInteract, true);
 }

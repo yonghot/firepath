@@ -7,7 +7,11 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
 import { CookieConsentBanner } from '@/components/common/cookie-consent-banner';
 import { WebVitalsReporter } from '@/components/common/web-vitals-reporter';
-import { initTrafficMarker, initReferralClassifier } from '@/lib/analytics';
+import {
+  initTrafficMarker,
+  initReferralClassifier,
+  initHumanSessionSignal,
+} from '@/lib/analytics';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -31,6 +35,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
     // community-directory classifier. Pure measurement through the same
     // consent-gated trackEvent() pipeline; no-op until gtag exists.
     initReferralClassifier();
+    // 부속W CODE-07 — arms the `human_session` engagement signal: fires once
+    // per session on 25% scroll depth or the first real input interaction, so
+    // the datacenter noise documented in docs/ga4-measurement-interpretation.md
+    // §2 can be separated from real readers in GA4 REPORTING. It never changes
+    // what is served to anyone — see the no-cloaking warning in lib/analytics.ts.
+    initHumanSessionSignal();
   }, []);
 
   return (

@@ -33,7 +33,7 @@ export default function PrivacyPage() {
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Privacy Policy</h1>
         <p className="text-sm text-muted-foreground">
-          Effective date: June 28, 2026 &mdash; Last updated: July 2, 2026
+          Effective date: June 28, 2026 &mdash; Last updated: August 18, 2026
         </p>
       </div>
 
@@ -229,7 +229,104 @@ export default function PrivacyPage() {
             </>
           )}
 
-          <h3>{ADS_ENABLED ? '4d' : '4c'}. How to Manage Cookies</h3>
+          {/*
+            부속W CODE-08 — AdSense's documentation requires the privacy policy
+            to carry three specific things, and a generic template does not
+            satisfy them: (1) the third-party-cookie notice, (2) a route to
+            Google's ad settings, and (3) a NAMED list of the third-party
+            vendors serving/loading on THIS site. The list below is derived from
+            what gofirepath.com actually contacts — the loader in
+            src/app/layout.tsx, the GA tag injected by cookie-consent-banner.tsx,
+            the Supabase browser client, the Stripe-hosted checkout redirect, and
+            the Vercel edge — not copied from a sibling site. Keep it in sync
+            with the code; src/app/(main)/privacy/__tests__ pins the required
+            elements. If NEXT_PUBLIC_AD_PROVIDER is ever switched away from
+            AdSense (see components/monetization/AdProvider.tsx), the "only
+            advertising network" sentence below stops being true and must change
+            with it.
+          */}
+          <h3>
+            {ADS_ENABLED ? '4d' : '4c'}. Third-party vendors and ad networks used on this site
+          </h3>
+          {ADS_ENABLED && (
+            <p>
+              <strong>
+                Third-party vendors, including Google, use cookies to serve ads based on your
+                prior visits
+              </strong>{' '}
+              to this website or other websites. Google&apos;s use of advertising cookies
+              enables it and its partners to serve ads to you based on your visit to
+              gofirepath.com and/or other sites on the internet.
+            </p>
+          )}
+          <p>
+            These are the third parties gofirepath.com actually loads or sends you to. No other
+            third-party script, tracker, or ad network runs on this site:
+          </p>
+          <ul>
+            {ADS_ENABLED && (
+              <li>
+                <strong>Google AdSense</strong> (
+                <code>pagead2.googlesyndication.com</code>,{' '}
+                <code>googleads.g.doubleclick.net</code>) — serves the display advertising
+                shown to free users below the calculator results and on the FIRE guide pages.
+                Google AdSense is the only advertising network loaded on this site. See{' '}
+                <a href="https://policies.google.com/technologies/ads" rel="noopener noreferrer">
+                  How Google uses cookies in advertising
+                </a>
+                .
+              </li>
+            )}
+            <li>
+              <strong>Google Analytics 4</strong> (<code>www.googletagmanager.com</code>) —
+              aggregate traffic measurement, subject to the consent posture described in
+              Section&nbsp;4b. The measurement tag is loaded only on the production
+              gofirepath.com hostname, never on preview deployments. The page address we send
+              to Google has the URL fragment stripped, so the FIRE figures you enter (which
+              live in that fragment when you share a scenario) are never transmitted to
+              Google Analytics.
+            </li>
+            <li>
+              <strong>Supabase</strong> (<code>*.supabase.co</code>) — sign-in and the
+              calculations you choose to save. Your browser talks to Supabase directly, and
+              Supabase sets a strictly necessary session cookie to keep you signed in. Nothing
+              is sent to Supabase unless you create an account or save a calculation.
+            </li>
+            <li>
+              <strong>Stripe</strong> (<code>stripe.com</code>) — premium subscriptions only.
+              No Stripe script runs on FIREPath pages; if you start a subscription or open the
+              billing portal you are redirected to a Stripe-hosted page, where Stripe&apos;s
+              own privacy policy applies.
+            </li>
+            <li>
+              <strong>Vercel</strong> — hosting and content delivery. Vercel processes request
+              metadata (IP address, user agent, referrer) in server logs to deliver the site,
+              and provides the country-level signal we use to decide which consent posture
+              applies to your visit (Section&nbsp;4b).
+            </li>
+          </ul>
+          <p>
+            Web fonts are self-hosted with the site&apos;s own assets, so loading a FIREPath
+            page makes no request to Google Fonts. The FIRE calculations you run are computed
+            in your browser; the figures you enter reach none of the vendors above unless you
+            deliberately save a calculation to your account (Supabase, above).
+          </p>
+          {ADS_ENABLED && (
+            <p>
+              You can opt out of personalized advertising from Google at{' '}
+              <a href="https://adssettings.google.com" rel="noopener noreferrer">
+                Google Ad Settings
+              </a>
+              , and from many other vendors at{' '}
+              <a href="https://www.aboutads.info/choices" rel="noopener noreferrer">
+                www.aboutads.info/choices
+              </a>
+              . Opting out does not remove advertising; it makes the ads you see
+              non-personalized.
+            </p>
+          )}
+
+          <h3>{ADS_ENABLED ? '4e' : '4d'}. How to Manage Cookies</h3>
           <p>
             You can control cookies through your browser settings or by clicking
             &ldquo;Decline&rdquo; in our cookie consent banner (where shown). Note that
