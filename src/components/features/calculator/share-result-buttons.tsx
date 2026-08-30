@@ -17,7 +17,7 @@
  * canonical, only real visitors who receive a shared link do.
  */
 
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { Copy, Check, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { trackEvent } from '@/lib/analytics';
@@ -25,10 +25,19 @@ import { toast } from 'sonner';
 
 /** Stable calc_type slug — mirrors CALC_TYPE in calculator-client.tsx / result-client.tsx. */
 const CALC_TYPE = 'fire_timeline';
+const emptySubscribe = (): (() => void) => () => {};
+
+function useWebShareAvailable(): boolean {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => typeof navigator !== 'undefined' && typeof navigator.share === 'function',
+    () => false,
+  );
+}
 
 export function ShareResultButtons({ className }: { className?: string }) {
   const [copied, setCopied] = useState(false);
-  const canWebShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+  const canWebShare = useWebShareAvailable();
 
   const handleCopyLink = async () => {
     try {
