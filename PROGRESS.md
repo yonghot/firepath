@@ -1638,3 +1638,18 @@ postbuild (simulated prod) — [indexnow] submitted 18 urls — verified end-to-
 - CMP/Consent Mode, TermsGate clickwrap — untouched; this wave's only
   content is plain internal `<Link>` anchors, no consent surface involved.
 - No commit was made — per mandate, the orchestrator handles commit/deploy.
+
+---
+
+## 인시던트 로그 — 2026-10 AdSense $0 수정 시리즈 (브랜치 fix/adsense-sitemap-404)
+
+이전 인시던트(2026-06-27/28)는 `docs/PROGRESS.md` "인시던트 로그"에 있다. 이 시리즈의 항목은 여기에 쌓는다.
+
+### [2026-10-07] /guide 빈 허브 "coming soon" + 전 페이지 푸터 404 링크 (Codex 체크포인트, FIRE-01·04·23)
+- **증상**: 라이브 `/guide` 본문이 "Guides are coming soon" 뿐이고, 전 페이지 푸터의 `/guide/what-is-{coastfire,leanfire,fatfire}` 3개 링크가 404. AdSense 심사 표면에 미완성 화면과 죽은 링크가 노출됨.
+- **근본 원인**: 가이드 본문이 Supabase DB 저작물인데 프로덕션 env 에 Supabase 가 없어 허브 목록이 항상 비었고(빈 상태 문구가 곧 "coming soon"), 푸터가 DB 슬러그를 하드링크했다. Codex 가 남긴 미커밋 4파일이 이를 고쳤으나 미배포였고 잔여 결함이 있었다.
+- **Codex 변경 판정**: `footer.tsx`(KEEP: `/fire-types#coast|lean|fat` 로 교체, 앵커 id 5종 실존), `faq-section.test.ts`(KEEP: 출하되지 않는 `__tests__` 를 FAQPage 스캔에서 제외, 도달 불가 self-skip 줄은 삭제), `guide/page.tsx`·`guide-pages-missing-supabase-env.test.ts`(FIX).
+- **조치**: 허브가 실존하는 5개 페이지(`/fire-guide`, `/fire-types`, `/healthcare-bridge`, `/methodology`, `/fire-statistics`)를 카드로 나열. 답변 표의 원문 경로 열(`/fire-types#lean` 텍스트) 삭제 + Coast 행 추가(5행, "seed needed today"). "engine-computed examples and limitations"(도착 페이지에 없는 약속)·"Comprehensive guides"·"Everything you need to know" 카피를 도착 페이지가 실제로 담은 내용으로 교체. ItemList JSON-LD 호스트를 `SITE_URL` 로 통일(하드코딩 제거). 카드 클릭을 `related_click {link_module:'hub'}` 로 측정(`guide-card-link.tsx`). `/fire-types` 카드에 `scroll-mt-20` 추가(푸터 앵커 착지 시 sticky 헤더에 가림 방지). 항상 참인 `itemListJsonLd &&`·어긋난 들여쓰기·낡은 주석·CRLF/LF 혼재 정리.
+- **회귀 테스트**: `tests/regressions/guide-pages-missing-supabase-env.test.ts`(404 를 Next 의 `NEXT_HTTP_ERROR_FALLBACK;404` 로 한정, 허브 링크 전수 실존 라우트, 카드 href ⊂ `getIndexablePages()`, 표에 원문 경로 0·5행, 카피 과장 0, ItemList 5건 이상·`SITE_URL` 접두(env 로 호스트를 바꿔 하드코딩 검출), 카드 5개가 추적 링크 사용, 클릭 이벤트), `tests/regressions/footer-no-dead-links.test.ts`(푸터 링크 전수 실존 라우트·`/guide/what-is-` 0·앵커 id 실존·`scroll-mt-20`). Codex 변경분만 적용한 상태에서 5건 실패(원문 경로 셀, 4행 표, 카피, 하드코딩 호스트, scroll-mt) → 수정 후 통과.
+- **재발 방지**: 라우트 해석 헬퍼 `tests/regressions/helpers/app-routes.ts`(`src/app` 을 걸어 실존 정적 라우트 판정)로 이후 링크 검증이 같은 기준을 쓴다. DB 가이드 슬러그를 하드링크하지 않는다. `/guide` 라우트는 삭제하지 않는다.
+- **범위 밖(후속 커밋)**: 푸터의 `/premium` 링크는 커밋 2, 푸터 하단 행의 빌드 시점 연도·발행자 표기는 커밋 6, 허브 답변 문단의 "last verified" 날짜 문구는 커밋 15 에서 처리한다.

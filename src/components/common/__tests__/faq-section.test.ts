@@ -10,20 +10,19 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { FAQSection } from '@/components/common/faq-section';
 
 const SRC_ROOT = path.resolve(__dirname, '../../..');
 
 function collectSourceFiles(dir: string, acc: string[] = []): string[] {
-  for (const entry of readdirSync(dir)) {
-    const full = path.join(dir, entry);
-    const stat = statSync(full);
-    if (stat.isDirectory()) {
-      if (entry === 'node_modules' || entry === '.next') continue;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (['node_modules', '.next', '__tests__'].includes(entry.name)) continue;
       collectSourceFiles(full, acc);
-    } else if (/\.(ts|tsx)$/.test(entry)) {
+    } else if (entry.isFile() && /\.(ts|tsx)$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name)) {
       acc.push(full);
     }
   }
@@ -35,8 +34,6 @@ describe('부속P CODE-02 — no FAQPage/HowTo JSON-LD emitted anywhere in src/'
     const files = collectSourceFiles(SRC_ROOT);
     const offenders: string[] = [];
     for (const file of files) {
-      // Skip this test file's own descriptive strings.
-      if (file.endsWith(path.join('__tests__', 'faq-section.test.ts'))) continue;
       const source = readFileSync(file, 'utf8');
       if (/@type['"]?\s*:\s*['"]FAQPage['"]/.test(source) || /@type['"]?\s*:\s*['"]HowTo['"]/.test(source)) {
         offenders.push(file);

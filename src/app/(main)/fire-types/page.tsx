@@ -210,7 +210,7 @@ function FireTypeCard({
   return (
     <article
       id={type}
-      className="rounded-xl border bg-card shadow-sm"
+      className="scroll-mt-20 rounded-xl border bg-card shadow-sm"
       style={{ borderLeftWidth: 4, borderLeftColor: color }}
       aria-labelledby={`${type}-heading`}
     >

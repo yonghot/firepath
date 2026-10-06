@@ -34,9 +34,9 @@ export function Footer() {
                 <Link href="/fire-guide" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">The Complete FIRE Guide</Link>
                 <Link href="/guide" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">All Guides</Link>
                 <Link href="/methodology" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">How We Calculate</Link>
-                <Link href="/guide/what-is-coastfire" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">CoastFIRE</Link>
-                <Link href="/guide/what-is-leanfire" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">LeanFIRE</Link>
-                <Link href="/guide/what-is-fatfire" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">FatFIRE</Link>
+                <Link href="/fire-types#coast" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">CoastFIRE</Link>
+                <Link href="/fire-types#lean" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">LeanFIRE</Link>
+                <Link href="/fire-types#fat" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">FatFIRE</Link>
               </nav>
             </div>
             <div className="space-y-2">
