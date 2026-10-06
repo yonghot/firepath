@@ -29,11 +29,11 @@ const FAQ_ITEMS = [
   },
   {
     q: 'How accurate is the FIRE calculator?',
-    a: 'FIREPath uses real return rates (adjusted for inflation) and year-by-year compounding for projections. While no calculator can predict the future, the model provides a solid baseline. For deeper analysis, the Monte Carlo simulation tests 1,000 random market scenarios to show probability ranges.',
+    a: 'FIREPath uses real return rates (adjusted for inflation) and year-by-year compounding for projections. While no calculator can predict the future, the model provides a solid baseline. It assumes constant returns, inflation, and savings, and does not model market volatility, taxes, or sequence-of-returns risk, so treat the results as estimates rather than predictions.',
   },
   {
     q: 'Can I save my calculations?',
-    a: 'Yes. Create a free account to save up to 5 calculations. You can also share any calculation via URL — the parameters are encoded in the link so anyone can see your exact scenario.',
+    a: 'Your inputs stay in your own browser and are never sent to a server. The calculator keeps your latest inputs in your browser\'s local storage so you can pick up where you left off on the same device, and the footer link "Clear my saved calculator data" erases them. To keep or share a scenario, copy the page address: the parameters are encoded in the link so anyone can see your exact scenario.',
   },
 ] as const;
 

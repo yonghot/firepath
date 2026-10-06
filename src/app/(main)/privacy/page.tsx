@@ -4,15 +4,20 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
 import { PUBLISHER } from '@/lib/site';
+import { isSupabaseConfigured } from '@/lib/supabase/client';
+import { isPremiumPurchasable } from '@/lib/premium-availability';
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy',
-  description:
-    'FIREPath Privacy Policy — how we collect, use, and protect your data. Covers account information, saved calculations, analytics, and your rights under GDPR and CCPA.',
-  alternates: { canonical: '/privacy' },
-  // 부속M K09 — Discover/Images full-size image preview eligibility.
-  robots: { index: true, follow: true, 'max-image-preview': 'large' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Privacy Policy',
+    description: `FIREPath Privacy Policy — how we collect, use, and protect your data. Covers ${
+      isSupabaseConfigured() ? 'account information, saved calculations, ' : ''
+    }analytics, and your rights under GDPR and CCPA.`,
+    alternates: { canonical: '/privacy' },
+    // 부속M K09 — Discover/Images full-size image preview eligibility.
+    robots: { index: true, follow: true, 'max-image-preview': 'large' },
+  };
+}
 
 export default function PrivacyPage() {
   // Whether ad-related disclosures apply depends on AdSense being configured.
@@ -20,6 +25,19 @@ export default function PrivacyPage() {
   // with no ad client id, no advertising cookies are ever set, no ads are shown,
   // and the policy must not claim otherwise.
   const ADS_ENABLED = Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID);
+  // Accounts and billing exist only where Supabase / a purchasable plan are configured.
+  const ACCOUNTS = isSupabaseConfigured();
+  const PAYMENTS = isPremiumPurchasable();
+  const SECTION_2 = [
+    ACCOUNTS && 'account',
+    ACCOUNTS && 'saved',
+    PAYMENTS && 'payment',
+    'usage',
+    'log',
+    'local',
+  ].filter(Boolean) as string[];
+  const sub2 = (id: string) => `2${String.fromCharCode(97 + SECTION_2.indexOf(id))}`;
+  const processors = [ACCOUNTS && 'Supabase', PAYMENTS && 'Stripe', 'Google', 'Vercel'].filter(Boolean).join(', ');
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
@@ -51,37 +69,45 @@ export default function PrivacyPage() {
         <section>
           <h2>2. Information We Collect</h2>
 
-          <h3>2a. Account Information</h3>
-          <p>
-            When you create an account, we collect your <strong>email address</strong> and
-            authentication credentials. Authentication is handled by{' '}
-            <strong>Supabase</strong> (including Supabase Auth). You may also sign in via
-            OAuth providers (such as Google), in which case we receive only the basic profile
-            information those providers send us (typically name and email). Passwords are
-            never stored by us in plain text; Supabase handles credential hashing.
-          </p>
+          {ACCOUNTS && (
+            <>
+              <h3>{sub2('account')}. Account Information</h3>
+              <p>
+                When you create an account, we collect your <strong>email address</strong> and
+                authentication credentials. Authentication is handled by{' '}
+                <strong>Supabase</strong> (including Supabase Auth). You may also sign in via
+                OAuth providers (such as Google), in which case we receive only the basic profile
+                information those providers send us (typically name and email). Passwords are
+                never stored by us in plain text; Supabase handles credential hashing.
+              </p>
 
-          <h3>2b. Saved Calculation Data</h3>
-          <p>
-            If you save FIRE calculations while logged in, we store the input parameters you
-            provide (such as current savings, monthly contribution, target amount, and assumed
-            return rates) and the resulting calculation outputs. This data is linked to your
-            account and stored in our database (Supabase / PostgreSQL). Free accounts may
-            save up to five calculations; premium accounts have unlimited saves.
-          </p>
+              <h3>{sub2('saved')}. Saved Calculation Data</h3>
+              <p>
+                If you save FIRE calculations while logged in, we store the input parameters you
+                provide (such as current savings, monthly contribution, target amount, and assumed
+                return rates) and the resulting calculation outputs. This data is linked to your
+                account and stored in our database (Supabase / PostgreSQL). Free accounts may
+                save up to five calculations{PAYMENTS ? '; premium accounts have unlimited saves' : ''}.
+              </p>
+            </>
+          )}
 
-          <h3>2c. Payment and Subscription Information</h3>
-          <p>
-            If you subscribe to FIREPath Premium, payment processing is handled exclusively
-            by <strong>Stripe</strong>. We do <strong>not</strong> store your credit card
-            number, CVV, or full payment card details on our servers. Stripe provides us with
-            a subscription status, a customer ID, and limited billing information (e.g.,
-            subscription plan, renewal date, last four digits of the card on file) necessary
-            to manage your account. By subscribing, you also agree to{' '}
-            <a href="https://stripe.com/privacy" rel="noopener noreferrer">Stripe&apos;s Privacy Policy</a>.
-          </p>
+          {PAYMENTS && (
+            <>
+              <h3>{sub2('payment')}. Payment and Subscription Information</h3>
+              <p>
+                If you subscribe to FIREPath Premium, payment processing is handled exclusively
+                by <strong>Stripe</strong>. We do <strong>not</strong> store your credit card
+                number, CVV, or full payment card details on our servers. Stripe provides us with
+                a subscription status, a customer ID, and limited billing information (e.g.,
+                subscription plan, renewal date, last four digits of the card on file) necessary
+                to manage your account. By subscribing, you also agree to{' '}
+                <a href="https://stripe.com/privacy" rel="noopener noreferrer">Stripe&apos;s Privacy Policy</a>.
+              </p>
+            </>
+          )}
 
-          <h3>2d. Usage and Analytics Data</h3>
+          <h3>{sub2('usage')}. Usage and Analytics Data</h3>
           <p>
             We use <strong>Google Analytics 4 (GA4)</strong> to collect anonymized usage data,
             including pages visited, session duration, browser type, operating system, and
@@ -94,7 +120,7 @@ export default function PrivacyPage() {
             you may opt out at any time.
           </p>
 
-          <h3>2e. Log Data</h3>
+          <h3>{sub2('log')}. Log Data</h3>
           <p>
             Our hosting provider (Vercel) automatically collects server logs including IP
             addresses, request timestamps, HTTP status codes, and referrer URLs. These logs
@@ -102,12 +128,13 @@ export default function PrivacyPage() {
             purposes and are not used for marketing.
           </p>
 
-          <h3>2f. Locally Computed Data</h3>
+          <h3>{sub2('local')}. Locally Computed Data</h3>
           <p>
             Calculator inputs are processed in your browser and are not transmitted to or
-            stored on our servers unless you explicitly choose to save a calculation while
-            signed in (see Section&nbsp;2b). All FIRE calculations you perform without saving
-            are computed entirely in your browser using JavaScript running on your device —
+            stored on our servers
+            {ACCOUNTS && <> unless you explicitly choose to save a calculation while signed in (see Section&nbsp;{sub2('saved')})</>}
+            . All FIRE calculations you perform{ACCOUNTS ? ' without saving' : ''} are
+            computed entirely in your browser using JavaScript running on your device —
             no network request carries your slider values, and no analytics event includes
             your calculator inputs.
           </p>
@@ -126,8 +153,7 @@ export default function PrivacyPage() {
             <li>We do not sell your personal data to third parties.</li>
             {ADS_ENABLED ? (
               <li>
-                We do not display advertising to <strong>premium (paid) subscribers</strong>.
-                Free users may see display ads served by <strong>Google AdSense</strong>.
+                Visitors may see display ads served by <strong>Google AdSense</strong>.
                 Advertising cookies are subject to geo-differentiated consent: visitors in the
                 EEA, UK, and Switzerland must opt in via the cookie/consent banner before
                 personalized advertising cookies are set; visitors elsewhere (e.g. the United
@@ -149,9 +175,11 @@ export default function PrivacyPage() {
 
           <h3>4a. Strictly Necessary Cookies</h3>
           <p>
-            These cookies are required for the site to function. They include session cookies
-            set by Supabase to keep you authenticated. These cannot be disabled without
-            breaking core functionality.
+            These cookies are required for the site to function. FIREPath sets a first-party
+            cookie named <code>visitor_country</code> that holds a two-letter country code
+            taken from your request, so the consent setting that fits your region can be
+            applied; it expires after one day.
+            {ACCOUNTS && <> If you sign in, Supabase also sets session cookies to keep you authenticated, and signing in does not work without them.</>}
           </p>
 
           <h3>4b. Analytics Cookies (Non-Essential)</h3>
@@ -172,15 +200,11 @@ export default function PrivacyPage() {
             <>
               <h3>4c. Advertising Cookies (Non-Essential)</h3>
               <p>
-                Free (non-premium) users may see display advertisements served by{' '}
+                Visitors may see display advertisements served by{' '}
                 <strong>Google AdSense</strong>, a third-party advertising network operated by
                 Google LLC. Google AdSense uses cookies and similar tracking technologies to
                 serve ads that may be personalized to your interests based on your browsing
                 activity. These cookies are set by Google, not by FIREPath.
-              </p>
-              <p>
-                <strong>Premium subscribers do not see ads</strong>, and no advertising cookies
-                are loaded for their sessions.
               </p>
               <p>
                 We use <strong>Google Consent Mode v2</strong> together with a{' '}
@@ -231,7 +255,8 @@ export default function PrivacyPage() {
             what gofirepath.com actually contacts — the loader in
             src/app/layout.tsx, the GA tag injected by cookie-consent-banner.tsx,
             the Supabase browser client, the Stripe-hosted checkout redirect, and
-            the Vercel edge — not copied from a sibling site. Keep it in sync
+            the Vercel edge — not copied from a sibling site. Supabase and Stripe are
+            listed only when their feature is configured (ACCOUNTS, PAYMENTS). Keep it in sync
             with the code; src/app/(main)/privacy/__tests__ pins the required
             elements. If NEXT_PUBLIC_AD_PROVIDER is ever switched away from
             AdSense (see components/monetization/AdProvider.tsx), the "only
@@ -262,7 +287,7 @@ export default function PrivacyPage() {
                 <strong>Google AdSense</strong> (
                 <code>pagead2.googlesyndication.com</code>,{' '}
                 <code>googleads.g.doubleclick.net</code>) — serves the display advertising
-                shown to free users below the calculator results and on the FIRE guide pages.
+                shown to visitors below the calculator results and on the FIRE guide pages.
                 Google AdSense is the only advertising network loaded on this site. See{' '}
                 <a href="https://policies.google.com/technologies/ads" rel="noopener noreferrer">
                   How Google uses cookies in advertising
@@ -279,18 +304,22 @@ export default function PrivacyPage() {
               live in that fragment when you share a scenario) are never transmitted to
               Google Analytics.
             </li>
-            <li>
-              <strong>Supabase</strong> (<code>*.supabase.co</code>) — sign-in and the
-              calculations you choose to save. Your browser talks to Supabase directly, and
-              Supabase sets a strictly necessary session cookie to keep you signed in. Nothing
-              is sent to Supabase unless you create an account or save a calculation.
-            </li>
-            <li>
-              <strong>Stripe</strong> (<code>stripe.com</code>) — premium subscriptions only.
-              No Stripe script runs on FIREPath pages; if you start a subscription or open the
-              billing portal you are redirected to a Stripe-hosted page, where Stripe&apos;s
-              own privacy policy applies.
-            </li>
+            {ACCOUNTS && (
+              <li>
+                <strong>Supabase</strong> (<code>*.supabase.co</code>) — sign-in and the
+                calculations you choose to save. Your browser talks to Supabase directly, and
+                Supabase sets a strictly necessary session cookie to keep you signed in. Nothing
+                is sent to Supabase unless you create an account or save a calculation.
+              </li>
+            )}
+            {PAYMENTS && (
+              <li>
+                <strong>Stripe</strong> (<code>stripe.com</code>) — premium subscriptions only.
+                No Stripe script runs on FIREPath pages; if you start a subscription or open the
+                billing portal you are redirected to a Stripe-hosted page, where Stripe&apos;s
+                own privacy policy applies.
+              </li>
+            )}
             <li>
               <strong>Vercel</strong> — hosting and content delivery. Vercel processes request
               metadata (IP address, user agent, referrer) in server logs to deliver the site,
@@ -301,8 +330,9 @@ export default function PrivacyPage() {
           <p>
             Web fonts are self-hosted with the site&apos;s own assets, so loading a FIREPath
             page makes no request to Google Fonts. The FIRE calculations you run are computed
-            in your browser; the figures you enter reach none of the vendors above unless you
-            deliberately save a calculation to your account (Supabase, above).
+            in your browser; the figures you enter reach none of the vendors above
+            {ACCOUNTS && <> unless you deliberately save a calculation to your account (Supabase, above)</>}
+            .
           </p>
           {ADS_ENABLED && (
             <p>
@@ -322,9 +352,9 @@ export default function PrivacyPage() {
           <h3>{ADS_ENABLED ? '4e' : '4d'}. How to Manage Cookies</h3>
           <p>
             You can control cookies through your browser settings or by clicking
-            &ldquo;Decline&rdquo; in our cookie consent banner (where shown). Note that
-            disabling strictly necessary cookies will prevent you from signing in. For Google
-            Analytics specifically, you may also use the{' '}
+            &ldquo;Decline&rdquo; in our cookie consent banner (where shown).
+            {ACCOUNTS && <> Note that disabling strictly necessary cookies will prevent you from signing in.</>}{' '}
+            For Google Analytics specifically, you may also use the{' '}
             <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener noreferrer">
               Google Analytics Opt-out Browser Add-on
             </a>.
@@ -346,18 +376,17 @@ export default function PrivacyPage() {
         <section>
           <h2>5. How We Use Your Information</h2>
           <ul>
-            <li>To provide and maintain the FIREPath service and your account.</li>
-            <li>To save and retrieve your FIRE calculations on your behalf.</li>
-            <li>To process subscription payments and manage your premium access via Stripe.</li>
+            <li>To provide and maintain the FIREPath service{ACCOUNTS ? ' and your account' : ''}.</li>
+            {ACCOUNTS && <li>To save and retrieve your FIRE calculations on your behalf.</li>}
+            {PAYMENTS && <li>To process subscription payments and manage your premium access via Stripe.</li>}
             <li>
               To analyze aggregate usage patterns (via GA4) to improve the calculator and user
               experience — subject to geo-differentiated consent as described in Section&nbsp;4b.
             </li>
             {ADS_ENABLED && (
               <li>
-                To display advertisements to free users via Google AdSense (only for
-                non-premium accounts; subject to geo-differentiated consent as described in
-                Section&nbsp;4c).
+                To display advertisements via Google AdSense (subject to
+                geo-differentiated consent as described in Section&nbsp;4c).
               </li>
             )}
             <li>To respond to your support inquiries and communications.</li>
@@ -395,15 +424,19 @@ export default function PrivacyPage() {
           <h2>8. Sharing Your Information</h2>
           <p>We share your personal data only in the following circumstances:</p>
           <ul>
-            <li>
-              <strong>Supabase:</strong> Our database and authentication provider. Supabase
-              processes your email and stored calculations on our behalf under a data
-              processing agreement.
-            </li>
-            <li>
-              <strong>Stripe:</strong> Our payment processor for premium subscriptions.
-              Stripe processes payment data under Stripe&apos;s own privacy policy.
-            </li>
+            {ACCOUNTS && (
+              <li>
+                <strong>Supabase:</strong> Our database and authentication provider. Supabase
+                processes your email and stored calculations on our behalf under a data
+                processing agreement.
+              </li>
+            )}
+            {PAYMENTS && (
+              <li>
+                <strong>Stripe:</strong> Our payment processor for premium subscriptions.
+                Stripe processes payment data under Stripe&apos;s own privacy policy.
+              </li>
+            )}
             <li>
               <strong>Google Analytics:</strong> Anonymous usage statistics. Sent after consent
               for EEA/UK/Switzerland visitors; sent on first visit under notice-and-opt-out for
@@ -411,12 +444,12 @@ export default function PrivacyPage() {
             </li>
             {ADS_ENABLED && (
               <li>
-                <strong>Google AdSense:</strong> Third-party display advertising for free users
-                only. Google may set advertising cookies and receive page-level data (such as
+                <strong>Google AdSense:</strong> Third-party display advertising. Google may set
+                advertising cookies and receive page-level data (such as
                 the page URL and a pseudonymous identifier) to serve and measure ads. For EEA,
                 UK, and Swiss visitors this occurs only after consent is granted; for visitors
                 elsewhere it occurs on the first visit under a notice-and-opt-out model.
-                Premium subscribers are excluded. Google&apos;s use of data is governed by{' '}
+                Google&apos;s use of data is governed by{' '}
                 <a href="https://policies.google.com/privacy" rel="noopener noreferrer">
                   Google&apos;s Privacy Policy
                 </a>.
@@ -440,7 +473,7 @@ export default function PrivacyPage() {
             We do not sell, rent, or trade your personal information to third parties for
             money.{' '}
             {ADS_ENABLED
-              ? 'When advertising is enabled, our use of Google AdSense to serve personalized ads may qualify as "sharing" for cross-context behavioral advertising under California law (see Section 10b); you can opt out via the "Do Not Sell or Share My Personal Information" link in the site footer, Google Ad Settings, or aboutads.info. We never share the financial figures you enter into the calculator, or your saved calculations, with advertisers.'
+              ? 'When advertising is enabled, our use of Google AdSense to serve personalized ads may qualify as "sharing" for cross-context behavioral advertising under California law (see Section 10b); you can opt out via the "Do Not Sell or Share My Personal Information" link in the site footer, Google Ad Settings, or aboutads.info. We never share the financial figures you enter into the calculator' + (ACCOUNTS ? ', or your saved calculations,' : '') + ' with advertisers.'
               : 'We do not share personal information for cross-context behavioral advertising.'}
           </p>
         </section>
@@ -448,19 +481,25 @@ export default function PrivacyPage() {
         <section>
           <h2>9. Data Retention</h2>
           <ul>
-            <li>
-              <strong>Account data:</strong> Retained for as long as your account is active.
-              If you delete your account, we will delete your personal data within 30 days,
-              except where we are required to retain it for legal or compliance purposes.
-            </li>
-            <li>
-              <strong>Saved calculations:</strong> Retained while your account is active and
-              deleted with your account.
-            </li>
-            <li>
-              <strong>Billing records:</strong> Retained for up to 7 years as required for
-              tax and accounting compliance.
-            </li>
+            {ACCOUNTS && (
+              <>
+                <li>
+                  <strong>Account data:</strong> Retained for as long as your account is active.
+                  If you delete your account, we will delete your personal data within 30 days,
+                  except where we are required to retain it for legal or compliance purposes.
+                </li>
+                <li>
+                  <strong>Saved calculations:</strong> Retained while your account is active and
+                  deleted with your account.
+                </li>
+              </>
+            )}
+            {PAYMENTS && (
+              <li>
+                <strong>Billing records:</strong> Retained for up to 7 years as required for
+                tax and accounting compliance.
+              </li>
+            )}
             <li>
               <strong>Server logs:</strong> Typically retained for 30 days.
             </li>
@@ -498,8 +537,8 @@ export default function PrivacyPage() {
             </li>
           </ul>
           <p>
-            Our legal basis for processing your data: account data is processed for
-            contract performance;{' '}
+            Our legal basis for processing your data:{' '}
+            {ACCOUNTS && <>account data is processed for contract performance; </>}
             {ADS_ENABLED ? 'analytics and advertising cookies are' : 'analytics is'} processed
             on the basis of consent; server logs are processed for legitimate interests
             (security and abuse prevention).
@@ -517,7 +556,7 @@ export default function PrivacyPage() {
             {ADS_ENABLED ? (
               <li>
                 <strong>Right to Opt-Out of Sale or Sharing:</strong> We do not sell personal
-                information for money. Free users may have data shared with Google AdSense for
+                information for money. Visitors may have data shared with Google AdSense for
                 interest-based advertising under a notice-and-opt-out model, which may
                 constitute &ldquo;sharing&rdquo; for cross-context behavioral advertising under
                 the CPRA. You may opt out or withdraw consent at any time via the{' '}
@@ -526,7 +565,6 @@ export default function PrivacyPage() {
                 <a href="https://adssettings.google.com" rel="noopener noreferrer">Google Ad Settings</a>,
                 or{' '}
                 <a href="https://www.aboutads.info/choices" rel="noopener noreferrer">www.aboutads.info/choices</a>.
-                Premium subscribers are never shown ads.
               </li>
             ) : (
               <li>
@@ -559,9 +597,10 @@ export default function PrivacyPage() {
           <h2>12. Security</h2>
           <p>
             We implement industry-standard security measures including HTTPS encryption for
-            all data in transit, row-level security policies in our database, and
-            authentication managed by Supabase. No method of transmission over the internet
-            is 100% secure, and we cannot guarantee absolute security.
+            all data in transit
+            {ACCOUNTS && <>, row-level security policies in our database, and authentication managed by Supabase</>}
+            . No method of transmission over the internet is 100% secure, and we cannot
+            guarantee absolute security.
           </p>
         </section>
 
@@ -569,7 +608,7 @@ export default function PrivacyPage() {
           <h2>13. International Data Transfers</h2>
           <p>
             Your data may be processed in the United States and other countries where our
-            service providers (Supabase, Stripe, Google, Vercel) operate. If you are located
+            service providers ({processors}) operate. If you are located
             in the EEA or UK, we rely on our service providers&apos; Standard Contractual
             Clauses or other approved transfer mechanisms to ensure your data is protected.
           </p>
@@ -579,9 +618,10 @@ export default function PrivacyPage() {
           <h2>14. Changes to This Policy</h2>
           <p>
             We may update this Privacy Policy from time to time. We will post the revised
-            policy on this page with an updated effective date. For material changes, we
-            will notify registered users via email. Your continued use of FIREPath after
-            the effective date constitutes acceptance of the revised policy.
+            policy on this page with an updated effective date.
+            {ACCOUNTS && <> For material changes, we will notify registered users via email.</>}{' '}
+            Your continued use of FIREPath after the effective date constitutes acceptance of
+            the revised policy.
           </p>
         </section>
 

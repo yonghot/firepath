@@ -150,7 +150,7 @@ export default function AboutPage() {
           services we believe are relevant to FIRE planning.
         </p>
         <p>
-          Premium subscribers never see advertisements. See our{' '}
+          See our{' '}
           <Link href="/privacy" className="underline underline-offset-4 hover:text-foreground transition-colors duration-200">
             Privacy Policy
           </Link>{' '}

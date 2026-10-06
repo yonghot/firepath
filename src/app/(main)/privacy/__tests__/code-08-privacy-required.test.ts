@@ -14,8 +14,9 @@
  * The list must also be specific to gofirepath.com: ten sibling sites share one
  * publisher id, so the vendors pinned below are the ones THIS repo really
  * contacts — the AdSense loader in src/app/layout.tsx, the GA tag injected by
- * cookie-consent-banner.tsx, the Supabase browser client, the Stripe-hosted
- * checkout redirect, and Vercel.
+ * cookie-consent-banner.tsx, and Vercel always, plus the Supabase browser
+ * client and the Stripe-hosted checkout redirect only where those features are
+ * configured (a vendor for a feature that cannot be used is a false statement).
  *
  * Asserted against the route source (this repo's `node` vitest environment has
  * no DOM — see src/lib/__tests__/analytics.test.ts), which is the same text the
@@ -66,6 +67,12 @@ describe('CODE-08 — privacy policy required elements', () => {
     ]) {
       expect(PRIVACY_SOURCE, `${vendor} must be named in the vendor list`).toContain(vendor);
     }
+    expect(PRIVACY_SOURCE, 'Supabase is listed only when accounts exist').toMatch(
+      /\{ACCOUNTS && \(\s*<li>\s*<strong>Supabase<\/strong>/
+    );
+    expect(PRIVACY_SOURCE, 'Stripe is listed only when a plan can be bought').toMatch(
+      /\{PAYMENTS && \(\s*<li>\s*<strong>Stripe<\/strong>/
+    );
     // The hosts, so the list is verifiable rather than decorative. Each of these
     // appears in this repo's own code, not in a boilerplate list.
     expect(PRIVACY_SOURCE).toContain('pagead2.googlesyndication.com');
@@ -94,8 +101,9 @@ describe('CODE-08 — privacy policy required elements', () => {
 
   it('keeps the vendor list honest when no ad client is configured', () => {
     // The ad-specific claims sit behind ADS_ENABLED so a build with no AdSense
-    // client id never asserts that ads are served; the non-ad vendors (Supabase,
-    // Stripe, Vercel, GA4) are unconditional because they always apply.
+    // client id never asserts that ads are served; Vercel and GA4 are
+    // unconditional because they always apply, Supabase and Stripe follow
+    // ACCOUNTS and PAYMENTS.
     expect(PRIVACY_SOURCE).toMatch(/const ADS_ENABLED = Boolean\(\s*process\.env\.NEXT_PUBLIC_ADSENSE_CLIENT_ID/);
     const vendorHeadingAt = PRIVACY_SOURCE.indexOf(
       'Third-party vendors and ad networks used on this site'

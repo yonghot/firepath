@@ -8,6 +8,7 @@ import { SourcesReferences, type SourceItem } from '@/components/common/sources-
 import { UpdatedBadge } from '@/components/common/updated-badge';
 import { buildMeta } from '@/lib/seo';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
+import { isPremiumPurchasable } from '@/lib/premium-availability';
 
 export const metadata: Metadata = buildMeta({
   title: 'How We Calculate: FIRE Formulas and Cited Data Sources',
@@ -24,7 +25,9 @@ const LAST_UPDATED = '2026-06-29';
  * Verified citations for the Sources & References section.
  * All URLs come from the credibility brief and were confirmed to resolve.
  */
-const METHODOLOGY_SOURCES: SourceItem[] = [
+type MethodologySource = SourceItem & { monteCarloOnly?: true };
+
+const METHODOLOGY_SOURCES: MethodologySource[] = [
   {
     id: 1,
     label: 'William Bengen — Wikipedia',
@@ -109,18 +112,21 @@ const METHODOLOGY_SOURCES: SourceItem[] = [
     label: 'T. Rowe Price — How Monte Carlo Analysis Could Improve Your Retirement Plan',
     url: 'https://www.troweprice.com/personal-investing/resources/insights/how-monte-carlo-analysis-could-improve-your-retirement-plan.html',
     note: 'Industry context for Monte Carlo simulations (1,000-run norm for retirement planning).',
+    monteCarloOnly: true,
   },
   {
     id: 15,
     label: 'Boldin — Monte Carlo Simulation Methodology',
     url: 'https://help.boldin.com/en/articles/5805671-boldin-s-monte-carlo-simulation',
     note: 'Reference implementation using 1,000 Monte Carlo iterations.',
+    monteCarloOnly: true,
   },
   {
     id: 16,
     label: 'YCharts — S&P 500 Monthly Standard Deviation (Annualized)',
     url: 'https://ycharts.com/indices/%5ESPX/monthly_standard_deviation_annualized_all',
     note: 'Historical S&P 500 annualized volatility data (supports 15% volatility assumption).',
+    monteCarloOnly: true,
   },
   {
     id: 17,
@@ -143,6 +149,11 @@ const METHODOLOGY_SOURCES: SourceItem[] = [
 ];
 
 export default function MethodologyPage() {
+  const monteCarlo = isPremiumPurchasable();
+  const sources: SourceItem[] = METHODOLOGY_SOURCES.filter((source) => monteCarlo || !source.monteCarloOnly).map(
+    (source, index) => ({ id: index + 1, label: source.label, url: source.url, note: source.note }),
+  );
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <Breadcrumbs items={[{ name: 'Methodology', path: '/methodology' }]} />
@@ -228,14 +239,14 @@ export default function MethodologyPage() {
 
         <p className="text-sm text-muted-foreground">
           Limitations: projections assume constant returns, inflation, and savings,
-          and do not model market volatility (use the Monte Carlo simulation for
-          probability ranges), taxes, or sequence-of-returns risk. They are
+          and do not model market volatility{monteCarlo ? ' (use the Monte Carlo simulation for probability ranges)' : ''}, taxes,
+          or sequence-of-returns risk. They are
           estimates, not guarantees. (See the <Link href="/">calculator</Link> and
           its FAQ for plain-language explanations.)
         </p>
       </div>
 
-      <SourcesReferences sources={METHODOLOGY_SOURCES} />
+      <SourcesReferences sources={sources} />
 
       <div className="mt-8">
         <DisclaimerBanner />

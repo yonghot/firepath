@@ -263,7 +263,7 @@ export function CookieConsentBanner() {
             {ADS_ENABLED ? (
               <>
                 and <strong className="text-foreground">advertising cookies</strong> (Google
-                AdSense) to keep FIREPath free. Premium subscribers see no ads.
+                AdSense) to keep FIREPath free.
               </>
             ) : (
               <>to improve FIREPath. We do not use advertising cookies.</>

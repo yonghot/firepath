@@ -4,17 +4,47 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
 import { PUBLISHER } from '@/lib/site';
+import { isSupabaseConfigured } from '@/lib/supabase/client';
+import { isPremiumPurchasable } from '@/lib/premium-availability';
 
-export const metadata: Metadata = {
-  title: 'Terms of Service',
-  description:
-    'FIREPath Terms of Service — rules governing use of our FIRE planning calculator, premium subscriptions, intellectual property, and limitations of liability.',
-  alternates: { canonical: '/terms' },
-  // 부속M K09 — Discover/Images full-size image preview eligibility.
-  robots: { index: true, follow: true, 'max-image-preview': 'large' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Terms of Service',
+    description: `FIREPath Terms of Service — rules governing use of our FIRE planning calculator${
+      isPremiumPurchasable() ? ', premium subscriptions' : ''
+    }, intellectual property, and limitations of liability.`,
+    alternates: { canonical: '/terms' },
+    // 부속M K09 — Discover/Images full-size image preview eligibility.
+    robots: { index: true, follow: true, 'max-image-preview': 'large' },
+  };
+}
 
 export default function TermsPage() {
+  const accounts = isSupabaseConfigured();
+  const premium = isPremiumPurchasable();
+  const order = [
+    'acceptance',
+    'service',
+    'advice',
+    accounts && 'accounts',
+    premium && 'premium',
+    'use',
+    'ip',
+    'links',
+    'warranty',
+    'liability',
+    'indemnity',
+    'changes',
+    'severability',
+    'contact',
+  ].filter(Boolean) as string[];
+  const num = (id: string) => order.indexOf(id) + 1;
+  const offered = [
+    accounts && 'account creation',
+    accounts && 'saved calculations',
+    premium && 'a premium subscription tier with additional features',
+  ].filter(Boolean) as string[];
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
       <Breadcrumbs items={[{ name: 'Terms of Service', path: '/terms' }]} />
@@ -28,7 +58,7 @@ export default function TermsPage() {
       <div className="prose prose-neutral dark:prose-invert max-w-none space-y-8">
 
         <section>
-          <h2>1. Acceptance of Terms</h2>
+          <h2>{num('acceptance')}. Acceptance of Terms</h2>
           <p>
             By accessing or using FIREPath at{' '}
             <a href="https://gofirepath.com" rel="noopener noreferrer">gofirepath.com</a>{' '}
@@ -45,18 +75,19 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>2. Description of Service</h2>
+          <h2>{num('service')}. Description of Service</h2>
           <p>
             FIREPath provides a web-based calculator for estimating Financial Independence,
             Retire Early (FIRE) milestones, including interactive tools for comparing Lean
-            FIRE, Regular FIRE, Fat FIRE, Coast FIRE, and Barista FIRE scenarios. The Service
-            also offers account creation, saved calculations, and a premium subscription tier
-            with additional features.
+            FIRE, Regular FIRE, Fat FIRE, Coast FIRE, and Barista FIRE scenarios.
+            {offered.length > 0 && (
+              <> The Service also offers {new Intl.ListFormat('en', { type: 'conjunction' }).format(offered)}.</>
+            )}
           </p>
         </section>
 
         <section>
-          <h2>3. Informational Estimates Only — Not Financial Advice</h2>
+          <h2>{num('advice')}. Informational Estimates Only — Not Financial Advice</h2>
           <p>
             <strong>
               THE SERVICE PROVIDES EDUCATIONAL AND INFORMATIONAL ESTIMATES ONLY. NOTHING ON
@@ -84,83 +115,87 @@ export default function TermsPage() {
           </p>
         </section>
 
-        <section>
-          <h2>4. Accounts and Registration</h2>
-          <p>
-            To use certain features (such as saving calculations), you must create an account.
-            You are responsible for:
-          </p>
-          <ul>
-            <li>Maintaining the confidentiality of your account credentials;</li>
-            <li>All activity that occurs under your account; and</li>
-            <li>Notifying us immediately of any unauthorized use.</li>
-          </ul>
-          <p>
-            You must be at least 13 years old (or 16 years old in the EEA) to create an
-            account. We reserve the right to suspend or terminate accounts that violate
-            these Terms.
-          </p>
-        </section>
+        {accounts && (
+          <section>
+            <h2>{num('accounts')}. Accounts and Registration</h2>
+            <p>
+              To use certain features (such as saving calculations), you must create an account.
+              You are responsible for:
+            </p>
+            <ul>
+              <li>Maintaining the confidentiality of your account credentials;</li>
+              <li>All activity that occurs under your account; and</li>
+              <li>Notifying us immediately of any unauthorized use.</li>
+            </ul>
+            <p>
+              You must be at least 13 years old (or 16 years old in the EEA) to create an
+              account. We reserve the right to suspend or terminate accounts that violate
+              these Terms.
+            </p>
+          </section>
+        )}
+
+        {premium && (
+          <section>
+            <h2>{num('premium')}. Premium Subscription and Billing</h2>
+
+            <h3>{num('premium')}a. Subscription Plans</h3>
+            <p>
+              FIREPath offers a premium subscription plan (&ldquo;Premium&rdquo;) that unlocks
+              additional features including Monte Carlo simulations, portfolio optimization,
+              unlimited saved calculations, and other benefits as described on the{' '}
+              <Link href="/premium">Premium page</Link>. Feature availability may change over
+              time as we develop the product.
+            </p>
+
+            <h3>{num('premium')}b. Pricing and Auto-Renewal</h3>
+            <p>
+              The current Premium subscription price is <strong>$4.99 per month</strong>
+              (or as otherwise displayed at the time of purchase). All prices are in U.S.
+              dollars. Your subscription will automatically renew at the end of each billing
+              period unless you cancel before the renewal date. By subscribing, you authorize
+              us (through our payment processor, Stripe) to charge your payment method on a
+              recurring basis.
+            </p>
+
+            <h3>{num('premium')}c. Payment Processing</h3>
+            <p>
+              All payments are processed by <strong>Stripe</strong>. By providing your payment
+              information, you also agree to{' '}
+              <a href="https://stripe.com/legal/ssa" rel="noopener noreferrer">
+                Stripe&apos;s Terms of Service
+              </a>. We do not store your full payment card details on our servers.
+            </p>
+
+            <h3>{num('premium')}d. Cancellation</h3>
+            <p>
+              You may cancel your Premium subscription at any time through your account
+              settings or by contacting us at{' '}
+              <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>. Cancellation
+              takes effect at the end of the current billing period. You will retain access to
+              Premium features until the end of the period you have paid for.
+            </p>
+
+            <h3>{num('premium')}e. Refunds</h3>
+            <p>
+              We offer a <strong>7-day refund</strong> for new subscribers who request a refund
+              within 7 days of their initial subscription purchase by emailing{' '}
+              <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>. After 7 days,
+              subscription payments are generally non-refundable, except as required by
+              applicable law. We handle refund requests on a case-by-case basis at our
+              discretion.
+            </p>
+
+            <h3>{num('premium')}f. Taxes</h3>
+            <p>
+              Prices are exclusive of applicable taxes. Where required by law, we will collect
+              and remit applicable sales taxes, VAT, or GST.
+            </p>
+          </section>
+        )}
 
         <section>
-          <h2>5. Premium Subscription and Billing</h2>
-
-          <h3>5a. Subscription Plans</h3>
-          <p>
-            FIREPath offers a premium subscription plan (&ldquo;Premium&rdquo;) that unlocks
-            additional features including Monte Carlo simulations, portfolio optimization,
-            unlimited saved calculations, and other benefits as described on the{' '}
-            <Link href="/premium">Premium page</Link>. Feature availability may change over
-            time as we develop the product.
-          </p>
-
-          <h3>5b. Pricing and Auto-Renewal</h3>
-          <p>
-            The current Premium subscription price is <strong>$4.99 per month</strong>
-            (or as otherwise displayed at the time of purchase). All prices are in U.S.
-            dollars. Your subscription will automatically renew at the end of each billing
-            period unless you cancel before the renewal date. By subscribing, you authorize
-            us (through our payment processor, Stripe) to charge your payment method on a
-            recurring basis.
-          </p>
-
-          <h3>5c. Payment Processing</h3>
-          <p>
-            All payments are processed by <strong>Stripe</strong>. By providing your payment
-            information, you also agree to{' '}
-            <a href="https://stripe.com/legal/ssa" rel="noopener noreferrer">
-              Stripe&apos;s Terms of Service
-            </a>. We do not store your full payment card details on our servers.
-          </p>
-
-          <h3>5d. Cancellation</h3>
-          <p>
-            You may cancel your Premium subscription at any time through your account
-            settings or by contacting us at{' '}
-            <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>. Cancellation
-            takes effect at the end of the current billing period. You will retain access to
-            Premium features until the end of the period you have paid for.
-          </p>
-
-          <h3>5e. Refunds</h3>
-          <p>
-            We offer a <strong>7-day refund</strong> for new subscribers who request a refund
-            within 7 days of their initial subscription purchase by emailing{' '}
-            <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>. After 7 days,
-            subscription payments are generally non-refundable, except as required by
-            applicable law. We handle refund requests on a case-by-case basis at our
-            discretion.
-          </p>
-
-          <h3>5f. Taxes</h3>
-          <p>
-            Prices are exclusive of applicable taxes. Where required by law, we will collect
-            and remit applicable sales taxes, VAT, or GST.
-          </p>
-        </section>
-
-        <section>
-          <h2>6. Acceptable Use</h2>
+          <h2>{num('use')}. Acceptable Use</h2>
           <p>You agree not to:</p>
           <ul>
             <li>Use the Service for any unlawful purpose or in violation of these Terms;</li>
@@ -170,7 +205,8 @@ export default function TermsPage() {
             </li>
             <li>
               Scrape, crawl, or systematically extract data from the Service without our
-              written permission;
+              written permission, other than the open data files and embed described in
+              Section&nbsp;{num('ip')};
             </li>
             <li>
               Use the Service to transmit malware, spam, or harmful code;
@@ -186,23 +222,37 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>7. Intellectual Property</h2>
+          <h2>{num('ip')}. Intellectual Property</h2>
           <p>
             The Service and its original content, features, functionality, design, and code
             are owned by FIREPath and are protected by applicable copyright, trademark, and
             other intellectual property laws. You may not reproduce, distribute, modify,
             create derivative works of, or publicly display any part of the Service without
-            our prior written consent.
+            our prior written consent, except as described in the next paragraph.
           </p>
           <p>
-            You retain ownership of any data you input into the calculator. By saving
-            calculations to your account, you grant us a limited license to store and
-            retrieve that data on your behalf.
+            The exceptions are the open statistics dataset and the embeddable calculator.
+            The dataset published at <a href="/data.json">/data.json</a> and{' '}
+            <a href="/data.csv">/data.csv</a> is licensed under{' '}
+            <a href="https://creativecommons.org/licenses/by/4.0/" rel="noopener noreferrer">
+              CC BY 4.0
+            </a>
+            : you may copy, redistribute and adapt it, including by automated download,
+            if you credit FIREPath. The calculator may be embedded on your own website
+            with the snippet and attribution link provided on the{' '}
+            <Link href="/embed-this">Embed the Calculator</Link> page.
+          </p>
+          <p>
+            You retain ownership of any data you input into the calculator.
+            {accounts && (
+              <> By saving calculations to your account, you grant us a limited license to
+              store and retrieve that data on your behalf.</>
+            )}
           </p>
         </section>
 
         <section>
-          <h2>8. Third-Party Links and Affiliate Links</h2>
+          <h2>{num('links')}. Third-Party Links and Affiliate Links</h2>
           <p>
             The Service may contain links to third-party websites, tools, or services,
             including affiliate links through which we may earn a commission. We do not
@@ -219,7 +269,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>9. Disclaimer of Warranties</h2>
+          <h2>{num('warranty')}. Disclaimer of Warranties</h2>
           <p>
             THE SERVICE IS PROVIDED &ldquo;AS IS&rdquo; AND &ldquo;AS AVAILABLE&rdquo; WITHOUT
             WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
@@ -231,7 +281,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>10. Limitation of Liability</h2>
+          <h2>{num('liability')}. Limitation of Liability</h2>
           <p>
             TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, FIREPATH AND ITS PUBLISHER,
             OWNERS, AFFILIATES, AND CONTRIBUTORS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL,
@@ -253,7 +303,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>11. Indemnification</h2>
+          <h2>{num('indemnity')}. Indemnification</h2>
           <p>
             You agree to indemnify and hold harmless FIREPath and its publisher, owners,
             affiliates, and contributors from any claims, liabilities, damages, losses, and expenses
@@ -264,7 +314,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>12. Modifications to the Service and Terms</h2>
+          <h2>{num('changes')}. Modifications to the Service and Terms</h2>
           <p>
             We reserve the right to modify, suspend, or discontinue the Service (or any
             feature thereof) at any time with or without notice. We will not be liable for
@@ -272,14 +322,15 @@ export default function TermsPage() {
           </p>
           <p>
             We may update these Terms from time to time. We will post the revised Terms on
-            this page with an updated effective date. For material changes, we will notify
-            registered users via email. Your continued use of the Service after the effective
-            date of any revision constitutes your acceptance of the updated Terms.
+            this page with an updated effective date.
+            {accounts && <> For material changes, we will notify registered users via email.</>}{' '}
+            Your continued use of the Service after the effective date of any revision
+            constitutes your acceptance of the updated Terms.
           </p>
         </section>
 
         <section>
-          <h2>13. Severability and Entire Agreement</h2>
+          <h2>{num('severability')}. Severability and Entire Agreement</h2>
           <p>
             If any provision of these Terms is found to be invalid or unenforceable, that
             provision shall be enforced to the maximum extent permissible, and the remaining
@@ -290,7 +341,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>14. Contact Us</h2>
+          <h2>{num('contact')}. Contact Us</h2>
           <p>
             If you have any questions about these Terms of Service, please contact us:
           </p>

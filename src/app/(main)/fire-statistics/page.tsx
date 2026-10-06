@@ -241,7 +241,15 @@ export default function FireStatisticsPage() {
         </h2>
         <p className="text-sm text-muted-foreground">
           The exact figures above, in machine-readable form — same dataset, no additional
-          processing.
+          processing. Free to reuse under{" "}
+          <a
+            href="https://creativecommons.org/licenses/by/4.0/"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2"
+          >
+            CC BY 4.0
+          </a>{" "}
+          with credit to FIREPath.
         </p>
         <div className="flex flex-wrap gap-3">
           <a
