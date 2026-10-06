@@ -114,9 +114,10 @@ describe('K7: the ad loader is mounted only on content routes', () => {
     expect(read(join(ROOT, 'src', 'components', 'layouts', 'site-chrome.tsx'))).not.toMatch(/AdLoader/);
   });
 
-  it('the feedback widget lives in the shared chrome, not the root layout (no widget on /embed or 404)', () => {
+  it('the feedback launcher lives in the shared chrome footer, not the root layout (no widget on /embed or 404)', () => {
     expect(read(join(APP, 'layout.tsx'))).not.toMatch(/FeedbackWidget/);
-    expect(read(join(ROOT, 'src', 'components', 'layouts', 'site-chrome.tsx'))).toMatch(/<FeedbackWidget\b/);
+    expect(read(join(ROOT, 'src', 'components', 'layouts', 'footer.tsx'))).toMatch(/<FeedbackWidget\b/);
+    expect(read(join(ROOT, 'src', 'components', 'layouts', 'site-chrome.tsx'))).toMatch(/<Footer\b/);
     for (const layout of ['(main)', '(utility)']) {
       expect(read(join(APP, layout, 'layout.tsx')), layout).toMatch(/<SiteChrome\b/);
     }

@@ -1,9 +1,10 @@
 'use client';
 
 /**
- * FeedbackWidget — site-wide floating feedback button + panel.
+ * FeedbackWidget — footer "Send feedback" launcher + panel.
  *
- * Mounted globally in the root layout so it appears on every page.
+ * The launcher sits in the footer; the panel renders only after the visitor
+ * clicks it, so nothing is pinned to the viewport on first paint (K18).
  * Sends feedback to POST /api/feedback. No DB — the API forwards to an
  * env-configured external collector (FEEDBACK_ENDPOINT).
  *
@@ -18,7 +19,7 @@
  *  - Uses only design tokens from globals.css / design/tokens.css.
  *  - NO purple/blue gradients, NO hover:scale-105, NO #000000, NO emoji icons.
  *  - Lucide icons only. On-grid spacing (4px base).
- *  - z-index: 40 (above content, below modals at z-50).
+ *  - z-index: 40 for the user-opened panel (above content, below modals at z-50).
  */
 
 import {
@@ -27,9 +28,8 @@ import {
   useEffect,
   useCallback,
   type FormEvent,
-  type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
-import { MessageSquarePlus, X, Send, ChevronDown } from 'lucide-react';
+import { X, Send, ChevronDown } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -90,18 +90,21 @@ export function FeedbackWidget() {
 
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const wasOpenRef = useRef(false);
   const firstInputRef = useRef<HTMLSelectElement>(null);
   const liveRef = useRef<HTMLDivElement>(null);
 
   // Move focus into the panel when it opens.
   useEffect(() => {
     if (open) {
+      wasOpenRef.current = true;
       // Small delay so the panel is in the DOM and painted.
       requestAnimationFrame(() => {
         firstInputRef.current?.focus();
       });
-    } else {
-      // Return focus to the trigger when closed.
+    } else if (wasOpenRef.current) {
+      // Only after a close: focusing the footer launcher on mount would scroll the page to the footer.
+      wasOpenRef.current = false;
       triggerRef.current?.focus();
     }
   }, [open]);
@@ -185,34 +188,20 @@ export function FeedbackWidget() {
 
   return (
     <>
-      {/* ── Floating trigger button ─────────────────────────────────────────── */}
+      {/* ── Footer launcher ─────────────────────────────────────────────────── */}
       <button
         ref={triggerRef}
         type="button"
-        aria-label={open ? 'Close feedback panel' : 'Open feedback panel'}
         aria-expanded={open}
         aria-haspopup="dialog"
         onClick={() => setOpen((v) => !v)}
         className={[
-          // Position: fixed bottom-right, safe-area-aware, above content.
-          'fixed bottom-6 right-6 z-40',
-          // Safe-area insets for mobile home indicators.
-          'pb-[env(safe-area-inset-bottom,0px)] pr-[env(safe-area-inset-right,0px)]',
-          // Layout.
-          'flex items-center gap-2',
-          // Shape + colour — brand primary, neutral text.
-          'rounded-full bg-[var(--brand-primary)] text-white shadow-md',
-          // Padding: icon-only on mobile, icon+label on sm+.
-          'px-3 py-3 sm:px-4 sm:py-2.5',
-          // Hover / focus.
-          'hover:bg-[var(--brand-light)] transition-colors duration-150',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2',
-          // Reduced-motion: no transition.
-          'motion-reduce:transition-none',
+          'text-left text-sm text-muted-foreground hover:text-foreground',
+          'transition-colors duration-200 motion-reduce:transition-none',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]',
         ].join(' ')}
       >
-        <MessageSquarePlus className="h-5 w-5 shrink-0" aria-hidden="true" />
-        <span className="hidden sm:inline text-sm font-medium">Feedback</span>
+        Send feedback
       </button>
 
       {/* ── Panel ───────────────────────────────────────────────────────────── */}
@@ -223,10 +212,9 @@ export function FeedbackWidget() {
           aria-modal="true"
           aria-label="Send feedback"
           className={[
-            // Position: anchored above the trigger button.
-            'fixed bottom-20 right-4 z-40 w-[calc(100vw-2rem)] max-w-sm',
-            // On mobile, account for safe-area.
-            'sm:right-6 sm:bottom-[5.5rem]',
+            // Position: opened by the visitor, anchored bottom-right.
+            'fixed bottom-4 right-4 z-40 w-[calc(100vw-2rem)] max-w-sm',
+            'sm:bottom-6 sm:right-6',
             // Card appearance.
             'rounded-xl border bg-[var(--card)] text-[var(--card-foreground)]',
             'shadow-md',

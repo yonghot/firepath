@@ -3,6 +3,7 @@ import { Flame } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { ManageConsentLink } from '@/components/common/manage-consent-link';
 import { ClearMyDataLink } from '@/components/common/clear-my-data-link';
+import { FeedbackWidget } from '@/components/common/feedback-widget';
 import { PUBLISHER } from '@/lib/site';
 
 export function Footer({ premiumAvailable = false }: { premiumAvailable?: boolean }) {
@@ -47,6 +48,7 @@ export function Footer({ premiumAvailable = false }: { premiumAvailable?: boolea
               <nav className="flex flex-col gap-1">
                 <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">About</Link>
                 <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Contact</Link>
+                <FeedbackWidget />
               </nav>
             </div>
             <div className="space-y-2">
