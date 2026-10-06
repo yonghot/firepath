@@ -28,6 +28,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import { buildConsentDefaultScript } from '@/lib/consent';
 
 const ROOT = path.resolve(__dirname, '..', '..', '..', '..', '..');
 const PRIVACY_SOURCE = readFileSync(
@@ -119,24 +120,26 @@ describe('CODE-08 — privacy policy required elements', () => {
 });
 
 describe('CODE-08 — denied-by-default ad storage ahead of the ad loader', () => {
-  it('declares every storage type denied by default', () => {
-    expect(LAYOUT_SOURCE).toMatch(/gtag\('consent','default'/);
+  it('declares every storage type denied by default for the consent regions', () => {
+    const script = buildConsentDefaultScript();
+    expect(script).toMatch(/gtag\('consent','default'/);
     for (const key of [
       'ad_storage',
       'ad_user_data',
       'ad_personalization',
       'analytics_storage',
     ]) {
-      expect(LAYOUT_SOURCE, `${key} must default to denied`).toMatch(
+      expect(script, `${key} must default to denied`).toMatch(
         new RegExp(`${key}\\s*:\\s*'denied'`)
       );
     }
   });
 
-  it('keeps the Consent Mode defaults inline in the root <head> and the AdSense loader out of the root layout', () => {
-    // The loader moved to the content-route layouts (K7), so it can no longer be
-    // compared with the defaults by source position in layout.tsx.
-    expect(LAYOUT_SOURCE).toMatch(/<head>[\s\S]*consentDefault \}\}[\s\S]*<\/head>/);
+  it('renders the Consent Mode defaults in the root <head> and keeps the AdSense loader out of the root layout', () => {
+    // Document order (defaults before loader) is asserted on rendered HTML in
+    // tests/regressions/consent-default-order.test.ts; source position in
+    // layout.tsx no longer decides it because the loader lives in AdLoader.
+    expect(LAYOUT_SOURCE).toMatch(/<head>[\s\S]*<ConsentDefault\s*\/>[\s\S]*<\/head>/);
     expect(LAYOUT_SOURCE).not.toContain('pagead2.googlesyndication.com');
     expect(AD_LOADER_SOURCE).toContain('pagead2.googlesyndication.com/pagead/js/adsbygoogle.js');
   });

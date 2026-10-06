@@ -4,6 +4,7 @@ import './globals.css';
 import { Providers } from '@/components/providers';
 import { organizationJsonLd, publisherJsonLd } from '@/components/common/json-ld';
 import { resolveAdsenseClientId } from '@/lib/ads-env';
+import { ConsentDefault } from '@/components/ads/consent-default';
 
 const inter = Inter({
   variable: '--font-sans',
@@ -81,20 +82,10 @@ export default function RootLayout({
     publisher: publisherJsonLd(),
   };
 
-  // Consent Mode v2 defaults. MUST run before any Google script (gtag.js /
-  // adsbygoogle.js) so the very first ad/analytics request carries a consent
-  // signal. Defaults to DENIED for all storage; the client (cookie banner /
-  // region logic) flips to 'granted' via gtag('consent','update', …) per region.
-  // wait_for_update gives the region logic a 500ms window to update before the
-  // first beacon fires. Static literal (no user input). Harmless when no Google
-  // scripts load (no env).
-  const consentDefault = `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});`;
-
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
-        {/* Consent Mode v2 defaults — must precede every Google script. */}
-        <script dangerouslySetInnerHTML={{ __html: consentDefault }} />
+        <ConsentDefault />
       </head>
       <body className="min-h-full flex flex-col font-sans">
         <script

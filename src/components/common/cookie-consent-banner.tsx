@@ -30,9 +30,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { isCanonicalProductionHost } from '@/lib/site';
 import { adsEnabled } from '@/lib/ads-env';
+import { CONSENT_KEY, EEA_UK_CH } from '@/lib/consent';
 import { Cookie } from 'lucide-react';
 
-const CONSENT_KEY = 'firepath_cookie_consent';
 const COUNTRY_COOKIE = 'visitor_country';
 /** Event the footer "Manage Consent" link dispatches to re-open the banner. */
 export const REOPEN_CONSENT_EVENT = 'firepath:reopen-consent';
@@ -42,15 +42,6 @@ type ConsentValue = 'accepted' | 'declined';
 // Whether ad cookies are in play depends on AdSense being configured. Keeps the
 // consent copy honest: no ad client id → "we do not use advertising cookies".
 const ADS_ENABLED = adsEnabled();
-
-// EEA + UK + Switzerland + Iceland/Liechtenstein/Norway. These require prior
-// consent (GDPR) → keep DENIED until the user accepts. Everyone else gets the
-// US notice-and-opt-out posture (granted on load).
-const EEA_UK_CH = new Set([
-  'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR',
-  'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK',
-  'SI', 'ES', 'SE', 'IS', 'LI', 'NO', 'GB', 'CH',
-]);
 
 const GRANTED = {
   ad_storage: 'granted',
@@ -73,7 +64,7 @@ function isConsentRequiredRegion(): boolean {
   const country = (readCookie(COUNTRY_COOKIE) || '').toUpperCase();
   // Unknown country → treat as US/non-EEA (granted-on-load), per the approved
   // model. Only the explicit EEA/UK/CH set is opt-in.
-  return EEA_UK_CH.has(country);
+  return EEA_UK_CH.includes(country);
 }
 
 /** Push a Consent Mode v2 update. Safe no-op if gtag isn't present. */
