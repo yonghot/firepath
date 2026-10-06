@@ -279,82 +279,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>13. Governing Law and Venue</h2>
-          <p>
-            These Terms are governed by the laws of the United States, without regard to
-            conflict-of-law principles. Subject to Section&nbsp;14 (Binding Arbitration and
-            Class Action Waiver) below, any disputes arising under these Terms that are not
-            subject to arbitration shall be resolved in the competent courts of the United
-            States. If you are a consumer in a jurisdiction that requires disputes to be heard
-            in your local courts, that requirement takes precedence.
-            {/* OPERATOR NOTE: insert your specific state of incorporation / principal place
-                of business and the county/court of proper venue here. */}
-          </p>
-          <p>
-            To the extent permitted by applicable law, any claim arising out of or relating
-            to these Terms or the Service must be brought within one (1) year after the cause
-            of action accrues.
-          </p>
-        </section>
-
-        <section>
-          <h2>14. Binding Arbitration and Class Action Waiver</h2>
-          <p>
-            <strong>
-              PLEASE READ THIS SECTION CAREFULLY. IT AFFECTS YOUR LEGAL RIGHTS, INCLUDING YOUR
-              RIGHT TO FILE A LAWSUIT IN COURT AND TO HAVE A CASE DECIDED BY A JURY.
-            </strong>
-          </p>
-          <h3>14a. Agreement to Arbitrate</h3>
-          <p>
-            You and FIREPath agree that any dispute, claim, or controversy arising out of or
-            relating to these Terms, the Service, or your use of the Service (each, a
-            &ldquo;Dispute&rdquo;) will be resolved by binding, individual arbitration, except
-            that either party may bring an individual action in small claims court. This
-            agreement to arbitrate is intended to be interpreted broadly and applies to all
-            Disputes based on any legal theory.
-          </p>
-          <h3>14b. Class Action and Jury Trial Waiver</h3>
-          <p>
-            <strong>
-              YOU AND FIREPATH EACH WAIVE THE RIGHT TO A JURY TRIAL AND THE RIGHT TO
-              PARTICIPATE IN A CLASS ACTION, CLASS ARBITRATION, OR REPRESENTATIVE ACTION.
-            </strong>{' '}
-            Disputes will be arbitrated only on an individual basis and will not be
-            consolidated with any other person&apos;s or entity&apos;s claims. If this specific
-            class action and class arbitration waiver is found unenforceable, then the entirety
-            of this arbitration section shall be null and void, and the Dispute will proceed in
-            court subject to Section&nbsp;13.
-          </p>
-          <h3>14c. Arbitration Procedure</h3>
-          <p>
-            The arbitration will be administered by a recognized arbitration organization
-            {/* OPERATOR NOTE: name your chosen arbitration provider (e.g. AAA, JAMS) and
-                insert a link to its applicable consumer arbitration rules here. */}{' '}
-            under its rules then in effect. The arbitrator, and not any court, shall have
-            exclusive authority to resolve any dispute relating to the interpretation,
-            applicability, or enforceability of this arbitration agreement.
-          </p>
-          <h3>14d. Opt-Out Right</h3>
-          <p>
-            You may opt out of this arbitration agreement within thirty (30) days of first
-            accepting these Terms by emailing{' '}
-            <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a> with the subject
-            line &ldquo;Arbitration Opt-Out&rdquo; and your account email address. If you opt
-            out, neither you nor FIREPath will be required to arbitrate, but every other part
-            of these Terms will continue to apply.
-          </p>
-          <h3>14e. Exceptions</h3>
-          <p>
-            Notwithstanding the foregoing, either party may bring an individual action in small
-            claims court, and either party may seek injunctive or other equitable relief in
-            court to prevent actual or threatened infringement, misappropriation, or violation
-            of intellectual property rights.
-          </p>
-        </section>
-
-        <section>
-          <h2>15. Severability and Entire Agreement</h2>
+          <h2>13. Severability and Entire Agreement</h2>
           <p>
             If any provision of these Terms is found to be invalid or unenforceable, that
             provision shall be enforced to the maximum extent permissible, and the remaining
@@ -365,7 +290,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>16. Contact Us</h2>
+          <h2>14. Contact Us</h2>
           <p>
             If you have any questions about these Terms of Service, please contact us:
           </p>
