@@ -1,9 +1,9 @@
 /**
  * Dynamic ads.txt — Authorized Digital Sellers (IAB).
  *
- * Served at /ads.txt now that FIREPath shows ads. Emits the AdSense
- * authorization line when NEXT_PUBLIC_ADSENSE_CLIENT_ID is set; otherwise
- * returns an empty body (free build → no ads → nothing to declare).
+ * Emits the AdSense authorization line for the id resolved by
+ * resolveAdsenseClientId() (the same id the loader and meta tag use);
+ * otherwise returns an empty body (no ads → nothing to declare).
  *
  * The client id is the full "ca-pub-XXXXXXXXXXXXXXXX" publisher id; Google's
  * ads.txt line uses the bare publisher number, so we strip the "ca-" prefix.
@@ -16,6 +16,8 @@
  *   the redirect env var is absent. The redirect is used INSTEAD of the
  *   AdSense line only when the env var is explicitly set.
  */
+
+import { resolveAdsenseClientId } from '@/lib/ads-env';
 
 export const dynamic = 'force-dynamic'; // redirect URL may change between deploys
 export const revalidate = 86400; // re-evaluate at most once a day
@@ -33,7 +35,7 @@ export function GET(): Response {
     });
   }
 
-  const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim();
+  const clientId = resolveAdsenseClientId();
 
   if (!clientId) {
     return new Response('', {

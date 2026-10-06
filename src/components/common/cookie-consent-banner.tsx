@@ -29,6 +29,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { isCanonicalProductionHost } from '@/lib/site';
+import { adsEnabled } from '@/lib/ads-env';
 import { Cookie } from 'lucide-react';
 
 const CONSENT_KEY = 'firepath_cookie_consent';
@@ -40,7 +41,7 @@ type ConsentValue = 'accepted' | 'declined';
 
 // Whether ad cookies are in play depends on AdSense being configured. Keeps the
 // consent copy honest: no ad client id → "we do not use advertising cookies".
-const ADS_ENABLED = Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID);
+const ADS_ENABLED = adsEnabled();
 
 // EEA + UK + Switzerland + Iceland/Liechtenstein/Norway. These require prior
 // consent (GDPR) → keep DENIED until the user accepts. Everyone else gets the

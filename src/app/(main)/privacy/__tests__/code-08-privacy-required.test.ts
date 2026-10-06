@@ -104,7 +104,7 @@ describe('CODE-08 — privacy policy required elements', () => {
     // client id never asserts that ads are served; Vercel and GA4 are
     // unconditional because they always apply, Supabase and Stripe follow
     // ACCOUNTS and PAYMENTS.
-    expect(PRIVACY_SOURCE).toMatch(/const ADS_ENABLED = Boolean\(\s*process\.env\.NEXT_PUBLIC_ADSENSE_CLIENT_ID/);
+    expect(PRIVACY_SOURCE).toMatch(/const ADS_ENABLED = adsEnabled\(\)/);
     const vendorHeadingAt = PRIVACY_SOURCE.indexOf(
       'Third-party vendors and ad networks used on this site'
     );

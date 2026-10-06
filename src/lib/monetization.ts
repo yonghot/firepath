@@ -13,6 +13,8 @@
  *   - LCP surface (result cards) is NEVER obscured by a monetization element.
  */
 
+import { resolveAdsenseClientId } from '@/lib/ads-env';
+
 // ─── Vertical constant ────────────────────────────────────────────────────────
 // Personal-finance / FIRE vertical default: CPL (financial advisor lead form).
 // This is the project default; it can be overridden by NEXT_PUBLIC_PRIMARY_CTA_TYPE.
@@ -122,14 +124,6 @@ export function resolvePrimaryCtaType(raw: string | undefined): PrimaryCTAType {
   return VERTICAL_DEFAULT_CTA_TYPE;
 }
 
-// ─── Normalise AdSense client id ──────────────────────────────────────────────
-
-function normaliseAdsenseId(raw: string | undefined): string | null {
-  if (!raw || !raw.trim()) return null;
-  const v = raw.trim();
-  return v.startsWith('ca-') ? v : `ca-${v}`;
-}
-
 // ─── Main config builder ──────────────────────────────────────────────────────
 
 /**
@@ -140,7 +134,7 @@ function normaliseAdsenseId(raw: string | undefined): string | null {
  */
 export function buildMonetizationConfig(): MonetizationConfig {
   const adProvider = resolveAdProvider(process.env.NEXT_PUBLIC_AD_PROVIDER);
-  const adsenseClientId = normaliseAdsenseId(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID);
+  const adsenseClientId = resolveAdsenseClientId() ?? null;
 
   const ezoicEnabled =
     process.env.NEXT_PUBLIC_EZOIC_ENABLED?.trim().toLowerCase() === 'true';

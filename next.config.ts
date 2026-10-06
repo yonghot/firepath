@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   // through to whatever NEXT_PUBLIC_VERCEL_ENV is already set to (e.g. local
   // .env) when VERCEL_ENV is absent (non-Vercel builds).
   env: {
-    NEXT_PUBLIC_VERCEL_ENV: process.env.VERCEL_ENV ?? process.env.NEXT_PUBLIC_VERCEL_ENV,
+    NEXT_PUBLIC_VERCEL_ENV: process.env.VERCEL_ENV || process.env.NEXT_PUBLIC_VERCEL_ENV,
   },
   async headers() {
     return [

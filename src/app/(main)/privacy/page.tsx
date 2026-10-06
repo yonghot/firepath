@@ -6,6 +6,7 @@ import { Breadcrumbs } from '@/components/common/breadcrumbs';
 import { PUBLISHER } from '@/lib/site';
 import { isSupabaseConfigured } from '@/lib/supabase/client';
 import { isPremiumPurchasable } from '@/lib/premium-availability';
+import { adsEnabled } from '@/lib/ads-env';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -24,7 +25,7 @@ export default function PrivacyPage() {
   // Mirrors ADS_ENABLED in cookie-consent-banner.tsx so the policy stays honest:
   // with no ad client id, no advertising cookies are ever set, no ads are shown,
   // and the policy must not claim otherwise.
-  const ADS_ENABLED = Boolean(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID);
+  const ADS_ENABLED = adsEnabled();
   // Accounts and billing exist only where Supabase / a purchasable plan are configured.
   const ACCOUNTS = isSupabaseConfigured();
   const PAYMENTS = isPremiumPurchasable();

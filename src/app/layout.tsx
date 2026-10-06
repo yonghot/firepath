@@ -4,6 +4,7 @@ import './globals.css';
 import { Providers } from '@/components/providers';
 import { organizationJsonLd, publisherJsonLd } from '@/components/common/json-ld';
 import { FeedbackWidget } from '@/components/common/feedback-widget';
+import { resolveAdsenseClientId } from '@/lib/ads-env';
 
 const inter = Inter({
   variable: '--font-sans',
@@ -14,12 +15,7 @@ export const viewport: Viewport = {
   themeColor: '#065F53',
 };
 
-const _adsenseRaw = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim();
-const _adsenseId = _adsenseRaw
-  ? _adsenseRaw.startsWith('ca-')
-    ? _adsenseRaw
-    : `ca-${_adsenseRaw}`
-  : undefined;
+const _adsenseId = resolveAdsenseClientId();
 
 export const metadata: Metadata = {
   title: {

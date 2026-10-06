@@ -43,15 +43,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { isValidSlotId } from '@/lib/ad-slots';
+import { resolveAdsenseClientId } from '@/lib/ads-env';
 
-// Normalise: accept values with or without the leading "ca-" prefix.
-// data-ad-client must be in "ca-pub-..." form for AdSense to work.
-const _rawClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID?.trim();
-const ADSENSE_CLIENT = _rawClientId
-  ? _rawClientId.startsWith('ca-')
-    ? _rawClientId
-    : `ca-${_rawClientId}`
-  : undefined;
+const ADSENSE_CLIENT = resolveAdsenseClientId();
 const SCRIPT_ID = 'adsense-loader';
 
 // Reserve space matching the placeholder to prevent CLS when the ad fills.
