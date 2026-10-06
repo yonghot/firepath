@@ -13,6 +13,7 @@ import { buildMeta } from '@/lib/seo';
 // structured-data object is injected — the same pattern already used by
 // breadcrumbs.tsx, /guide/[slug], /fire-types, and json-ld.ts across this repo.
 import { safeJsonLd } from '@/lib/utils/json-ld';
+import { publisherJsonLd } from '@/components/common/json-ld';
 import { calculateFIRE } from '@/lib/engine/fire-calculator';
 import { DEFAULT_INPUT } from '@/constants/fire-defaults';
 import { formatCurrencyFull, formatPercent } from '@/lib/utils/format';
@@ -39,8 +40,8 @@ const articleJsonLd = {
   description: DESCRIPTION,
   datePublished: GUIDE_UPDATED,
   dateModified: GUIDE_UPDATED,
-  author: { '@type': 'Organization', name: 'FIREPath' },
-  publisher: { '@type': 'Organization', name: 'FIREPath', url: SITE_URL },
+  author: publisherJsonLd(),
+  publisher: publisherJsonLd(),
   mainEntityOfPage: `${SITE_URL}${PAGE_PATH}`,
   isAccessibleForFree: true,
 };

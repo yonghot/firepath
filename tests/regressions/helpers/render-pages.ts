@@ -34,9 +34,20 @@ export function renderWithProviders(node: ReactNode): string {
   );
 }
 
-export async function renderPage(path: string): Promise<string> {
+const loaded = new Map<string, Promise<PageModule>>();
+
+function loadPage(path: string): Promise<PageModule> {
   const load = PAGE_LOADERS[path];
   if (!load) throw new Error(`no page loader registered for ${path}`);
-  const page = await load();
+  if (!loaded.has(path)) loaded.set(path, load());
+  return loaded.get(path) as Promise<PageModule>;
+}
+
+export async function preloadPages(paths: string[] = Object.keys(PAGE_LOADERS)): Promise<void> {
+  await Promise.all(paths.map(loadPage));
+}
+
+export async function renderPage(path: string): Promise<string> {
+  const page = await loadPage(path);
   return renderWithProviders(await page.default());
 }

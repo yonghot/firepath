@@ -10,6 +10,7 @@ import { resolveAdSlot } from '@/lib/ad-slots';
 import { AdSlot } from '@/components/common/ad-slot';
 import { getPremiumStatus } from '@/lib/subscription/premium';
 import { safeJsonLd } from '@/lib/utils/json-ld';
+import { publisherJsonLd } from '@/components/common/json-ld';
 import { buildMeta } from '@/lib/seo';
 import { GUIDE_PAGES } from '@/lib/content-pages';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
@@ -163,8 +164,8 @@ export default async function GuidePage({ params }: GuidePageProps) {
     '@type': 'Article',
     headline: guide.title,
     description: guide.description,
-    author: { '@type': 'Organization', name: 'FIREPath' },
-    publisher: { '@type': 'Organization', name: 'FIREPath' },
+    author: publisherJsonLd(),
+    publisher: publisherJsonLd(),
     ...(guide.created_at && { datePublished: guide.created_at }),
     ...(guide.updated_at && { dateModified: guide.updated_at }),
   };

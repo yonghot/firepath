@@ -8,6 +8,7 @@ import { AdvisorCta } from "@/components/common/advisor-cta";
 import { SourcesReferences, type SourceItem } from "@/components/common/sources-references";
 import { HealthcareBridgeCalculator } from "@/components/features/healthcare/healthcare-bridge-calculator";
 import { FAQSection, type FaqItem } from "@/components/common/faq-section";
+import { publisherJsonLd } from "@/components/common/json-ld";
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import { buildMeta } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/common/breadcrumbs";
@@ -170,11 +171,7 @@ const toolJsonLd = {
     price: "0",
     priceCurrency: "USD",
   },
-  publisher: {
-    "@type": "Organization",
-    name: "FIREPath",
-    url: SITE_URL,
-  },
+  publisher: publisherJsonLd(),
 };
 
 export default function HealthcareBridgePage() {

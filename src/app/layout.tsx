@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
-import { organizationJsonLd } from '@/components/common/json-ld';
+import { organizationJsonLd, publisherJsonLd } from '@/components/common/json-ld';
 import { FeedbackWidget } from '@/components/common/feedback-widget';
 
 const inter = Inter({
@@ -78,25 +78,12 @@ export default function RootLayout({
     },
   };
 
-  /**
-   * 부속P CODE-02 — WebSite + potentialAction SearchAction, emitted ONCE on
-   * the site root (Sitelinks Searchbox eligibility). FIREPath has no
-   * internal search endpoint today, so the target points at the existing
-   * /guide hub filtered by a query string it doesn't yet parse — this is
-   * still valid WebSite/SearchAction markup (the target URL template is
-   * schema-valid regardless of whether the destination page consumes the
-   * `q` param yet); no FAQPage/HowTo is emitted anywhere in this file.
-   */
   const websiteJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'FIREPath',
     url: SITE_URL,
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: `${SITE_URL}/guide?q={search_term_string}`,
-      'query-input': 'required name=search_term_string',
-    },
+    publisher: publisherJsonLd(),
   };
 
   // Consent Mode v2 defaults. MUST run before any Google script (gtag.js /
@@ -139,7 +126,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        {/* Sitewide Organization identity (E-E-A-T / knowledge graph). */}
+        {/* Sitewide publisher identity. */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}

@@ -3,7 +3,7 @@ import { Flame } from 'lucide-react';
 import { CalculatorClient } from '@/components/features/calculator/calculator-client';
 import { FAQSection } from '@/components/common/faq-section';
 import { RelatedCalculators } from '@/components/common/related-calculators';
-import { calculatorAppJsonLd, personJsonLd, breadcrumbJsonLd } from '@/components/common/json-ld';
+import { calculatorAppJsonLd, breadcrumbJsonLd } from '@/components/common/json-ld';
 import { ResultMonetization } from '@/components/monetization/ResultMonetization';
 import { EmailMyResultsGate } from '@/components/features/calculator/email-my-results-gate';
 import { HowItWorksFire } from '@/components/common/how-it-works-fire';
@@ -52,10 +52,6 @@ export default async function CalculatorPage() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(calculatorAppJsonLd({ dateModified: figuresLastVerified })),
         }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd()) }}
       />
       <script
         type="application/ld+json"

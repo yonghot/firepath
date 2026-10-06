@@ -8,6 +8,7 @@ import { AdvisorCta } from "@/components/common/advisor-cta";
 import { SourcesReferences, type SourceItem } from "@/components/common/sources-references";
 import { FAQSection, type FaqItem } from "@/components/common/faq-section";
 import { safeJsonLd } from "@/lib/utils/json-ld";
+import { publisherJsonLd } from "@/components/common/json-ld";
 import { calculateFIRE } from "@/lib/engine/fire-calculator";
 import { DEFAULT_INPUT, FIRE_MULTIPLIERS } from "@/constants/fire-defaults";
 import { FIRE_COLORS, FIRE_LABELS } from "@/constants/fire-colors";
@@ -179,11 +180,7 @@ const pageJsonLd = {
     price: "0",
     priceCurrency: "USD",
   },
-  publisher: {
-    "@type": "Organization",
-    name: "FIREPath",
-    url: SITE_URL,
-  },
+  publisher: publisherJsonLd(),
 };
 
 /**

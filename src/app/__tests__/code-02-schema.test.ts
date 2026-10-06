@@ -2,9 +2,10 @@
  * code-02-schema.test.ts — 부속P CODE-02 acceptance-criteria regression guard.
  *
  * "Rich Results Test / schema validator on a sample page shows valid Article
- * + BreadcrumbList + SoftwareApplication (and WebSite+SearchAction on root),
- * and shows NO FAQPage/HowTo emitted for SERP. ... aggregateRating absent
- * unless backed by real data."
+ * + BreadcrumbList + SoftwareApplication (and WebSite on root), and shows NO
+ * FAQPage/HowTo emitted for SERP. ... aggregateRating absent unless backed by
+ * real data." The WebSite node carries no SearchAction: the site has no
+ * search endpoint (/guide ignores `q`), so advertising one would be false.
  *
  * Source-level checks (no jsdom in this repo's vitest environment).
  */
@@ -20,12 +21,12 @@ function readSource(relPath: string): string {
   return readFileSync(path.join(ROOT, relPath), 'utf8');
 }
 
-describe('부속P CODE-02 — root layout emits WebSite + SearchAction', () => {
-  it('layout.tsx defines a WebSite @type with a potentialAction SearchAction', () => {
+describe('부속P CODE-02 — root layout emits WebSite without a SearchAction', () => {
+  it('layout.tsx defines a WebSite @type and no potentialAction SearchAction', () => {
     const source = readSource('src/app/layout.tsx');
     expect(source).toMatch(/@type['"]?:\s*['"]WebSite['"]/);
-    expect(source).toContain('SearchAction');
-    expect(source).toContain('potentialAction');
+    expect(source).not.toContain('SearchAction');
+    expect(source).not.toContain('potentialAction');
   });
 
   it('layout.tsx does not emit FAQPage or HowTo', () => {
