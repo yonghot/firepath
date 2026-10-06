@@ -49,7 +49,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <TooltipProvider>
           {children}
           <Toaster />
-          {/* Cookie consent banner — gates GA4 analytics until user accepts */}
+          {/* Cookie notice (footer-opened outside EEA/UK/CH); applies stored decline and starts GA4 under Consent Mode */}
           <CookieConsentBanner />
           {/* Core Web Vitals -> GA4 events (부속I T13) — flows through the same
               consent-gated trackEvent() pipeline; no-op until gtag exists. */}

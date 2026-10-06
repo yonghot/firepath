@@ -28,7 +28,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { buildConsentDefaultScript } from '@/lib/consent';
+import { EEA_UK_CH, buildConsentDefaultScript, resolveConsentActions } from '@/lib/consent';
 
 const ROOT = path.resolve(__dirname, '..', '..', '..', '..', '..');
 const PRIVACY_SOURCE = readFileSync(
@@ -144,12 +144,15 @@ describe('CODE-08 — denied-by-default ad storage ahead of the ad loader', () =
     expect(AD_LOADER_SOURCE).toContain('pagead2.googlesyndication.com/pagead/js/adsbygoogle.js');
   });
 
-  it('grants ad storage only via a consent update, never by editing the defaults', () => {
+  it('grants ad storage only via a consent update from an explicit Accept, never by editing the defaults', () => {
     expect(BANNER_SOURCE).toMatch(/gtag\('consent',\s*'update'/);
-    expect(BANNER_SOURCE).toMatch(/ad_storage:\s*'granted'/);
-    // EEA/UK/CH stay denied until the visitor accepts — the region gate the
-    // update path is keyed on.
-    expect(BANNER_SOURCE).toMatch(/EEA_UK_CH/);
     expect(BANNER_SOURCE).not.toMatch(/gtag\('consent',\s*'default'/);
+    const accept = resolveConsentActions({ country: 'US', stored: null, event: 'accept' });
+    expect(accept.update?.ad_storage).toBe('granted');
+    // EEA/UK/CH stay denied: Google's certified message is the only consent UI there.
+    for (const country of EEA_UK_CH) {
+      const regional = resolveConsentActions({ country, stored: 'accepted', event: 'accept' });
+      expect(regional.update, country).toBeNull();
+    }
   });
 });

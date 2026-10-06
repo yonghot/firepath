@@ -1,28 +1,11 @@
 'use client';
 
 /**
- * Cookie Consent Banner — GEO-DIFFERENTIATED Consent Mode v2 model.
- *
- * The AdSense loader and gtag.js are loaded UNCONDITIONALLY in <head> (env-
- * guarded), with Consent Mode v2 defaulting all storage to DENIED *before* any
- * Google script runs (see app/layout.tsx). This component then issues the
- * per-region consent UPDATE so personalized ads / analytics can serve on the
- * first visit where the law allows it:
- *
- *   - EEA / UK / Switzerland: consent stays DENIED. The banner shows; on Accept
- *     we call gtag('consent','update', {all granted}). Google's certified CMP
- *     (enabled later in the AdSense dashboard) additionally governs these users.
- *   - Everyone else (US default, incl. unknown country): we call
- *     gtag('consent','update', {all granted}) immediately on load — US notice +
- *     opt-out / CCPA posture — so ads + analytics serve on the FIRST visit. The
- *     banner still shows as a notice but does NOT block anything.
- *
- * The user's stored choice ('accepted' | 'declined') lives in localStorage under
- * "firepath_cookie_consent". Analytics (GA) follows the same consent via Consent
- * Mode; we still fire gtag('config') so GA initializes once consent is granted.
- *
- * Withdrawal: clearing the stored choice (Footer "Do Not Sell / Manage Consent")
- * re-shows the banner. See firepath_consent events below.
+ * Cookie notice, opened only from the footer "Manage consent" link outside
+ * EEA/UK/CH. The consent defaults come from the server-rendered head script
+ * (src/lib/consent.ts); this component sends updates only for an explicit
+ * Accept/Decline and re-applies a stored decline on every mount. EEA/UK/CH
+ * visitors get Google's certified CMP instead: no banner, no update here.
  */
 
 import { useState, useEffect } from 'react';
@@ -30,45 +13,22 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { isCanonicalProductionHost } from '@/lib/site';
 import { adsEnabled } from '@/lib/ads-env';
-import { CONSENT_KEY, EEA_UK_CH } from '@/lib/consent';
+import {
+  CONSENT_KEY,
+  REOPEN_CONSENT_EVENT,
+  readVisitorCountry,
+  runConsentEvent,
+  type ConsentChoice,
+  type ConsentIO,
+  type ConsentState,
+} from '@/lib/consent';
 import { Cookie } from 'lucide-react';
 
-const COUNTRY_COOKIE = 'visitor_country';
-/** Event the footer "Manage Consent" link dispatches to re-open the banner. */
-export const REOPEN_CONSENT_EVENT = 'firepath:reopen-consent';
-
-type ConsentValue = 'accepted' | 'declined';
-
-// Whether ad cookies are in play depends on AdSense being configured. Keeps the
-// consent copy honest: no ad client id → "we do not use advertising cookies".
+// Keeps the consent copy honest: no ad client id → "we do not use advertising cookies".
 const ADS_ENABLED = adsEnabled();
 
-const GRANTED = {
-  ad_storage: 'granted',
-  ad_user_data: 'granted',
-  ad_personalization: 'granted',
-  analytics_storage: 'granted',
-} as const;
-
-/** Read a cookie value on the client. */
-function readCookie(name: string): string | null {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(
-    new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1') + '=([^;]*)')
-  );
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
-/** True when the visitor is in a region requiring prior (opt-in) consent. */
-function isConsentRequiredRegion(): boolean {
-  const country = (readCookie(COUNTRY_COOKIE) || '').toUpperCase();
-  // Unknown country → treat as US/non-EEA (granted-on-load), per the approved
-  // model. Only the explicit EEA/UK/CH set is opt-in.
-  return EEA_UK_CH.includes(country);
-}
-
 /** Push a Consent Mode v2 update. Safe no-op if gtag isn't present. */
-function updateConsent(state: typeof GRANTED): void {
+function updateConsent(state: ConsentState): void {
   if (typeof window === 'undefined' || typeof window.gtag !== 'function') return;
   window.gtag('consent', 'update', state);
 }
@@ -157,84 +117,46 @@ function initGA(): void {
   });
 }
 
-/** Grant analytics + ads consent and init GA. */
-function grantAll(): void {
-  updateConsent(GRANTED);
-  initGA();
+function readStoredConsent(): ConsentChoice | null {
+  try {
+    const value = localStorage.getItem(CONSENT_KEY);
+    return value === 'accepted' || value === 'declined' ? value : null;
+  } catch {
+    return null;
+  }
 }
 
-function readStoredConsent(): ConsentValue | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem(CONSENT_KEY) as ConsentValue | null;
+function writeStoredConsent(value: ConsentChoice): void {
+  try {
+    localStorage.setItem(CONSENT_KEY, value);
+  } catch {
+    // storage unavailable (private mode): the choice still applies to this visit
+  }
 }
 
-type Decision = 'show' | 'hidden';
+function makeConsentIO(setVisible: (visible: boolean) => void): ConsentIO {
+  return {
+    country: readVisitorCountry,
+    readStored: readStoredConsent,
+    writeStored: writeStoredConsent,
+    update: updateConsent,
+    initAnalytics: initGA,
+    setVisible,
+  };
+}
 
 export function CookieConsentBanner() {
-  // null until the client resolves it (SSR + first client render → null → render
-  // null, so hydration matches). Resolved in a microtask off the render path.
-  const [decision, setDecision] = useState<Decision | null>(null);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
-    const resolve = () => {
-      if (cancelled) return;
-      const stored = readStoredConsent();
-      const optIn = isConsentRequiredRegion();
-
-      if (stored === 'accepted') {
-        // Prior explicit acceptance (any region) — grant now, no banner.
-        grantAll();
-        setDecision('hidden');
-        return;
-      }
-      if (stored === 'declined') {
-        // Prior explicit decline — keep DENIED (default), no banner.
-        setDecision('hidden');
-        return;
-      }
-
-      // No stored choice yet.
-      if (optIn) {
-        // EEA/UK/CH: stay DENIED, show the banner to collect opt-in.
-        setDecision('show');
-      } else {
-        // US default / unknown: grant immediately (notice + opt-out), still
-        // show the banner as a non-blocking notice.
-        grantAll();
-        setDecision('show');
-      }
-    };
-
-    queueMicrotask(resolve);
-
-    // Re-open handler (footer "Manage Consent" / Do Not Sell link).
-    const onReopen = () => {
-      if (cancelled) return;
-      setDecision('show');
-    };
+    const io = makeConsentIO(setVisible);
+    runConsentEvent('mount', io);
+    const onReopen = () => runConsentEvent('reopen', io);
     window.addEventListener(REOPEN_CONSENT_EVENT, onReopen);
-
-    return () => {
-      cancelled = true;
-      window.removeEventListener(REOPEN_CONSENT_EVENT, onReopen);
-    };
+    return () => window.removeEventListener(REOPEN_CONSENT_EVENT, onReopen);
   }, []);
 
-  const visible = decision === 'show';
-  const setVisible = (next: boolean) => setDecision(next ? 'show' : 'hidden');
-
-  const handleAccept = () => {
-    localStorage.setItem(CONSENT_KEY, 'accepted');
-    setVisible(false);
-    grantAll();
-  };
-
-  const handleDecline = () => {
-    localStorage.setItem(CONSENT_KEY, 'declined');
-    setVisible(false);
-    // Consent stays at the DENIED default; nothing further to update.
-  };
+  const io = makeConsentIO(setVisible);
 
   if (!visible) return null;
 
@@ -273,14 +195,14 @@ export function CookieConsentBanner() {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleDecline}
+            onClick={() => runConsentEvent('decline', io)}
             aria-label="Decline non-essential cookies"
           >
             Decline
           </Button>
           <Button
             size="sm"
-            onClick={handleAccept}
+            onClick={() => runConsentEvent('accept', io)}
             aria-label="Accept all cookies including analytics"
           >
             Accept
