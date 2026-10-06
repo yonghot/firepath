@@ -14,7 +14,7 @@
 import { calculateFIRE } from '@/lib/engine/fire-calculator';
 import { DEFAULT_INPUT } from '@/constants/fire-defaults';
 import { formatCurrencyFull, formatPercent } from '@/lib/utils/format';
-import { CORE_ASSUMPTIONS_LAST_VERIFIED } from '@/lib/figures';
+import { CORE_ASSUMPTIONS_LAST_VERIFIED, EXPECTED_RETURN_STAT } from '@/lib/figures';
 import { buildAnswerBlock, type GeoAnswerEntity } from './geo';
 
 const { annualExpenses, safeWithdrawalRate, currentAge, retirementAge } = DEFAULT_INPUT;
@@ -57,10 +57,6 @@ export const MAIN_CALCULATOR_ANSWER: GeoAnswerEntity = buildAnswerBlock({
       sourceLabel: 'Trinity Study (1998)',
       sourceUrl: 'https://en.wikipedia.org/wiki/Trinity_study',
     },
-    {
-      text: '7% default nominal expected return',
-      sourceLabel: 'NYU Stern historical U.S. equity return data',
-      sourceUrl: 'https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html',
-    },
+    EXPECTED_RETURN_STAT,
   ],
 });

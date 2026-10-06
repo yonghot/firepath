@@ -17,7 +17,7 @@ import { buildMeta } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/common/breadcrumbs";
 import { AnswerBlock } from "@/components/common/answer-block";
 import { buildAnswerBlock, type GeoAnswerEntity } from "@/lib/seo/geo";
-import { CORE_ASSUMPTIONS_LAST_VERIFIED } from "@/lib/figures";
+import { CORE_ASSUMPTIONS_LAST_VERIFIED, EXPECTED_RETURN_STAT } from "@/lib/figures";
 
 export const metadata: Metadata = buildMeta({
   title: "FIRE Types Explained: Lean, Fat, Coast and Barista",
@@ -73,11 +73,7 @@ const FIRE_TYPES_ANSWER: GeoAnswerEntity = buildAnswerBlock({
       sourceLabel: "Trinity Study (1998)",
       sourceUrl: "https://en.wikipedia.org/wiki/Trinity_study",
     },
-    {
-      text: "7% default nominal expected return",
-      sourceLabel: "NYU Stern historical U.S. equity return data",
-      sourceUrl: "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html",
-    },
+    EXPECTED_RETURN_STAT,
   ],
 });
 

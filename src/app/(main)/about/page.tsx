@@ -99,7 +99,7 @@ export default function AboutPage() {
             </div>
             <p className="text-sm text-muted-foreground">
               Default assumptions (4% SWR, 7% nominal return, 3% inflation) are
-              grounded in peer-reviewed research and publicly cited. See our{' '}
+              adjustable starting points based on publicly cited sources. See our{' '}
               <Link href="/methodology" className="underline underline-offset-4 hover:text-foreground transition-colors duration-200">
                 sources list
               </Link>

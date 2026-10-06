@@ -51,7 +51,7 @@ const METHODOLOGY_SOURCES: MethodologySource[] = [
     id: 4,
     label: 'NAPA Net — Morningstar Revises Safe Starting Withdrawal Rate',
     url: 'https://www.napa-net.org/news/2024/12/morningstar-revises-safe-starting-withdrawal-rate/',
-    note: 'Reports Morningstar\'s 2024 safe starting rate of 3.7% for a 30-year, 90%-success horizon.',
+    note: 'Trade-press report on Morningstar\'s 2024 revision of its safe starting withdrawal rate.',
   },
   {
     id: 5,
@@ -63,13 +63,13 @@ const METHODOLOGY_SOURCES: MethodologySource[] = [
     id: 6,
     label: 'NYU Stern — Historical Returns on Stocks, Bonds and Bills',
     url: 'https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html',
-    note: 'Source for long-run U.S. equity returns (basis for the 7% nominal return default).',
+    note: 'Long-run U.S. stock returns. The 7% nominal return default is a FIREPath assumption set below these returns; you can change it.',
   },
   {
     id: 7,
     label: 'J.P. Morgan Asset Management — Long-Term Capital Market Assumptions',
     url: 'https://am.jpmorgan.com/us/en/asset-management/institutional/insights/portfolio-insights/ltcma/',
-    note: 'Institutional long-term return assumptions (corroborates nominal return default).',
+    note: 'Institutional long-term return assumptions, listed for context.',
   },
   {
     id: 8,

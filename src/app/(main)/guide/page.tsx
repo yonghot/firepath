@@ -18,7 +18,7 @@ import { calculateFIRE } from '@/lib/engine/fire-calculator';
 import { DEFAULT_INPUT, FIRE_MULTIPLIERS } from '@/constants/fire-defaults';
 import { FIRE_LABELS, FIRE_TYPES } from '@/constants/fire-colors';
 import { formatCurrencyFull, formatPercent } from '@/lib/utils/format';
-import { CORE_ASSUMPTIONS_LAST_VERIFIED } from '@/lib/figures';
+import { CORE_ASSUMPTIONS_LAST_VERIFIED, EXPECTED_RETURN_STAT } from '@/lib/figures';
 import { SITE_URL } from '@/lib/site';
 
 export const metadata: Metadata = buildMeta({
@@ -71,11 +71,7 @@ const GUIDE_HUB_ANSWER: GeoAnswerEntity = buildAnswerBlock({
       sourceLabel: 'Trinity Study (1998)',
       sourceUrl: 'https://en.wikipedia.org/wiki/Trinity_study',
     },
-    {
-      text: '7% default nominal expected return',
-      sourceLabel: 'NYU Stern historical U.S. equity return data',
-      sourceUrl: 'https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html',
-    },
+    EXPECTED_RETURN_STAT,
   ],
 });
 

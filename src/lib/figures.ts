@@ -49,7 +49,7 @@ export const CORE_FIGURES: Record<string, FigureMeta> = {
     lastVerified: CORE_ASSUMPTIONS_LAST_VERIFIED,
     source: 'https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html',
     note:
-      'NYU Stern historical U.S. equity return data, corroborated by J.P. Morgan Long-Term Capital Market Assumptions. See /methodology sources 6–7.',
+      'FIREPath default assumption, adjustable. Set below the long-run U.S. stock returns that NYU Stern reports (/methodology source 6). See docs/source-checks.md.',
   },
   inflation: {
     label: 'Expected annual inflation rate',
@@ -74,6 +74,13 @@ export const CORE_FIGURES: Record<string, FigureMeta> = {
     source: 'https://ycharts.com/indices/%5ESPX/monthly_standard_deviation_annualized_all',
     note: 'YCharts historical S&P 500 annualized volatility data. See /methodology source 16.',
   },
+};
+
+/** Source-attributed line shown with the 7% default wherever an answer block lists it. */
+export const EXPECTED_RETURN_STAT = {
+  text: `${Math.round(CORE_FIGURES.expectedReturn.value * 100)}% default nominal expected return (FIREPath assumption you can adjust, set below long-run U.S. stock returns)`,
+  sourceLabel: 'NYU Stern historical U.S. equity return data',
+  sourceUrl: CORE_FIGURES.expectedReturn.source!,
 };
 
 /**

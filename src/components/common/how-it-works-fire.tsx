@@ -125,8 +125,9 @@ export function HowItWorksFire() {
             .
           </li>
           <li>
-            Starting from the default net worth, the calculator compounds
-            annual savings at the nominal return, year by year, until the
+            Starting from the default net worth, the calculator grows the
+            balance each year at the real (inflation-adjusted) return and
+            adds annual savings, until the
             portfolio crosses each FIRE type&apos;s target — that crossing
             year becomes the &quot;reach age&quot; shown on the chart and
             result cards. In this scenario, Regular FIRE is reached at age{' '}

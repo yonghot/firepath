@@ -26,7 +26,7 @@ export const GUIDE_FACTS: GuideFact[] = [
   {
     fact: 'Updated research puts a base-case safe withdrawal rate at 3.9%, not 4%',
     detail:
-      "Morningstar's most recent State of Retirement Income research puts the base-case safe starting withdrawal rate at 3.9% (up from a 2024 low of 3.7%) for a 30-year, 90%-success horizon on a 30%-50% equity portfolio. Retirees willing to flex spending with market conditions could sustain closer to 5.7%-6%.",
+      "Morningstar's most recent State of Retirement Income research puts the base-case safe starting withdrawal rate at 3.9% (up from 3.7% in the previous year's report) for a 30-year, 90%-success horizon on a 30%-50% equity portfolio. Retirees willing to tolerate some fluctuation in their spending can start with a withdrawal rate of nearly 6%.",
     sourceUrl: 'https://www.morningstar.com/retirement/whats-safe-retirement-withdrawal-rate-2026',
   },
   {
@@ -113,10 +113,10 @@ export const GUIDE_SECTIONS: GuideSection[] = [
   {
     heading: 'Beyond 4%: What Newer Withdrawal-Rate Research Shows',
     prose:
-      "The 4% figure is 30+ years old, and both markets and life expectancies have moved since 1994 — which is why researchers keep revisiting it. Morningstar's annual State of Retirement Income research has put the base-case \"safe starting withdrawal rate\" at 4.0% in 2023, 3.7% in 2024, and back up to 3.9% for its most recent 2025/2026 edition — a moving target that depends on current equity valuations, bond yields, and inflation expectations, not a fixed constant. Importantly, that base case assumes a fixed inflation-adjusted spending amount every year regardless of market performance; Morningstar's own research shows retirees willing to flex their spending down in bad years and up in good ones (a \"guardrails\" approach) can sustain notably higher starting withdrawal rates, in the 5.7%-6% range.",
+      "The 4% figure is 30+ years old, and both markets and life expectancies have moved since 1994 — which is why researchers keep revisiting it. Morningstar's annual State of Retirement Income research has put the base-case \"safe starting withdrawal rate\" at 4.0% in 2023, 3.7% in 2024, and back up to 3.9% for its most recent 2025/2026 edition — a moving target that depends on current equity valuations, bond yields, and inflation expectations, not a fixed constant. Importantly, that base case assumes a fixed inflation-adjusted spending amount every year regardless of market performance; Morningstar's own research concludes that retirees willing to tolerate some fluctuation in their spending can start with a withdrawal rate of nearly 6%.",
     bullets: [
       "Morningstar's base-case safe withdrawal rate: 4.0% (2023) → 3.7% (2024) → 3.9% (2025/2026) — not a fixed number.",
-      'A flexible ("guardrails") spending strategy can sustain roughly 5.7%-6%, per the same research, versus a fixed real-dollar withdrawal.',
+      'Retirees willing to tolerate some fluctuation in spending can start with a withdrawal rate of nearly 6%, per the same research, versus a fixed real-dollar withdrawal.',
       'This calculator\'s default SWR stays at the widely recognized 4% benchmark; use the SWR slider (2%-6%) to model a more conservative or more flexible assumption.',
     ],
   },
