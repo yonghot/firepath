@@ -46,14 +46,14 @@ export async function POST(request: NextRequest) {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        { success: false, error: { code: 'VALIDATION_ERROR', message: '잘못된 JSON 형식입니다' } },
+        { success: false, error: { code: 'VALIDATION_ERROR', message: 'Invalid JSON body' } },
         { status: 400 }
       );
     }
     const parsed = CreateCalculationSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: { code: 'VALIDATION_ERROR', message: '입력값이 올바르지 않습니다' } },
+        { success: false, error: { code: 'VALIDATION_ERROR', message: 'Invalid input' } },
         { status: 400 }
       );
     }

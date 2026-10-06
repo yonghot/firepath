@@ -17,7 +17,13 @@ const NAV_ITEMS = [
 
 const PREMIUM_NAV_ITEM = { href: '/premium', label: 'Premium' };
 
-export function Header({ premiumAvailable = false }: { premiumAvailable?: boolean }) {
+export function Header({
+  premiumAvailable = false,
+  authAvailable = false,
+}: {
+  premiumAvailable?: boolean;
+  authAvailable?: boolean;
+}) {
   const navItems = premiumAvailable ? [...NAV_ITEMS, PREMIUM_NAV_ITEM] : NAV_ITEMS;
   const [open, setOpen] = useState(false);
   const { user, loading, signOut } = useAuth();
@@ -50,7 +56,7 @@ export function Header({ premiumAvailable = false }: { premiumAvailable?: boolea
             </Link>
           ))}
           <ThemeToggle />
-          {!loading && (
+          {authAvailable && !loading && (
             user ? (
               <div className="flex items-center gap-2">
                 <Link href="/saved">
@@ -91,7 +97,7 @@ export function Header({ premiumAvailable = false }: { premiumAvailable?: boolea
                 </Link>
               ))}
               <div className="flex items-center justify-between">
-                {!loading && (
+                {authAvailable && !loading && (
                   user ? (
                     <div className="flex items-center gap-2">
                       <Link href="/saved" onClick={() => setOpen(false)}>

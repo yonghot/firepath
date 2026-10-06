@@ -20,7 +20,7 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isSupabaseConfigured()) {
-      toast.error('로그인 서비스를 일시적으로 사용할 수 없습니다.');
+      toast.error('Sign-in is temporarily unavailable.');
       return;
     }
     setLoading(true);
@@ -40,7 +40,7 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     if (!isSupabaseConfigured()) {
-      toast.error('로그인 서비스를 일시적으로 사용할 수 없습니다.');
+      toast.error('Sign-in is temporarily unavailable.');
       return;
     }
     const supabase = createClient();
