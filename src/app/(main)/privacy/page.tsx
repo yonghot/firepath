@@ -27,7 +27,7 @@ export default function PrivacyPage() {
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Privacy Policy</h1>
         <p className="text-sm text-muted-foreground">
-          Effective date: June 28, 2026 &mdash; Last updated: August 18, 2026
+          Effective date: June 28, 2026 &mdash; Last updated: October 7, 2026
         </p>
       </div>
 
@@ -37,11 +37,10 @@ export default function PrivacyPage() {
           <h2>1. Who We Are</h2>
           <p>
             FIREPath (&ldquo;FIREPath,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;)
-            operates the website{' '}
+            is published by {PUBLISHER.name} ({new URL(PUBLISHER.url).hostname}) and operates the website{' '}
             <a href="https://gofirepath.com" rel="noopener noreferrer">gofirepath.com</a>{' '}
             and the FIREPath web application, a FIRE (Financial Independence, Retire Early)
             planning calculator.
-            {/* OPERATOR NOTE: insert your registered legal business name and jurisdiction here */}
           </p>
           <p>
             Contact us for any privacy-related questions at:{' '}
@@ -593,8 +592,7 @@ export default function PrivacyPage() {
             or your personal data, please contact us:
           </p>
           <p>
-            <strong>FIREPath</strong>
-            {/* OPERATOR NOTE: add your registered legal business name and mailing address here */}
+            <strong>FIREPath</strong>, published by {PUBLISHER.name}
             <br />
             Email:{' '}
             <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>

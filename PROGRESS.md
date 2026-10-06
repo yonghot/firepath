@@ -1682,3 +1682,9 @@ postbuild (simulated prod) — [indexnow] submitted 18 urls — verified end-to-
 - **계획과 다른 점**: 계획은 `logo` 를 남기라 했으나 `public/logo.png` 는 FIREPath 로고라서 Actigence Organization 노드에 붙이면 귀속이 틀려 뺐다. 노드는 name·url·email 만 가진다.
 - **회귀 테스트**: `tests/regressions/publisher-identity.test.ts` — 13개 페이지 렌더 HTML 과 모든 ld+json 노드(루트 레이아웃 포함)에서 Person·`reviewedBy`·`lastReviewed`·`potentialAction`·"Editorial Team"·"Reviewed for accuracy" 0, author/publisher/creator 가 Actigence 로 해석, 소스 스캔(주석 제외). 수정 전 9건 실패. `json-ld.test.ts` 는 Person 단정을 publisher 단정으로, `code-02-schema.test.ts` 는 SearchAction 존재 단정을 부재 단정으로 정정(허위 기능 광고 제거가 이유).
 
+
+### [2026-10-07] 발행자(Actigence)를 독자가 보는 자리에 표기 (FIRE-06, K6)
+- **증상**: 푸터·About·Terms·Privacy 어디에도 발행 주체가 없었다(`Actigence` 렌더 0). 푸터 하단은 빌드 시점에 굳은 `new Date().getFullYear()` 를 썼고, Terms 는 존재하지 않는 "officers, directors" 를 책임 제한·면책 대상으로 적었다.
+- **조치**: 모두 `PUBLISHER` 슬롯만 읽는다. 푸터 "© FIREPath. Published by Actigence. For educational purposes only."(연도 삭제), About 새 섹션 "Who publishes FIREPath"(발행자·정정 요청 안내), Terms 서두 "FIREPath is published by Actigence (actigence.ai)", Privacy "Who We Are", 두 문서의 Contact 블록. Terms §10·§11 의 "officers, directors, employees, and agents" 는 "publisher, owners, affiliates, and contributors" 로 교체(homeequitycard-compare 와 같은 표현). 설립연도·주소·인원·법인 형태·관할은 쓰지 않았다(Q3 기본값). 소스의 "OPERATOR NOTE" 주석 중 이 문장들 옆의 것을 함께 제거.
+- **날짜**: Terms 와 Privacy 의 "Last updated" 를 2026-10-07 로 올렸다 — 발행자 표기·책임 대상 문구 교체라는 실제 본문 변경이 있었기 때문(K3). 시행일은 그대로.
+- **회귀 테스트**: `tests/regressions/publisher-identity.test.ts` 확장 — 푸터·About·Terms·Privacy·Contact 가 Actigence 를 표시, 푸터에 © 연도 없음, Terms/Privacy 에 "officers, directors" 없음, `actigence` 문자열이 `src/lib/site.ts` 밖의 출하 소스에 0(단일 슬롯). 수정 전 6건 실패.

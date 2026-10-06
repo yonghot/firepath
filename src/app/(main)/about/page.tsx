@@ -4,6 +4,7 @@ import { Flame, BookOpen, Calculator, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { buildMeta } from '@/lib/seo';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
+import { PUBLISHER } from '@/lib/site';
 
 export const metadata: Metadata = buildMeta({
   title: 'About FIREPath: Our Editorial Standards and Sources',
@@ -57,6 +58,18 @@ export default function AboutPage() {
             fully documented
           </Link>
           .
+        </p>
+      </section>
+
+      {/* Publisher */}
+      <section className="mb-10 space-y-4">
+        <h2 className="text-2xl font-semibold">Who publishes FIREPath</h2>
+        <p>
+          FIREPath is published by {PUBLISHER.name} (
+          <a href={PUBLISHER.url} rel="noopener noreferrer" className="underline underline-offset-4 hover:text-foreground transition-colors duration-200">
+            {new URL(PUBLISHER.url).hostname}
+          </a>
+          ). {PUBLISHER.correctionRequest}
         </p>
       </section>
 

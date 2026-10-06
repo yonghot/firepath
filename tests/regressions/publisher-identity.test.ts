@@ -4,6 +4,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { PUBLISHER } from '@/lib/site';
+import { Footer } from '@/components/layouts/footer';
 import { PAGE_LOADERS, preloadPages, renderPage } from './helpers/render-pages';
 
 vi.mock('next/font/google', () => ({ Inter: () => ({ variable: 'font-sans', className: 'font-sans' }) }));
@@ -93,6 +94,48 @@ describe('K6/K30: identity claims name the publisher and nothing the site cannot
       const src = stripComments(readFileSync(file, 'utf8'));
       return /(author|publisher|creator)\s*:\s*\{[^}]*name:\s*['"]FIREPath['"]/.test(src);
     });
+    expect(offenders.map((file) => file.slice(SRC.length + 1))).toEqual([]);
+  });
+});
+
+const visibleText = (html: string) =>
+  html
+    .replace(/<script[\s\S]*?<\/script>/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/\s+([.,;:])/g, '$1');
+
+describe('K6: the publisher is named where readers look for who is behind the site', () => {
+  it('the footer names the publisher and carries no build-frozen year', () => {
+    const text = visibleText(renderToStaticMarkup(createElement(Footer, { premiumAvailable: false })));
+    expect(text).toContain(`Published by ${PUBLISHER.name}`);
+    expect(text).not.toMatch(/\u00a9\s*\d{4}/);
+  });
+
+  for (const path of ['/about', '/terms', '/privacy', '/contact']) {
+    it(`${path} names the publisher`, async () => {
+      expect(visibleText(await renderPage(path))).toContain(PUBLISHER.name);
+    });
+  }
+
+  it('About, Terms and Privacy say FIREPath is published by the publisher; About gives the correction route', async () => {
+    const about = visibleText(await renderPage('/about'));
+    expect(about).toContain(`FIREPath is published by ${PUBLISHER.name}`);
+    expect(about).toContain(PUBLISHER.correctionRequest);
+    expect(visibleText(await renderPage('/terms'))).toContain(`FIREPath is published by ${PUBLISHER.name}`);
+    expect(visibleText(await renderPage('/privacy'))).toContain(`is published by ${PUBLISHER.name}`);
+  });
+
+  it('Terms and Privacy do not invent corporate officers or directors', async () => {
+    for (const path of ['/terms', '/privacy']) {
+      expect(visibleText(await renderPage(path)), path).not.toMatch(/officers,\s*directors/i);
+    }
+  });
+
+  it('the publisher name and address are typed only in the PUBLISHER slot', () => {
+    const offenders = shippedSources(SRC)
+      .filter((file) => !file.endsWith(join('lib', 'site.ts')))
+      .filter((file) => /actigence/i.test(stripComments(readFileSync(file, 'utf8'))));
     expect(offenders.map((file) => file.slice(SRC.length + 1))).toEqual([]);
   });
 });

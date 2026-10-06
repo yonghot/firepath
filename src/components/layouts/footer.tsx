@@ -3,6 +3,7 @@ import { Flame } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { ManageConsentLink } from '@/components/common/manage-consent-link';
 import { ClearMyDataLink } from '@/components/common/clear-my-data-link';
+import { PUBLISHER } from '@/lib/site';
 
 export function Footer({ premiumAvailable = false }: { premiumAvailable?: boolean }) {
   return (
@@ -63,7 +64,13 @@ export function Footer({ premiumAvailable = false }: { premiumAvailable?: boolea
         <Separator className="my-6" />
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-2 text-xs text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} FIREPath. For educational purposes only.</p>
+          <p>
+            &copy; FIREPath. Published by{' '}
+            <a href={PUBLISHER.url} rel="noopener" className="underline underline-offset-4 hover:text-foreground transition-colors duration-200">
+              {PUBLISHER.name}
+            </a>
+            . For educational purposes only.
+          </p>
           <p>Not financial advice. Past performance does not guarantee future results.</p>
         </div>
       </div>

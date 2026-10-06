@@ -21,7 +21,7 @@ export default function TermsPage() {
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Terms of Service</h1>
         <p className="text-sm text-muted-foreground">
-          Effective date: June 28, 2026 &mdash; Last updated: July 2, 2026
+          Effective date: June 28, 2026 &mdash; Last updated: October 7, 2026
         </p>
       </div>
 
@@ -36,10 +36,10 @@ export default function TermsPage() {
             (&ldquo;Terms&rdquo;). If you do not agree to these Terms, do not use the Service.
           </p>
           <p>
-            These Terms constitute a legally binding agreement between you and FIREPath
-            (&ldquo;FIREPath,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;).
-            {/* OPERATOR NOTE: replace "FIREPath" above with your registered legal entity name */}
-            If you are using the Service on behalf of an organization, you represent that you
+            FIREPath is published by {PUBLISHER.name} ({new URL(PUBLISHER.url).hostname}).
+            These Terms constitute a legally binding agreement between you and the publisher
+            of FIREPath (&ldquo;FIREPath,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or
+            &ldquo;our&rdquo;). If you are using the Service on behalf of an organization, you represent that you
             have authority to bind that organization to these Terms.
           </p>
         </section>
@@ -233,8 +233,8 @@ export default function TermsPage() {
         <section>
           <h2>10. Limitation of Liability</h2>
           <p>
-            TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, FIREPATH AND ITS OFFICERS,
-            DIRECTORS, EMPLOYEES, AND AGENTS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL,
+            TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, FIREPATH AND ITS PUBLISHER,
+            OWNERS, AFFILIATES, AND CONTRIBUTORS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL,
             SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING BUT NOT LIMITED TO LOSS OF
             PROFITS, LOSS OF DATA, LOSS OF SAVINGS, OR FINANCIAL LOSSES ARISING OUT OF OR
             RELATED TO YOUR USE OF OR RELIANCE ON THE SERVICE OR ITS OUTPUTS, EVEN IF WE HAVE
@@ -255,8 +255,8 @@ export default function TermsPage() {
         <section>
           <h2>11. Indemnification</h2>
           <p>
-            You agree to indemnify and hold harmless FIREPath and its officers, directors,
-            employees, and agents from any claims, liabilities, damages, losses, and expenses
+            You agree to indemnify and hold harmless FIREPath and its publisher, owners,
+            affiliates, and contributors from any claims, liabilities, damages, losses, and expenses
             (including reasonable legal fees) arising out of or related to your use of the
             Service, your violation of these Terms, or your violation of any third-party
             rights.
@@ -370,8 +370,7 @@ export default function TermsPage() {
             If you have any questions about these Terms of Service, please contact us:
           </p>
           <p>
-            <strong>FIREPath</strong>
-            {/* OPERATOR NOTE: add your registered legal business name and mailing address here */}
+            <strong>FIREPath</strong>, published by {PUBLISHER.name}
             <br />
             Email:{' '}
             <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>
