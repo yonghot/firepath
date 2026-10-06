@@ -103,6 +103,8 @@ export interface ContentPage {
    * drop this flag.
    */
   requiresDbContent?: boolean;
+  /** Date (YYYY-MM-DD) of the last real change to this page's content; omit when unknown. Never the build date (K3). */
+  lastModified?: string;
 }
 
 /** True when a page carries >= MIN_DIFFERENTIATING_FACTS entity-specific facts (부속P CODE-06 information-gain guard). Core/hub pages always pass (exempt by design — 부속I T09). */
@@ -342,6 +344,7 @@ export const CORE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'core',
+    lastModified: '2026-10-07',
   },
   {
     path: '/guide',
@@ -351,6 +354,7 @@ export const CORE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'hub',
+    lastModified: '2026-10-07',
   },
   {
     path: '/fire-types',
@@ -360,6 +364,7 @@ export const CORE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'hub',
+    lastModified: '2026-10-07',
   },
   {
     path: '/healthcare-bridge',
@@ -369,6 +374,7 @@ export const CORE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'spoke',
+    lastModified: '2026-10-07',
     differentiatingFacts: [
       'Distinct calculation: a geometric-series premium projection, not a FIRE-target multiplier',
       '5 real computed bridge-year scenarios (retiring at 45/50/55/60/64) in the on-page answer table',
@@ -384,6 +390,7 @@ export const CORE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'spoke',
+    lastModified: '2026-10-07',
     differentiatingFacts: [
       'Ranked table of all 5 FIRE-type targets at default inputs — distinct aggregation not shown on any single-type page',
       'Cross-scenario table of FIRE targets across 5 retirement ages (40/45/50/55/60)',
@@ -399,6 +406,7 @@ export const CORE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'spoke',
+    lastModified: '2026-10-07',
     differentiatingFacts: [
       '13 original prose sections (>=3-6 sentences each) covering the 4% rule\'s 1994 Bengen origin and the 1998 Trinity Study — not duplicated on /methodology, /fire-types, or any /guide/[slug] article',
       'The only page site-wide citing 2026 IRS 401(k)/IRA/HSA contribution limits and the 2026 Social Security COLA/wage base',
@@ -414,6 +422,7 @@ export const CORE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'core',
+    lastModified: '2026-10-07',
   },
   {
     path: '/about',
@@ -423,6 +432,7 @@ export const CORE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'core',
+    lastModified: '2026-10-07',
   },
 ];
 

@@ -34,7 +34,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     seenPaths.add(page.canonicalPath);
     contentPages.push({
       url: page.canonicalPath === '/' ? baseUrl : `${baseUrl}${page.canonicalPath}`,
-      lastModified: new Date(),
+      ...(page.lastModified ? { lastModified: page.lastModified } : {}),
       changeFrequency: page.canonicalPath === '/' ? 'weekly' : 'monthly',
       priority: page.canonicalPath === '/' ? 1.0 : priorityByKind[page.kind],
     });
@@ -54,7 +54,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     .filter(({ path }) => !isNoindexed(path))
     .map(({ path, priority }) => ({
       url: `${baseUrl}${path}`,
-      lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority,
     }));

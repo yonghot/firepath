@@ -1731,3 +1731,9 @@ postbuild (simulated prod) — [indexnow] submitted 18 urls — verified end-to-
 - **K8/K29 해당 없음 근거**: 둘 다 템플릿 패밀리 인스턴스가 아니라 K1/K10(막다른 길·얇은 화면) 근거다. 광고 로더 제외는 커밋 17 의 라우트 그룹 분리에서 처리한다(리더 결정 Q-F1 기본값).
 - **현재 noindex 목록**: `/premium`(구매 가능한 플랜 없음), `/contact`(고유 내용 없는 연락 화면), `/embed-this`(임베드 코드 안내뿐). **복원 절차**: `src/data/noindex-paths.json` 에서 해당 항목 삭제 → 배포 → IndexNow 로 URL 제출.
 - **회귀 테스트**: `tests/regressions/noindex-consistency.test.ts` — 목록의 모든 경로가 실존 라우트이고 사유·날짜를 가지며, 세 유틸리티 페이지의 메타데이터가 noindex,follow, sitemap·색인 레지스트리에 없고, 페이지가 noindex 를 선언하면 목록에 있고 그 반대도 성립하며, `/guide` 는 색인·sitemap 에 남는다. 수정 전 5건 실패. sitemap URL 수를 10 으로 고정하던 `premium-dead-end.test.ts` 와 하한 10 이던 `content-pages.test.ts` 는 8 로 정정했다(두 페이지를 의도적으로 뺐기 때문).
+
+### [2026-10-07] sitemap lastmod 를 빌드 시각이 아닌 페이지별 실제 변경일로 (FIRE-08, K3)
+- **증상**: `sitemap.ts` 가 `lastModified: new Date()` 를 써서 정적 prerender 시점(빌드 시각)이 11개 URL 전부에 같은 값으로 찍혔다(라이브 2026-08-30T18:33:20Z). 내용이 안 바뀌어도 배포마다 값이 바뀌므로 검색엔진은 lastmod 를 신뢰할 수 없는 신호로 본다.
+- **조치**: `ContentPage.lastModified?: 'YYYY-MM-DD'` 를 레지스트리(`src/lib/content-pages.ts`)에 두고 sitemap 은 그 값만 쓴다(없으면 필드를 생략). `sitemap.ts` 에는 `new Date(` 가 없다. 8개 코어 페이지의 값은 `git log -1 --format=%cs -- <페이지 소스와 콘텐츠 모듈>` 의 최댓값으로 시드했다. 홈=page.tsx+how-it-works-fire.tsx+geo-entities.ts, /fire-statistics=page.tsx+statistics.ts, /fire-guide=page.tsx+content.ts, /healthcare-bridge=page.tsx+계산기 컴포넌트, 나머지는 page.tsx. 결과는 8개 모두 2026-10-07 이다 — 이번 RC 번들(커밋 1~13)이 8개 페이지의 본문을 실제로 고쳤으므로 같은 날짜가 사실이다. 날짜를 흩어 놓으려고 옛 날짜를 쓰지 않았다. FIRE 유형 앵커 5개와 DB 가이드 7개는 별도 URL 이 아니거나 본문이 DB 에 있어 날짜를 두지 않았다.
+- **유지 규칙**: 페이지 본문을 실제로 고치는 커밋은 같은 커밋에서 그 페이지의 `lastModified` 를 올린다(재검증·내용 변경 없이 올리지 않는다). 이후 편집부터 값이 페이지별로 갈라진다.
+- **회귀 테스트**: `tests/regressions/sitemap-lastmod.test.ts` — sitemap 소스에 시계 읽기 없음, 모든 항목이 레지스트리 값과 같고 값이 없으면 필드 없음, 레지스트리 날짜가 실제 달력 날짜이며 미래가 아님, 시스템 시계를 2031 로 옮겨도 값 불변, 레지스트리가 다른 날짜를 주면 sitemap 도 다르게 내고 날짜 없는 페이지는 필드 없음. 수정 전 5건 실패.
