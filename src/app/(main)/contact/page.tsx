@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Mail } from 'lucide-react';
 import { ContactForm } from '@/components/features/contact/contact-form';
 import { buildMeta } from '@/lib/seo';
+import { PUBLISHER } from '@/lib/site';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
 
 export const metadata: Metadata = buildMeta({
@@ -11,17 +12,7 @@ export const metadata: Metadata = buildMeta({
   path: '/contact',
 });
 
-/**
- * /contact page — AdSense-approval-ready contact page.
- *
- * The contact email is shown only when the owner sets NEXT_PUBLIC_CONTACT_EMAIL.
- * No email is fabricated here. The form always renders so reviewers (and users)
- * see a working contact mechanism regardless of env configuration.
- */
 export default function ContactPage() {
-  // Shown only when the owner configures this env var — never fabricated.
-  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? '';
-
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
       <Breadcrumbs items={[{ name: 'Contact', path: '/contact' }]} />
@@ -33,19 +24,16 @@ export default function ContactPage() {
         </p>
       </div>
 
-      {/* Optional direct email — only rendered when env is set */}
-      {contactEmail && (
-        <div className="mb-8 flex items-center gap-2 text-sm">
-          <Mail className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
-          <span className="text-muted-foreground">You can also email us directly at </span>
-          <a
-            href={`mailto:${contactEmail}`}
-            className="font-medium underline underline-offset-4 hover:text-foreground transition-colors duration-200"
-          >
-            {contactEmail}
-          </a>
-        </div>
-      )}
+      <div className="mb-8 flex items-center gap-2 text-sm">
+        <Mail className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
+        <span className="text-muted-foreground">You can also email us directly at </span>
+        <a
+          href={`mailto:${PUBLISHER.email}`}
+          className="font-medium underline underline-offset-4 hover:text-foreground transition-colors duration-200"
+        >
+          {PUBLISHER.email}
+        </a>
+      </div>
 
       <div className="rounded-xl border bg-card p-6 shadow-sm">
         <ContactForm />

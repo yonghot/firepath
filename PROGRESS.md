@@ -1662,3 +1662,9 @@ postbuild (simulated prod) — [indexnow] submitted 18 urls — verified end-to-
 - **현재 noindex 목록**: `/premium` — 구매 가능한 플랜이 없어 상태 문장 외 내용 없음(2026-10-07). **복원 절차**: `src/data/noindex-paths.json` 에서 해당 항목 삭제 → 배포 → IndexNow 로 해당 URL 제출.
 - **회귀 테스트**: `tests/regressions/premium-dead-end.test.ts`(Stripe 미설정/설정 양쪽에서 헤더·푸터·계산기·홈·embed·`/premium` 렌더, 메타 robots, sitemap 10개, noindex 목록 단위), `tests/regressions/no-visible-draft-placeholders.test.ts`(K1 소스 스캔, homeequitycard-compare 55d3827 에서 이식). 기존 `seo.test.ts` 의 `/premium` 행렬 항목과 `content-pages.test.ts` 의 sitemap 유틸 페이지 수(3→2, 하한 11→10)는 새 현실에 맞게 정정.
 
+### [2026-10-07] 발행자 슬롯(Actigence)과 수신 불가 주소 교체 (FIRE-03·06 일부)
+- **증상**: Terms·Privacy 본문이 환불·중재 옵트아웃·GDPR/CCPA 요청 경로로 `contact@gofirepath.com` 을 8회 안내하지만 이 도메인에는 MX 레코드가 없어 메일을 받을 수 없다. `/contact` 에는 주소가 없었다(`NEXT_PUBLIC_CONTACT_EMAIL` 미설정).
+- **조치**: `src/lib/site.ts` 에 `PUBLISHER`({name: Actigence, url: https://actigence.ai, email: contact@actigence.ai, correctionRequest}) 단일 슬롯을 두고, Terms 4곳·Privacy 4곳·`/contact` 가 이 슬롯만 읽는다. 설립연도·주소·인원·자격·저자명은 쓰지 않았다(사용자가 주지 않은 사실). 소스 주석의 옛 주소와 "OPERATOR NOTE" 두 블록도 제거.
+- **회귀 테스트**: `tests/regressions/publisher-contact.test.ts` — 소스(주석·데이터 포함)에 `@gofirepath.com` 0, Terms·Privacy·Contact 렌더에 `mailto:contact@actigence.ai` 포함. 렌더 헬퍼 `tests/regressions/helpers/render-pages.ts`(next/navigation 모킹, 페이지 로더 표, Providers 래핑)를 이후 렌더 스캔 테스트가 공유한다.
+- **후속**: 발행자 문구(About·푸터·Terms 서두·Privacy "Who We Are")는 커밋 6, `/contact` 폼 정직화는 커밋 4.
+

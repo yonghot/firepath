@@ -3,6 +3,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
+import { PUBLISHER } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
@@ -13,13 +14,6 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true, 'max-image-preview': 'large' },
 };
 
-/**
- * Terms of Service page — effective June 28, 2026.
- *
- * OPERATOR NOTE: Replace "FIREPath" with your registered legal business name
- * wherever it is used as the contracting entity throughout this document.
- * contact@gofirepath.com is the designated contact for legal inquiries.
- */
 export default function TermsPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
@@ -143,7 +137,7 @@ export default function TermsPage() {
           <p>
             You may cancel your Premium subscription at any time through your account
             settings or by contacting us at{' '}
-            <a href="mailto:contact@gofirepath.com">contact@gofirepath.com</a>. Cancellation
+            <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>. Cancellation
             takes effect at the end of the current billing period. You will retain access to
             Premium features until the end of the period you have paid for.
           </p>
@@ -152,7 +146,7 @@ export default function TermsPage() {
           <p>
             We offer a <strong>7-day refund</strong> for new subscribers who request a refund
             within 7 days of their initial subscription purchase by emailing{' '}
-            <a href="mailto:contact@gofirepath.com">contact@gofirepath.com</a>. After 7 days,
+            <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>. After 7 days,
             subscription payments are generally non-refundable, except as required by
             applicable law. We handle refund requests on a case-by-case basis at our
             discretion.
@@ -345,7 +339,7 @@ export default function TermsPage() {
           <p>
             You may opt out of this arbitration agreement within thirty (30) days of first
             accepting these Terms by emailing{' '}
-            <a href="mailto:contact@gofirepath.com">contact@gofirepath.com</a> with the subject
+            <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a> with the subject
             line &ldquo;Arbitration Opt-Out&rdquo; and your account email address. If you opt
             out, neither you nor FIREPath will be required to arbitrate, but every other part
             of these Terms will continue to apply.
@@ -380,7 +374,7 @@ export default function TermsPage() {
             {/* OPERATOR NOTE: add your registered legal business name and mailing address here */}
             <br />
             Email:{' '}
-            <a href="mailto:contact@gofirepath.com">contact@gofirepath.com</a>
+            <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>
             <br />
             Website:{' '}
             <a href="https://gofirepath.com" rel="noopener noreferrer">gofirepath.com</a>

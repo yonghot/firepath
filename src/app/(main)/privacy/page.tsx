@@ -3,6 +3,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
+import { PUBLISHER } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
@@ -13,13 +14,6 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true, 'max-image-preview': 'large' },
 };
 
-/**
- * Privacy Policy page — effective June 28, 2026.
- *
- * OPERATOR NOTE: Replace "FIREPath" with your registered legal business name
- * wherever you see it used as the operator/entity throughout this document.
- * contact@gofirepath.com is the designated contact for privacy inquiries.
- */
 export default function PrivacyPage() {
   // Whether ad-related disclosures apply depends on AdSense being configured.
   // Mirrors ADS_ENABLED in cookie-consent-banner.tsx so the policy stays honest:
@@ -51,7 +45,7 @@ export default function PrivacyPage() {
           </p>
           <p>
             Contact us for any privacy-related questions at:{' '}
-            <a href="mailto:contact@gofirepath.com">contact@gofirepath.com</a>.
+            <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>.
           </p>
         </section>
 
@@ -546,7 +540,7 @@ export default function PrivacyPage() {
           </ul>
           <p>
             To exercise any of these rights, contact us at{' '}
-            <a href="mailto:contact@gofirepath.com">contact@gofirepath.com</a>. We will
+            <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>. We will
             respond within 45 days.
           </p>
         </section>
@@ -557,7 +551,7 @@ export default function PrivacyPage() {
             FIREPath is not directed to children under the age of 13 (or 16 in the EEA).
             We do not knowingly collect personal data from children. If you believe we have
             inadvertently collected information from a child, please contact us at{' '}
-            <a href="mailto:contact@gofirepath.com">contact@gofirepath.com</a> and we will
+            <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a> and we will
             promptly delete it.
           </p>
         </section>
@@ -603,7 +597,7 @@ export default function PrivacyPage() {
             {/* OPERATOR NOTE: add your registered legal business name and mailing address here */}
             <br />
             Email:{' '}
-            <a href="mailto:contact@gofirepath.com">contact@gofirepath.com</a>
+            <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a>
             <br />
             Website:{' '}
             <a href="https://gofirepath.com" rel="noopener noreferrer">gofirepath.com</a>
