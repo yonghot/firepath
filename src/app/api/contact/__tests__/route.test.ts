@@ -2,14 +2,25 @@
  * Unit tests for POST /api/contact.
  *
  * Tests cover:
- * - Valid submission returns 200 { ok: true }
+ * - Valid submission is forwarded to FEEDBACK_ENDPOINT (fetch mocked, no network)
+ *   and returns 200 { ok: true } only after the endpoint answers 2xx
  * - Missing / empty fields return 400
  * - Oversized fields return 400
  * - Invalid email format returns 400
  * - Non-JSON body returns 400
  */
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { POST } from '../route';
+
+beforeEach(() => {
+  vi.stubEnv('FEEDBACK_ENDPOINT', 'http://127.0.0.1:9/collect');
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('ok', { status: 200 })));
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+});
 
 /** Build a minimal Request-like object that satisfies the route handler. */
 function makeRequest(body: unknown, contentType = 'application/json'): Request {

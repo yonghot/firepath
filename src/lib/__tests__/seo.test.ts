@@ -52,8 +52,8 @@ const ROUTE_MATRIX: Record<string, { title: string; h1: string }> = {
     h1: 'Premium Plans',
   },
   '/contact': {
-    title: 'Contact Us: Reach the FIREPath Support Team Directly',
-    h1: 'Contact Us',
+    title: 'Contact FIREPath: Email the Publisher or Report an Error',
+    h1: 'Contact FIREPath',
   },
   '/embed-this': {
     title: 'Embed the FIRE Calculator: Free Widget for Your Site',

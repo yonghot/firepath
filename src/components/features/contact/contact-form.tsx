@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { PUBLISHER } from '@/lib/site';
 
 /** Minimal validation helper — mirrors the server-side rules. */
 function validateContactForm(fields: {
@@ -59,7 +60,7 @@ export function ContactForm() {
 
       if (res.ok) {
         setStatus('success');
-        setStatusMessage("Your message was sent. We'll get back to you as soon as we can.");
+        setStatusMessage(`Thanks. Your message was passed to ${PUBLISHER.name}.`);
         setName('');
         setEmail('');
         setMessage('');

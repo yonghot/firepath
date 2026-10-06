@@ -1668,3 +1668,10 @@ postbuild (simulated prod) — [indexnow] submitted 18 urls — verified end-to-
 - **회귀 테스트**: `tests/regressions/publisher-contact.test.ts` — 소스(주석·데이터 포함)에 `@gofirepath.com` 0, Terms·Privacy·Contact 렌더에 `mailto:contact@actigence.ai` 포함. 렌더 헬퍼 `tests/regressions/helpers/render-pages.ts`(next/navigation 모킹, 페이지 로더 표, Providers 래핑)를 이후 렌더 스캔 테스트가 공유한다.
 - **후속**: 발행자 문구(About·푸터·Terms 서두·Privacy "Who We Are")는 커밋 6, `/contact` 폼 정직화는 커밋 4.
 
+### [2026-10-07] 연락 폼이 버린 메시지를 "보냈다"고 표시 (FIRE-03·27 일부)
+- **증상**: `/api/contact` 는 검증만 하고 메시지를 버리면서 `200 {ok:true}` 를 반환했고, 폼은 "Your message was sent. We'll get back to you as soon as we can." 을 표시했다. 페이지는 "Support Team", "We read every submission" 이라고 썼다. 실제로 받는 사람이 없는데 전달·응답을 약속한 거짓 신뢰 신호.
+- **근본 원인**: AdSense 심사용 "작동하는 폼"을 위해 의도적 no-op 로 출하했고 수신 경로를 만들지 않았다.
+- **조치**: 기존 `/api/feedback` 의 포워더를 `src/lib/utils/forward-submission.ts`(5초 타임아웃, 2xx 만 true)로 추출해 두 라우트가 공유. `/api/contact` 는 `FEEDBACK_ENDPOINT` 로 `{type:'contact', name, email, message, pageUrl, site, userAgent, receivedAt}` 를 전달하고 **2xx 일 때만** `ok:true`. 엔드포인트 미설정 503, 전달 실패 502(상세 미노출), 두 경우 모두 오류 문구에 `contact@actigence.ai` 를 안내. 폼 성공 문구는 "Thanks. Your message was passed to Actigence."(응답 시간 약속 없음). `/contact` 는 발행자 메일과 정정 요청 문장(`PUBLISHER.correctionRequest`)을 먼저 보이고, 폼은 `FEEDBACK_ENDPOINT` 가 설정된 빌드에서만 렌더. 제목·메타에서 "Support Team"·"We read every submission" 삭제.
+- **미확인 사실(리더 질문 Q2)**: `FEEDBACK_ENDPOINT` 수신처를 Actigence 가 실제로 읽는지는 확인할 수 없다(값은 조회하지 않음). 확인되지 않으면 `src/app/(main)/contact/page.tsx` 의 `formEnabled` 를 `false` 로 고정하면 이메일 전용이 된다(한 줄).
+- **회귀 테스트**: `tests/regressions/contact-no-silent-drop.test.ts`(fetch 모킹, 외부 호출 0): 엔드포인트 없음/2xx/5xx/네트워크 실패/잘못된 입력, 페이지의 메일·정정 문장·문구 금지·폼 조건부 렌더, 폼 문구 소스 단정. 기존 `src/app/api/contact/__tests__/route.test.ts` 는 "버려진 메시지에 ok" 를 전제했으므로 엔드포인트·fetch 를 모킹하도록 정정(삭제·skip 없음). `seo.test.ts` 의 `/contact` 제목·H1 행도 새 값으로.
+

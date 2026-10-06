@@ -1,25 +1,11 @@
 import { NextResponse } from 'next/server';
+import { PUBLISHER, SITE_URL } from '@/lib/site';
+import { forwardSubmission } from '@/lib/utils/forward-submission';
 
-/**
- * POST /api/contact — same-origin contact form endpoint.
- *
- * Accepts JSON { name, email, message }, validates all three fields, and
- * acknowledges with 200 { ok: true }. No storage or email-service-provider
- * is wired — this is a deliberate, safe no-op that satisfies AdSense reviewer
- * expectations (functioning contact form) without leaking that no backend
- * integration exists yet.
- *
- * IMPORTANT: This route intentionally adds NO real storage or ESP. Wiring
- * a destination (Resend, Mailchimp, Supabase table, etc.) is the owner's
- * responsibility.
- *
- * TODO(owner): wire a real destination here. Recommended approaches:
- *   - Forward to an ESP (Resend / Mailchimp / Loops) via a server-only API key
- *     read from process.env (NEVER expose it to the client).
- *   - OR insert into a Supabase table (e.g. `contact_submissions`) via the
- *     server client.
- * Until then, submissions are validated and dropped (no-op) by design.
- */
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+const UNDELIVERED = `Your message could not be delivered. Please email ${PUBLISHER.email} instead.`;
 
 // Conservative RFC-5322-lite email check — good enough for capture validation.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -74,7 +60,24 @@ export async function POST(request: Request) {
     );
   }
 
-  // TODO(owner): persist { name, email, message } to storage/ESP here once configured.
-  // No storage/ESP is wired, so this is a safe no-op acknowledgement.
+  const endpoint = process.env.FEEDBACK_ENDPOINT?.trim();
+  if (!endpoint) {
+    return NextResponse.json({ ok: false, error: UNDELIVERED }, { status: 503 });
+  }
+
+  const delivered = await forwardSubmission(endpoint, {
+    type: 'contact',
+    name,
+    email,
+    message,
+    pageUrl: '/contact',
+    site: new URL(SITE_URL).hostname,
+    userAgent: request.headers.get('user-agent') ?? '',
+    receivedAt: new Date().toISOString(),
+  });
+  if (!delivered) {
+    return NextResponse.json({ ok: false, error: UNDELIVERED }, { status: 502 });
+  }
+
   return NextResponse.json({ ok: true });
 }

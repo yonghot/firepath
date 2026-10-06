@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { validateFeedback } from '@/lib/utils/feedback-validation';
+import { forwardSubmission } from '@/lib/utils/forward-submission';
 
 /**
  * POST /api/feedback — site-wide user feedback endpoint.
@@ -67,22 +68,7 @@ export async function POST(request: Request) {
 
   // Forward to external collector if configured.
   const endpoint = process.env.FEEDBACK_ENDPOINT;
-  if (endpoint) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(record),
-        signal: controller.signal,
-      });
-      clearTimeout(timeout);
-    } catch (err) {
-      // Log but do not surface to the user — they should never be blocked.
-      console.error('[feedback] Failed to forward to FEEDBACK_ENDPOINT:', err);
-    }
-  }
+  if (endpoint) await forwardSubmission(endpoint, record);
 
   return NextResponse.json({ ok: true });
 }
