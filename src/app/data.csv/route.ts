@@ -20,7 +20,7 @@ function csvEscape(value: string | number): string {
 export function GET(): Response {
   const dataset = buildFireStatisticsDataset();
 
-  const header = ['retirement_age', 'fire_type', 'target_amount_usd', 'data_verified_date'];
+  const header = ['retirement_age', 'fire_type', 'target_amount_usd', 'last_updated'];
   const rows: string[][] = [];
 
   for (const scenario of dataset.scenarios) {
@@ -29,7 +29,7 @@ export function GET(): Response {
         String(scenario.retirementAge),
         type,
         String(scenario.targets[type]),
-        dataset.dataVerifiedDate,
+        dataset.lastUpdated,
       ]);
     }
   }

@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { calculateFIRE } from '@/lib/engine/fire-calculator';
 import { DEFAULT_INPUT, FIRE_MULTIPLIERS } from '@/constants/fire-defaults';
 import { formatCurrencyFull } from '@/lib/utils/format';
-import { CORE_ASSUMPTIONS_LAST_VERIFIED } from '@/lib/figures';
 
 /**
  * HowItWorksFire — 부속M K01 on-page editorial depth for the home
@@ -147,12 +146,12 @@ export function HowItWorksFire() {
 
       <p className="text-xs text-muted-foreground border-t border-border pt-4">
         Figures on this page are calculated with the same formulas as the
-        calculator above, using its default input values. Core assumption defaults (return, inflation, SWR) were last
-        verified {CORE_ASSUMPTIONS_LAST_VERIFIED} — see{' '}
+        calculator above, using its default input values. The default assumptions
+        (return, inflation, SWR) and their sources are listed on the{' '}
         <Link href="/methodology" className="underline underline-offset-2">
-          methodology &amp; sources
-        </Link>{' '}
-        for citations. Adjust any slider above to see your own numbers.
+          methodology page
+        </Link>
+        . Adjust any slider above to see your own numbers.
       </p>
     </section>
   );

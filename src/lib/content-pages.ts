@@ -459,6 +459,13 @@ export function getIndexablePages(): ContentPage[] {
   );
 }
 
+/** The registry date of a page's last real content change; throws when the page has none so a missing date fails the build instead of printing a stale or invented one. */
+export function getPageLastModified(path: string): string {
+  const date = ALL_CONTENT_PAGES.find((p) => p.canonicalPath === path && p.lastModified)?.lastModified;
+  if (!date) throw new Error(`No lastModified registered in content-pages.ts for ${path}`);
+  return date;
+}
+
 /**
  * Pages excluded from indexing/linking ONLY because their content is
  * DB-authored (not because they failed the information-gain gate). Exposed so

@@ -37,9 +37,9 @@ export function organizationJsonLd() {
 /**
  * SoftwareApplication for the main calculator tool. No aggregateRating.
  *
- * 부속I T11: accepts an optional `dateModified` (ISO date) driven by a REAL
- * lastVerified field (src/lib/figures.ts) — never a hand-stamped "freshness"
- * date — plus `author`/`publisher` resolving to the publisher Organization
+ * 부속I T11: accepts an optional `dateModified` (ISO date) — pass the page
+ * registry date (getPageLastModified in src/lib/content-pages.ts), never a
+ * hand-stamped "freshness" date — plus `author`/`publisher` resolving to the publisher Organization
  * so the calculator page carries the same identity as the root layout.
  */
 export function calculatorAppJsonLd(options?: { dateModified?: string }) {

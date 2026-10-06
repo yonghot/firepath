@@ -15,6 +15,7 @@
  */
 
 import type { GeoAnswerEntity } from '@/lib/seo/geo';
+import { formatIsoDate } from '@/lib/utils/format';
 
 interface AnswerBlockProps {
   entity: GeoAnswerEntity;
@@ -24,12 +25,7 @@ interface AnswerBlockProps {
 }
 
 export function AnswerBlock({ entity, idPrefix = 'geo-answer', className }: AnswerBlockProps) {
-  const { query, answer, dataVerifiedDate, tableHeaders, tableRows, factors, stats } = entity;
-  const formattedDate = new Date(dataVerifiedDate).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const { query, answer, lastUpdated, tableHeaders, tableRows, factors, stats } = entity;
 
   return (
     <section
@@ -43,9 +39,9 @@ export function AnswerBlock({ entity, idPrefix = 'geo-answer', className }: Answ
       <p className="text-base leading-relaxed">{answer}</p>
 
       <p className="text-xs text-muted-foreground">
-        Data verified{' '}
-        <time dateTime={dataVerifiedDate} className="font-medium text-foreground">
-          {formattedDate}
+        Updated{' '}
+        <time dateTime={lastUpdated} className="font-medium text-foreground">
+          {formatIsoDate(lastUpdated)}
         </time>
         .
       </p>

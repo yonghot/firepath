@@ -21,7 +21,7 @@ describe('GET /data.json', () => {
     const body = await res.json();
     const dataset = buildFireStatisticsDataset();
 
-    expect(body.dataVerifiedDate).toBe(dataset.dataVerifiedDate);
+    expect(body.lastUpdated).toBe(dataset.lastUpdated);
     expect(body.headline.value).toBe(dataset.headline.value);
     expect(body.rankedFireTypes).toEqual(dataset.rankedFireTypes);
     expect(body.scenarios).toEqual(dataset.scenarios);

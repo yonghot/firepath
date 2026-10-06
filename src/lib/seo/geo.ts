@@ -51,13 +51,13 @@ export interface GeoAnswerEntity {
   query: string;
   /**
    * 40-60 word answer paragraph. Must already contain the real computed
-   * number(s) and the literal string "As of {dataVerifiedDate}" (or an
+   * number(s) and the literal string "As of {lastUpdated}" (or an
    * equivalent dated freshness phrase) — this module does not template it
    * further so callers keep full control of word count and phrasing.
    */
   answer: string;
-  /** ISO date (YYYY-MM-DD) the underlying figures were last verified. */
-  dataVerifiedDate: string;
+  /** ISO date (YYYY-MM-DD) of the page's last real content change (the page registry date). */
+  lastUpdated: string;
   /** Table column headers (3-4 cols). First header is the label column. */
   tableHeaders: string[];
   /** Table body rows (5-10 rows). */
@@ -87,8 +87,8 @@ export function validateGeoAnswerEntity(entity: GeoAnswerEntity): {
     factorsOk: entity.factors.length >= 5 && entity.factors.length <= 10,
     statsOk: entity.stats.length >= 2,
     hasFreshnessMarker:
-      entity.answer.includes(entity.dataVerifiedDate) ||
-      /as of|data verified/i.test(entity.answer),
+      entity.answer.includes(entity.lastUpdated) ||
+      /as of|updated/i.test(entity.answer),
   };
 }
 

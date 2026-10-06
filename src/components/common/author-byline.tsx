@@ -1,19 +1,16 @@
 import { Building2 } from 'lucide-react';
 import { PUBLISHER } from '@/lib/site';
+import { formatIsoDate } from '@/lib/utils/format';
 
 export function AuthorByline({
   lastUpdated,
   className,
 }: {
-  /** ISO date string, e.g. "2026-06-28". */
+  /** ISO date of the page's last real content change (the page registry date), e.g. "2026-10-07". */
   lastUpdated: string;
   className?: string;
 }) {
-  const formatted = new Date(lastUpdated).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const formatted = formatIsoDate(lastUpdated);
 
   return (
     <div
@@ -25,7 +22,7 @@ export function AuthorByline({
       </span>
       <span aria-hidden="true">·</span>
       <span>
-        Last updated{' '}
+        Updated{' '}
         <time dateTime={lastUpdated}>{formatted}</time>
       </span>
       <span aria-hidden="true">·</span>

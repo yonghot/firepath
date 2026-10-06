@@ -7,6 +7,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { getPageLastModified } from '@/lib/content-pages';
 import { calculateFIRE } from '@/lib/engine/fire-calculator';
 import { DEFAULT_INPUT } from '@/constants/fire-defaults';
 import {
@@ -62,8 +63,9 @@ describe('buildFireStatisticsDataset — 부속P CODE-04 acceptance criteria', (
     expect(dataset.scenarios.length).toBe(5);
   });
 
-  it('carries a dataVerifiedDate matching CORE_ASSUMPTIONS_LAST_VERIFIED (never a hand-stamped date)', () => {
-    expect(dataset.dataVerifiedDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  it('carries the /fire-statistics registry date as lastUpdated (never a hand-stamped date)', () => {
+    expect(dataset.lastUpdated).toBe(getPageLastModified('/fire-statistics'));
+    expect(dataset.lastUpdated).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
   it('cites real sources with URLs (no fabricated attribution)', () => {

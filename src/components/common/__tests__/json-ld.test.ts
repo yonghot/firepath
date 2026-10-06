@@ -17,7 +17,7 @@ import {
   calculatorAppJsonLd,
   fireStatisticsDatasetJsonLd,
 } from '@/components/common/json-ld';
-import { CORE_ASSUMPTIONS_LAST_VERIFIED, getFiguresLastUpdated } from '@/lib/figures';
+import { getPageLastModified } from '@/lib/content-pages';
 
 describe('no Person identity exists', () => {
   it('the module exports no personJsonLd builder', () => {
@@ -50,18 +50,16 @@ describe('calculatorAppJsonLd — dateModified + publisher linkage', () => {
     expect(result).not.toHaveProperty('dateModified');
   });
 
-  it('sets dateModified to the exact value passed in — the SAME field the "Updated for {year}" badge reads', () => {
-    const lastVerified = getFiguresLastUpdated();
-    const result = calculatorAppJsonLd({ dateModified: lastVerified });
-    expect(result.dateModified).toBe(lastVerified);
-    // Never a hand-typed date drifting from the real figures registry.
-    expect(result.dateModified).toBe(CORE_ASSUMPTIONS_LAST_VERIFIED);
+  it('sets dateModified to the exact value passed in — the page registry date the "Updated" badge reads', () => {
+    const pageDate = getPageLastModified('/');
+    const result = calculatorAppJsonLd({ dateModified: pageDate });
+    expect(result.dateModified).toBe(pageDate);
   });
 });
 
 describe('fireStatisticsDatasetJsonLd — 부속P CODE-04 Dataset schema', () => {
   const result = fireStatisticsDatasetJsonLd({
-    dateModified: CORE_ASSUMPTIONS_LAST_VERIFIED,
+    dateModified: getPageLastModified('/fire-statistics'),
     description: 'Test description',
   });
 
@@ -73,7 +71,7 @@ describe('fireStatisticsDatasetJsonLd — 부속P CODE-04 Dataset schema', () =>
   });
 
   it('sets dateModified to the exact value passed in — never a fabricated freshness stamp', () => {
-    expect(result.dateModified).toBe(CORE_ASSUMPTIONS_LAST_VERIFIED);
+    expect(result.dateModified).toBe(getPageLastModified('/fire-statistics'));
   });
 
   it('declares a DataDownload distribution for both /data.json and /data.csv', () => {

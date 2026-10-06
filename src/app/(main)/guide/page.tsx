@@ -18,7 +18,8 @@ import { calculateFIRE } from '@/lib/engine/fire-calculator';
 import { DEFAULT_INPUT, FIRE_MULTIPLIERS } from '@/constants/fire-defaults';
 import { FIRE_LABELS, FIRE_TYPES } from '@/constants/fire-colors';
 import { formatCurrencyFull, formatPercent } from '@/lib/utils/format';
-import { CORE_ASSUMPTIONS_LAST_VERIFIED, EXPECTED_RETURN_STAT } from '@/lib/figures';
+import { EXPECTED_RETURN_STAT } from '@/lib/figures';
+import { getPageLastModified } from '@/lib/content-pages';
 import { SITE_URL } from '@/lib/site';
 
 export const metadata: Metadata = buildMeta({
@@ -47,8 +48,8 @@ const GUIDE_HUB_ANSWER: GeoAnswerEntity = buildAnswerBlock({
     `At the common defaults (age ${currentAge}, $${annualExpenses.toLocaleString()}/yr expenses, ` +
     `${formatPercent(safeWithdrawalRate)} SWR), Lean FIRE needs ${fmtShortGuide(guideDefaultResults.lean.targetAmount)}, ` +
     `Regular FIRE needs ${fmtShortGuide(guideDefaultResults.regular.targetAmount)}, and Fat FIRE needs ` +
-    `${fmtShortGuide(guideDefaultResults.fat.targetAmount)}. The published guides below explain these illustrative targets, withdrawal assumptions, and healthcare bridge scenarios. Default assumptions were last verified ${CORE_ASSUMPTIONS_LAST_VERIFIED}; they are not guaranteed outcomes.`,
-  dataVerifiedDate: CORE_ASSUMPTIONS_LAST_VERIFIED,
+    `${fmtShortGuide(guideDefaultResults.fat.targetAmount)}. The published guides below explain these illustrative targets, withdrawal assumptions, and healthcare bridge scenarios. As of ${getPageLastModified('/guide')}, these are illustrative defaults, not guaranteed outcomes.`,
+  lastUpdated: getPageLastModified('/guide'),
   tableHeaders: ['FIRE Type', 'Multiplier', 'Target Amount'],
   tableRows: FIRE_TYPES.map((type) => ({
     label: type === 'coast' ? `${FIRE_LABELS.coast} (seed needed today)` : FIRE_LABELS[type],

@@ -17,9 +17,11 @@ import { publisherJsonLd } from '@/components/common/json-ld';
 import { calculateFIRE } from '@/lib/engine/fire-calculator';
 import { DEFAULT_INPUT } from '@/constants/fire-defaults';
 import { formatCurrencyFull, formatPercent } from '@/lib/utils/format';
-import { GUIDE_UPDATED, GUIDE_FACTS, GUIDE_SECTIONS, GUIDE_SOURCES } from './content';
+import { GUIDE_PUBLISHED, GUIDE_FACTS, GUIDE_SECTIONS, GUIDE_SOURCES } from './content';
+import { getPageLastModified } from '@/lib/content-pages';
 
 const PAGE_PATH = '/fire-guide';
+const PAGE_UPDATED = getPageLastModified(PAGE_PATH);
 const TITLE = 'The Complete FIRE Guide (2026): 4% Rule, 5 FIRE Types';
 const DESCRIPTION =
   "The 4% rule's real 1994 origin, updated 2024-2026 safe-withdrawal-rate research, all 5 FIRE types, sequence-of-returns risk, 2026 IRS and Social Security limits, and the healthcare bridge before Medicare — 14 official sources cited.";
@@ -38,8 +40,8 @@ const articleJsonLd = {
   '@type': 'Article',
   headline: 'The Complete FIRE Guide (2026): 5 FIRE Types, the 4% Rule, and Sequence Risk',
   description: DESCRIPTION,
-  datePublished: GUIDE_UPDATED,
-  dateModified: GUIDE_UPDATED,
+  datePublished: GUIDE_PUBLISHED,
+  dateModified: PAGE_UPDATED,
   author: publisherJsonLd(),
   publisher: publisherJsonLd(),
   mainEntityOfPage: `${SITE_URL}${PAGE_PATH}`,
@@ -194,14 +196,14 @@ export default function FireGuidePage() {
           <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
             The Complete FIRE Guide (2026)
           </h1>
-          <UpdatedBadge lastVerified={GUIDE_UPDATED} className="mt-3" />
+          <UpdatedBadge lastUpdated={PAGE_UPDATED} className="mt-3" />
           <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
             Where the 4% rule actually comes from, all 5 FIRE types, what newer
             withdrawal-rate research says, sequence-of-returns risk, and the 2026
             regulatory numbers — IRS limits, Social Security, healthcare — that
             change every FIRE plan&apos;s math.
           </p>
-          <AuthorByline lastUpdated={GUIDE_UPDATED} className="mt-3" />
+          <AuthorByline lastUpdated={PAGE_UPDATED} className="mt-3" />
         </div>
       </div>
 

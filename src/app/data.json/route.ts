@@ -11,7 +11,7 @@
 import { buildFireStatisticsDataset } from '@/lib/seo/statistics';
 
 export const dynamic = 'force-static';
-export const revalidate = 86400; // figures only change when CORE_ASSUMPTIONS_LAST_VERIFIED is bumped
+export const revalidate = 86400;
 
 export function GET(): Response {
   const dataset = buildFireStatisticsDataset();
@@ -19,7 +19,7 @@ export function GET(): Response {
   const body = JSON.stringify(
     {
       source: 'https://gofirepath.com/fire-statistics',
-      dataVerifiedDate: dataset.dataVerifiedDate,
+      lastUpdated: dataset.lastUpdated,
       headline: dataset.headline,
       rankedFireTypes: dataset.rankedFireTypes,
       scenarios: dataset.scenarios,

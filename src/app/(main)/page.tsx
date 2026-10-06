@@ -14,7 +14,7 @@ import { AnswerBlock } from '@/components/common/answer-block';
 import { MAIN_CALCULATOR_ANSWER } from '@/lib/seo/geo-entities';
 import { getPremiumStatus } from '@/lib/subscription/premium';
 import { isPremiumPurchasable } from '@/lib/premium-availability';
-import { getFiguresLastUpdated } from '@/lib/figures';
+import { getPageLastModified } from '@/lib/content-pages';
 import { buildMeta } from '@/lib/seo';
 
 // Use absolute to bypass the "%s | FIREPath" template from root layout —
@@ -36,10 +36,7 @@ export const metadata: Metadata = {
 export default async function CalculatorPage() {
   // Free tier sees ads; premium is ad-free.
   const { isPremium } = await getPremiumStatus();
-  // 부속I T11 — dateModified driven by the REAL lastVerified field (never a
-  // hand-stamped freshness date); the same field the "Updated for {year}"
-  // badge below reads, so JSON-LD and visible copy can never drift.
-  const figuresLastVerified = getFiguresLastUpdated();
+  const pageUpdated = getPageLastModified('/');
 
   return (
     <>
@@ -49,7 +46,7 @@ export default async function CalculatorPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(calculatorAppJsonLd({ dateModified: figuresLastVerified })),
+          __html: JSON.stringify(calculatorAppJsonLd({ dateModified: pageUpdated })),
         }}
       />
       <script
@@ -64,7 +61,7 @@ export default async function CalculatorPage() {
           <div className="flex items-center justify-center lg:justify-start gap-2 mb-2 flex-wrap">
             <Flame className="h-7 w-7 text-[var(--fire-coast)]" />
             <h1 className="text-4xl font-bold">FIREPath</h1>
-            <UpdatedBadge lastVerified={figuresLastVerified} className="ml-0 lg:ml-2" />
+            <UpdatedBadge lastUpdated={pageUpdated} className="ml-0 lg:ml-2" />
           </div>
           <p className="text-muted-foreground max-w-xl mx-auto lg:mx-0">
             Compare 5 FIRE types — Lean, Regular, Fat, Coast &amp; Barista — on one interactive timeline. Adjust the sliders and see your path to financial independence in real time.

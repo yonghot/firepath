@@ -3,6 +3,7 @@ import { FIRE_COLORS } from '@/constants/fire-colors';
 import { formatCurrencyFull } from '@/lib/utils/format';
 import { buildOgVisual, OG_SIZE, OG_CONTENT_TYPE } from '@/lib/og/og-visual';
 import { buildFireStatisticsDataset } from '@/lib/seo/statistics';
+import { getPageLastModified } from '@/lib/content-pages';
 
 /**
  * opengraph-image.tsx (`/fire-statistics`) — 부속P CODE-05.
@@ -33,7 +34,7 @@ export default async function Image() {
         { label: 'Regular FIRE', value: formatCurrencyFull(regular.targetAmount), accent: FIRE_COLORS.regular },
         { label: 'Fat FIRE (highest)', value: formatCurrencyFull(fat.targetAmount), accent: FIRE_COLORS.fat },
       ],
-      dataVerifiedDate: dataset.dataVerifiedDate,
+      lastUpdated: getPageLastModified('/fire-statistics'),
     }),
     { ...OG_SIZE }
   );

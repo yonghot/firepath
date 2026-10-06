@@ -17,7 +17,8 @@ import { calculateFIRE } from '@/lib/engine/fire-calculator';
 import { DEFAULT_INPUT, FIRE_MULTIPLIERS } from '@/constants/fire-defaults';
 import { FIRE_LABELS, FIRE_TYPES } from '@/constants/fire-colors';
 import { formatCurrencyFull } from '@/lib/utils/format';
-import { CORE_ASSUMPTIONS_LAST_VERIFIED, CORE_FIGURES } from '@/lib/figures';
+import { CORE_FIGURES } from '@/lib/figures';
+import { getPageLastModified } from '@/lib/content-pages';
 import type { FIREType } from '@/types/fire.types';
 
 /** Retirement-age scenarios aggregated for the cross-scenario comparison table. */
@@ -37,7 +38,8 @@ export interface StatisticsFireTypeRow {
 }
 
 export interface FireStatisticsDataset {
-  dataVerifiedDate: string;
+  /** ISO date of the last real change to the figures (the /fire-statistics registry date). */
+  lastUpdated: string;
   /** Headline stat sentence — the single most citable number on the page. */
   headline: {
     text: string;
@@ -56,7 +58,7 @@ function fmtShort(n: number): string {
   return n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(2)}M` : `$${Math.round(n / 1000)}K`;
 }
 
-/** Builds the full statistics dataset. Pure function — same output every call (no randomness/dates besides the verified constant). */
+/** Builds the full statistics dataset. Pure function — same output every call (no randomness; the date is the registry date). */
 export function buildFireStatisticsDataset(): FireStatisticsDataset {
   const { results: defaultResults } = calculateFIRE(DEFAULT_INPUT);
 
@@ -99,7 +101,7 @@ export function buildFireStatisticsDataset(): FireStatisticsDataset {
   ];
 
   return {
-    dataVerifiedDate: CORE_ASSUMPTIONS_LAST_VERIFIED,
+    lastUpdated: getPageLastModified('/fire-statistics'),
     headline: {
       text: `At the default ${(CORE_FIGURES.safeWithdrawalRate.value * 100).toFixed(0)}% Safe Withdrawal Rate and $${DEFAULT_INPUT.annualExpenses.toLocaleString()}/yr expenses, FIRE targets range from ${formatCurrencyFull(leanRow.targetAmount)} (Lean) to ${formatCurrencyFull(fatRow.targetAmount)} (Fat) — a ${fatVsLeanPct}% spread across the 5 FIRE types.`,
       value: `${formatCurrencyFull(leanRow.targetAmount)} – ${formatCurrencyFull(fatRow.targetAmount)}`,

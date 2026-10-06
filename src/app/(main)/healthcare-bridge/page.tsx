@@ -16,7 +16,7 @@ import { calculateHealthcareBridge, MEDICARE_ELIGIBILITY_AGE } from "@/lib/engin
 import { formatCurrencyFull } from "@/lib/utils/format";
 import { AnswerBlock } from "@/components/common/answer-block";
 import { buildAnswerBlock, type GeoAnswerEntity } from "@/lib/seo/geo";
-import { CORE_ASSUMPTIONS_LAST_VERIFIED } from "@/lib/figures";
+import { getPageLastModified } from "@/lib/content-pages";
 
 export const metadata: Metadata = buildMeta({
   title: "Healthcare Bridge Estimator: Your Cost Before Medicare",
@@ -25,7 +25,7 @@ export const metadata: Metadata = buildMeta({
   path: "/healthcare-bridge",
 });
 
-const LAST_UPDATED = "2026-06-29";
+const PAGE_UPDATED = getPageLastModified("/healthcare-bridge");
 
 const SOURCES: SourceItem[] = [
   {
@@ -94,8 +94,8 @@ const HEALTHCARE_BRIDGE_ANSWER: GeoAnswerEntity | null = exampleResult
         `At a $${EXAMPLE_INPUT.annualPremium.toLocaleString()}/yr premium with ${(EXAMPLE_INPUT.annualGrowthRate * 100).toFixed(0)}% ` +
         `annual growth, retiring at ${EXAMPLE_INPUT.retirementAge} means ${exampleResult.bridgeYears} bridge years and ` +
         `${formatCurrencyFull(exampleResult.totalEstimatedCost)} total before Medicare at ${MEDICARE_ELIGIBILITY_AGE}. ` +
-        `As of ${CORE_ASSUMPTIONS_LAST_VERIFIED}, later retirement ages shorten the bridge and lower the total — retiring at 64 needs just 1 year of coverage.`,
-      dataVerifiedDate: CORE_ASSUMPTIONS_LAST_VERIFIED,
+        `As of ${PAGE_UPDATED}, later retirement ages shorten the bridge and lower the total — retiring at 64 needs just 1 year of coverage.`,
+      lastUpdated: PAGE_UPDATED,
       tableHeaders: ["Retirement Age", "Bridge Years", "Total Estimated Cost", "Medicare At"],
       tableRows: bridgeScenarios
         .filter((s) => s.result)
@@ -193,7 +193,7 @@ export default function HealthcareBridgePage() {
           <HeartPulse className="h-6 w-6 text-[var(--brand-primary)]" aria-hidden="true" />
           <h1 className="text-4xl font-bold">Healthcare Bridge Estimator</h1>
         </div>
-        <AuthorByline lastUpdated={LAST_UPDATED} className="mb-4" />
+        <AuthorByline lastUpdated={PAGE_UPDATED} className="mb-4" />
         <p className="text-muted-foreground">
           One of the biggest hidden costs in early retirement is health insurance. If you retire
           before 65, you need private coverage until Medicare kicks in. This tool helps you estimate

@@ -80,19 +80,19 @@ describe('og-visual.tsx — design/forbidden.md compliance (부속M K09)', () =>
   });
 });
 
-describe('buildOgVisual — dataVerifiedDate dated freshness marker (부속P CODE-05)', () => {
-  it('renders "As of {date}" in the footer when dataVerifiedDate is provided', () => {
+describe('buildOgVisual — lastUpdated dated freshness marker (부속P CODE-05)', () => {
+  it('renders "As of {date}" in the footer when lastUpdated is provided', () => {
     const el = buildOgVisual({
       eyebrow: 'FIREPath',
       title: 'Test title',
       stats: [{ label: 'Test stat', value: '$1,000' }],
-      dataVerifiedDate: '2026-06-29',
+      lastUpdated: '2026-06-29',
     });
     const text = collectText(el);
     expect(text).toContain('As of 2026-06-29');
   });
 
-  it('falls back to the generic tagline when dataVerifiedDate is omitted (no fabricated date)', () => {
+  it('falls back to the generic tagline when lastUpdated is omitted (no fabricated date)', () => {
     const el = buildOgVisual({
       eyebrow: 'FIREPath',
       title: 'Test title',
@@ -108,7 +108,7 @@ describe('buildOgVisual — dataVerifiedDate dated freshness marker (부속P COD
       eyebrow: 'FIREPath',
       title: 'Test title',
       stats: [{ label: 'Test stat', value: '$1,000' }],
-      dataVerifiedDate: '2026-06-29',
+      lastUpdated: '2026-06-29',
     });
     const text = collectText(el).toLowerCase();
     for (const word of ['best', 'amazing', 'guaranteed', '#1 rated', 'top-rated']) {
@@ -163,8 +163,8 @@ describe('opengraph-image.tsx route files — hub/insight pages (부속M K09)', 
         expect(source).toMatch(/from '@\/lib\/og\/og-visual'/);
       });
 
-      it('passes a dataVerifiedDate to buildOgVisual — the 부속P CODE-05 dated freshness marker', () => {
-        expect(source).toMatch(/dataVerifiedDate:/);
+      it('passes a lastUpdated to buildOgVisual — the 부속P CODE-05 dated freshness marker', () => {
+        expect(source).toMatch(/lastUpdated:/);
       });
     });
   }

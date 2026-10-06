@@ -22,7 +22,7 @@ const VALID_ENTITY: GeoAnswerEntity = {
     'At the common defaults (age 30, $40,000/yr expenses, 4.0% SWR), Example FIRE needs ' +
     '$600,000 today, compounding to the full target by retirement age. As of 2026-06-29, this ' +
     'figure comes directly from the FIREPath calculation engine, not a hand-typed or fabricated estimate.',
-  dataVerifiedDate: '2026-06-29',
+  lastUpdated: '2026-06-29',
   tableHeaders: ['Type', 'Multiplier', 'Target', 'Monthly'],
   tableRows: [
     { label: 'Lean', values: ['60%', '$600K', '$2,000/mo'] },

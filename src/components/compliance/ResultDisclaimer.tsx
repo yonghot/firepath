@@ -9,8 +9,8 @@
  * Extends (does not duplicate) the existing DisclaimerBanner component —
  * DisclaimerBanner keeps its original short-form copy for lower-stakes
  * surfaces; ResultDisclaimer is the fuller layered version required directly
- * beside RESULT output, and additionally surfaces the figures' last-verified
- * date + a primary-source link pulled from the central figures registry.
+ * beside RESULT output, and additionally links to the methodology and
+ * sources page (plus the page's update date when the caller passes one).
  *
  * IMPERSONAL FRAMING: copy intentionally avoids "your retirement plan" /
  * "you will reach" in favor of "this scenario" / "the scenario's" so results
@@ -19,22 +19,17 @@
  */
 
 import { AlertTriangle } from 'lucide-react';
-import { getFiguresLastUpdated, getFiguresPrimarySource } from '@/lib/figures';
+import { getFiguresPrimarySource } from '@/lib/figures';
+import { formatIsoDate } from '@/lib/utils/format';
 
 interface ResultDisclaimerProps {
   className?: string;
-  /** Optional override for the "figures last updated" date (ISO). Defaults to the central figures registry. */
+  /** ISO date of the page's last real content change; the date line is omitted when the caller has none. */
   lastUpdated?: string;
 }
 
 export function ResultDisclaimer({ className, lastUpdated }: ResultDisclaimerProps) {
-  const figuresDate = lastUpdated ?? getFiguresLastUpdated();
   const primarySource = getFiguresPrimarySource();
-  const formatted = new Date(figuresDate).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
 
   return (
     <div
@@ -60,8 +55,12 @@ export function ResultDisclaimer({ className, lastUpdated }: ResultDisclaimerPro
             professional, or attorney before acting on this scenario.
           </p>
           <p className="text-[10px] uppercase tracking-wide text-amber-800/80 dark:text-amber-300/80">
-            Figures last updated: <time dateTime={figuresDate}>{formatted}</time>
-            {' · '}
+            {lastUpdated ? (
+              <>
+                Updated <time dateTime={lastUpdated}>{formatIsoDate(lastUpdated)}</time>
+                {' · '}
+              </>
+            ) : null}
             <a
               href={primarySource.url}
               className="underline underline-offset-2 hover:text-amber-900 dark:hover:text-amber-100 focus-visible:outline-none focus-visible:underline"

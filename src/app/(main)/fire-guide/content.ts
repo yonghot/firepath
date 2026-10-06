@@ -14,7 +14,7 @@ export interface GuideSection {
 export interface GuideFact { fact: string; detail: string; sourceUrl: string; }
 export interface GuideSource { name: string; url: string; }
 
-export const GUIDE_UPDATED = '2026-07-18';
+export const GUIDE_PUBLISHED = '2026-07-18';
 
 export const GUIDE_FACTS: GuideFact[] = [
   {
@@ -198,7 +198,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
   {
     heading: 'Staying on Track After You Reach FIRE',
     prose:
-      "Reaching a FIRE number isn't the finish line — it's the start of the withdrawal phase, where sequence-of-returns risk and cost-of-living adjustments to contribution/benefit figures keep changing every year. The practical habit that matters most is revisiting your assumptions annually: re-check the current safe withdrawal rate research, re-confirm this year's IRS and Social Security figures rather than relying on last year's numbers, and re-run your healthcare cost estimate as premiums and ACA rules shift. This site's own default assumptions (expected return, inflation, SWR) are documented with sources and a last-verified date on the Methodology page — the same discipline is worth applying to your personal plan.",
+      "Reaching a FIRE number isn't the finish line — it's the start of the withdrawal phase, where sequence-of-returns risk and cost-of-living adjustments to contribution/benefit figures keep changing every year. The practical habit that matters most is revisiting your assumptions annually: re-check the current safe withdrawal rate research, re-confirm this year's IRS and Social Security figures rather than relying on last year's numbers, and re-run your healthcare cost estimate as premiums and ACA rules shift. This site's own default assumptions (expected return, inflation, SWR) are documented with their sources, and the dates of any source checks, on the Methodology page — the same discipline is worth applying to your personal plan.",
     bullets: [
       'Re-verify contribution limits, COLA figures, and healthcare premiums annually — every regulatory number in this guide changes yearly.',
       'Re-run your numbers through the calculator whenever your income, expenses, or market outlook changes meaningfully.',

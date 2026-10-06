@@ -14,7 +14,8 @@
 import { calculateFIRE } from '@/lib/engine/fire-calculator';
 import { DEFAULT_INPUT } from '@/constants/fire-defaults';
 import { formatCurrencyFull, formatPercent } from '@/lib/utils/format';
-import { CORE_ASSUMPTIONS_LAST_VERIFIED, EXPECTED_RETURN_STAT } from '@/lib/figures';
+import { EXPECTED_RETURN_STAT } from '@/lib/figures';
+import { getPageLastModified } from '@/lib/content-pages';
 import { buildAnswerBlock, type GeoAnswerEntity } from './geo';
 
 const { annualExpenses, safeWithdrawalRate, currentAge, retirementAge } = DEFAULT_INPUT;
@@ -31,8 +32,8 @@ export const MAIN_CALCULATOR_ANSWER: GeoAnswerEntity = buildAnswerBlock({
     `At the common defaults (age ${currentAge}, retiring by ${retirementAge}, $${annualExpenses.toLocaleString()}/yr expenses, ` +
     `${formatPercent(safeWithdrawalRate)} SWR), the baseline Regular FIRE target is ${fmtShort(results.regular.targetAmount)}. ` +
     `Lean FIRE lowers that to ${fmtShort(results.lean.targetAmount)}; Fat FIRE raises it to ${fmtShort(results.fat.targetAmount)}. ` +
-    `As of ${CORE_ASSUMPTIONS_LAST_VERIFIED}, each target equals annual expenses times a fixed multiplier, divided by the safe withdrawal rate.`,
-  dataVerifiedDate: CORE_ASSUMPTIONS_LAST_VERIFIED,
+    `As of ${getPageLastModified('/')}, each target equals annual expenses times a fixed multiplier, divided by the safe withdrawal rate.`,
+  lastUpdated: getPageLastModified('/'),
   tableHeaders: ['FIRE Type', 'Multiplier', 'Target Amount', 'Monthly Income'],
   tableRows: (['lean', 'regular', 'fat', 'coast', 'barista'] as const).map((type) => ({
     label: type[0].toUpperCase() + type.slice(1),

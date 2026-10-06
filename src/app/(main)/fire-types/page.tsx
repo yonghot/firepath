@@ -17,7 +17,8 @@ import { buildMeta } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/common/breadcrumbs";
 import { AnswerBlock } from "@/components/common/answer-block";
 import { buildAnswerBlock, type GeoAnswerEntity } from "@/lib/seo/geo";
-import { CORE_ASSUMPTIONS_LAST_VERIFIED, EXPECTED_RETURN_STAT } from "@/lib/figures";
+import { EXPECTED_RETURN_STAT } from "@/lib/figures";
+import { getPageLastModified } from "@/lib/content-pages";
 
 export const metadata: Metadata = buildMeta({
   title: "FIRE Types Explained: Lean, Fat, Coast and Barista",
@@ -27,7 +28,7 @@ export const metadata: Metadata = buildMeta({
   ogType: "article",
 });
 
-const LAST_UPDATED = "2026-06-29";
+const PAGE_UPDATED = getPageLastModified("/fire-types");
 
 /** Computed from default inputs so all figures on this page are real engine outputs. */
 const defaultOutput = calculateFIRE(DEFAULT_INPUT);
@@ -47,8 +48,8 @@ const FIRE_TYPES_ANSWER: GeoAnswerEntity = buildAnswerBlock({
     `${formatPercent(safeWithdrawalRate)} SWR), Lean FIRE needs ${fmtShort(defaultResults.lean.targetAmount)}, ` +
     `Regular FIRE needs ${fmtShort(defaultResults.regular.targetAmount)}, Fat FIRE needs ` +
     `${fmtShort(defaultResults.fat.targetAmount)}, Coast FIRE needs a ${fmtShort(defaultResults.coast.targetAmount)} seed today, ` +
-    `and Barista FIRE needs ${fmtShort(defaultResults.barista.targetAmount)}. As of ${CORE_ASSUMPTIONS_LAST_VERIFIED}, each target is annual expenses times a fixed multiplier, divided by the SWR.`,
-  dataVerifiedDate: CORE_ASSUMPTIONS_LAST_VERIFIED,
+    `and Barista FIRE needs ${fmtShort(defaultResults.barista.targetAmount)}. As of ${PAGE_UPDATED}, each target is annual expenses times a fixed multiplier, divided by the SWR.`,
+  lastUpdated: PAGE_UPDATED,
   tableHeaders: ["FIRE Type", "Multiplier", "Target Amount", "Monthly Income"],
   tableRows: (["lean", "regular", "fat", "coast", "barista"] as const).map((type) => ({
     label: FIRE_LABELS[type],
@@ -283,7 +284,7 @@ export default function FireTypesPage() {
       {/* Header */}
       <div>
         <h1 className="text-4xl font-bold mb-2">FIRE Types Explained</h1>
-        <AuthorByline lastUpdated={LAST_UPDATED} className="mb-4" />
+        <AuthorByline lastUpdated={PAGE_UPDATED} className="mb-4" />
         <p className="text-muted-foreground">
           &quot;FIRE&quot; stands for Financial Independence, Retire Early. The five variants — Lean,
           Regular, Fat, Coast, and Barista — each target a different lifestyle and spending level.

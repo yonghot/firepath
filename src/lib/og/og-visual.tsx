@@ -36,7 +36,7 @@ export function buildOgVisual({
   eyebrow,
   title,
   stats,
-  dataVerifiedDate,
+  lastUpdated,
 }: {
   /** Small top label, e.g. "FIREPath". */
   eyebrow: string;
@@ -45,14 +45,13 @@ export function buildOgVisual({
   /** 3-5 real computed/sourced stats rendered as data cards. */
   stats: OgStat[];
   /**
-   * ISO date (YYYY-MM-DD) the underlying figures were last verified (부속P
+   * ISO date (YYYY-MM-DD) of the page's last real content change (부속P
    * CODE-05). Rendered as "As of {date}" in the footer instead of the
    * generic tagline when provided, so shared images carry a real freshness
-   * marker rather than an undated claim. Never a fabricated/hand-typed date
-   * — pass CORE_ASSUMPTIONS_LAST_VERIFIED (src/lib/figures.ts) or another
-   * already-verified `lastVerified` field.
+   * marker rather than an undated claim. Pass getPageLastModified(path) from
+   * src/lib/content-pages.ts, never a hand-typed date.
    */
-  dataVerifiedDate?: string;
+  lastUpdated?: string;
 }) {
   return (
     <div
@@ -124,8 +123,8 @@ export function buildOgVisual({
           marginTop: '32px',
         }}
       >
-        {dataVerifiedDate
-          ? `gofirepath.com — As of ${dataVerifiedDate}, real computed figures`
+        {lastUpdated
+          ? `gofirepath.com — As of ${lastUpdated}, real computed figures`
           : 'gofirepath.com — Free FIRE calculator, real computed figures'}
       </div>
     </div>

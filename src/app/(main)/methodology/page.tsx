@@ -9,6 +9,9 @@ import { UpdatedBadge } from '@/components/common/updated-badge';
 import { buildMeta } from '@/lib/seo';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
 import { isPremiumPurchasable } from '@/lib/premium-availability';
+import { getPageLastModified } from '@/lib/content-pages';
+import { CORE_ASSUMPTIONS_AS_OF, SOURCE_CHECKS } from '@/lib/figures';
+import { formatIsoDate } from '@/lib/utils/format';
 
 export const metadata: Metadata = buildMeta({
   title: 'How We Calculate: FIRE Formulas and Cited Data Sources',
@@ -18,8 +21,7 @@ export const metadata: Metadata = buildMeta({
   ogType: 'article',
 });
 
-// Last meaningful update to the methodology/engine description.
-const LAST_UPDATED = '2026-06-29';
+const PAGE_UPDATED = getPageLastModified('/methodology');
 
 /**
  * Verified citations for the Sources & References section.
@@ -160,9 +162,9 @@ export default function MethodologyPage() {
 
       <div className="flex items-center gap-3 mb-2 flex-wrap">
         <h1 className="text-4xl font-bold">How We Calculate</h1>
-        <UpdatedBadge lastVerified={LAST_UPDATED} />
+        <UpdatedBadge lastUpdated={PAGE_UPDATED} />
       </div>
-      <AuthorByline lastUpdated={LAST_UPDATED} className="mb-6" />
+      <AuthorByline lastUpdated={PAGE_UPDATED} className="mb-6" />
 
       <div className="prose prose-neutral dark:prose-invert max-w-none">
         <p>
@@ -235,6 +237,65 @@ export default function MethodologyPage() {
           For each target we also show the monthly passive income it would generate
           at your SWR: <span className="font-mono text-sm">(target × SWR) / 12</span>.
         </p>
+
+        <h2>6. Default assumptions</h2>
+        <p>
+          The calculator starts from these values, and every one can be changed with the
+          sliders. The last column says whether the default has a source check on record.
+        </p>
+        <div className="overflow-x-auto">
+          <table>
+            <caption className="sr-only">Default assumptions, their basis and source checks</caption>
+            <thead>
+              <tr>
+                <th scope="col">Assumption</th>
+                <th scope="col">Default</th>
+                <th scope="col">Basis</th>
+                <th scope="col">Source check</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Safe withdrawal rate</th>
+                <td>4%</td>
+                <td>Bengen (1994) and the Trinity Study (1998).</td>
+                <td>
+                  Checked against Morningstar on{' '}
+                  <time dateTime={SOURCE_CHECKS['morningstar-finding-swr'].date}>
+                    {formatIsoDate(SOURCE_CHECKS['morningstar-finding-swr'].date)}
+                  </time>
+                  : its latest base case is 3.9% for a 30-year horizon, below the 4% default.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Expected return (nominal)</th>
+                <td>7%</td>
+                <td>A FIREPath assumption, set below the long-run U.S. stock returns reported by NYU Stern.</td>
+                <td>
+                  Checked against NYU Stern on{' '}
+                  <time dateTime={SOURCE_CHECKS['nyu-histretsp'].date}>
+                    {formatIsoDate(SOURCE_CHECKS['nyu-histretsp'].date)}
+                  </time>
+                  : long-run U.S. stock returns are higher than 7%.
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Inflation</th>
+                <td>3%</td>
+                <td>Historical U.S. consumer price data.</td>
+                <td>No source check on record.</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colSpan={4}>
+                  Default values in force as of{' '}
+                  <time dateTime={CORE_ASSUMPTIONS_AS_OF}>{formatIsoDate(CORE_ASSUMPTIONS_AS_OF)}</time>.
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
 
         <p className="text-sm text-muted-foreground">
           Limitations: projections assume constant returns, inflation, and savings,

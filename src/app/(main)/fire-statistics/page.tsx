@@ -10,7 +10,7 @@ import { buildMeta } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/common/breadcrumbs";
 import { fireStatisticsDatasetJsonLd } from "@/components/common/json-ld";
 import { buildFireStatisticsDataset, STATISTICS_RETIREMENT_AGE_SCENARIOS } from "@/lib/seo/statistics";
-import { formatCurrencyFull } from "@/lib/utils/format";
+import { formatCurrencyFull, formatIsoDate } from "@/lib/utils/format";
 import { buildSynthesisSentence } from "@/lib/content-pages";
 
 /**
@@ -68,7 +68,7 @@ const SOURCES: SourceItem[] = dataset.sources.map((s, i) => ({
 export default function FireStatisticsPage() {
   const datasetJson = safeJsonLd(
     fireStatisticsDatasetJsonLd({
-      dateModified: dataset.dataVerifiedDate,
+      dateModified: dataset.lastUpdated,
       description: dataset.headline.text,
     })
   );
@@ -84,7 +84,7 @@ export default function FireStatisticsPage() {
           <BarChart3 className="h-6 w-6 text-[var(--brand-primary)]" aria-hidden="true" />
           <h1 className="text-4xl font-bold">FIRE Statistics</h1>
         </div>
-        <AuthorByline lastUpdated={dataset.dataVerifiedDate} className="mb-4" />
+        <AuthorByline lastUpdated={dataset.lastUpdated} className="mb-4" />
         <p className="text-muted-foreground">
           Target amounts for each FIRE type at the default inputs, ranked and compared across
           retirement ages. Every figure is calculated with the same formulas as the interactive
@@ -105,13 +105,9 @@ export default function FireStatisticsPage() {
         </p>
         <p className="text-base leading-relaxed">{dataset.headline.text}</p>
         <p className="text-xs text-muted-foreground">
-          Data verified{" "}
-          <time dateTime={dataset.dataVerifiedDate} className="font-medium text-foreground">
-            {new Date(dataset.dataVerifiedDate).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
+          Updated{" "}
+          <time dateTime={dataset.lastUpdated} className="font-medium text-foreground">
+            {formatIsoDate(dataset.lastUpdated)}
           </time>
           .
         </p>
