@@ -3,7 +3,6 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/providers';
 import { organizationJsonLd, publisherJsonLd } from '@/components/common/json-ld';
-import { FeedbackWidget } from '@/components/common/feedback-widget';
 import { resolveAdsenseClientId } from '@/lib/ads-env';
 
 const inter = Inter({
@@ -96,26 +95,6 @@ export default function RootLayout({
       <head>
         {/* Consent Mode v2 defaults — must precede every Google script. */}
         <script dangerouslySetInnerHTML={{ __html: consentDefault }} />
-        {_adsenseId && (
-          <>
-            {/* Speed up the first AdSense connection. Harmless when unused. */}
-            <link
-              rel="preconnect"
-              href="https://pagead2.googlesyndication.com"
-              crossOrigin="anonymous"
-            />
-            <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net" />
-            {/* AdSense loader — loaded UNCONDITIONALLY (not gated by the cookie
-                banner). Ad personalization is governed by Consent Mode above,
-                not by whether this script loads. Absent when env is unset. */}
-            <script
-              id="adsense-loader"
-              async
-              crossOrigin="anonymous"
-              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${_adsenseId}`}
-            />
-          </>
-        )}
       </head>
       <body className="min-h-full flex flex-col font-sans">
         <script
@@ -132,8 +111,6 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
         />
         <Providers>{children}</Providers>
-        {/* Site-wide floating feedback widget — reports bugs / feature requests */}
-        <FeedbackWidget />
       </body>
     </html>
   );

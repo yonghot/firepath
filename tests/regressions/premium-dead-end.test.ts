@@ -10,7 +10,7 @@ import { Footer } from '@/components/layouts/footer';
 import { CalculatorClient } from '@/components/features/calculator/calculator-client';
 import CalculatorPage from '@/app/(main)/page';
 import EmbedPage from '@/app/embed/page';
-import * as premiumModule from '@/app/(main)/premium/page';
+import * as premiumModule from '@/app/(utility)/premium/page';
 import sitemap from '@/app/sitemap';
 
 vi.mock('next/navigation', () => ({

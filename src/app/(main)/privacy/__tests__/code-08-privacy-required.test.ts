@@ -35,6 +35,10 @@ const PRIVACY_SOURCE = readFileSync(
   'utf-8'
 );
 const LAYOUT_SOURCE = readFileSync(path.join(ROOT, 'src', 'app', 'layout.tsx'), 'utf-8');
+const AD_LOADER_SOURCE = readFileSync(
+  path.join(ROOT, 'src', 'components', 'ads', 'ad-loader.tsx'),
+  'utf-8'
+);
 const BANNER_SOURCE = readFileSync(
   path.join(ROOT, 'src', 'components', 'common', 'cookie-consent-banner.tsx'),
   'utf-8'
@@ -84,8 +88,8 @@ describe('CODE-08 — privacy policy required elements', () => {
   it('only names hosts this repo actually contacts', () => {
     // The AdSense hosts and the GA tag host must be real call sites here, so the
     // policy can never drift into naming a vendor the site does not load.
-    expect(LAYOUT_SOURCE).toContain('pagead2.googlesyndication.com');
-    expect(LAYOUT_SOURCE).toContain('googleads.g.doubleclick.net');
+    expect(AD_LOADER_SOURCE).toContain('pagead2.googlesyndication.com');
+    expect(AD_LOADER_SOURCE).toContain('googleads.g.doubleclick.net');
     expect(BANNER_SOURCE).toContain('www.googletagmanager.com');
   });
 
@@ -129,23 +133,12 @@ describe('CODE-08 — denied-by-default ad storage ahead of the ad loader', () =
     }
   });
 
-  it('emits the Consent Mode defaults BEFORE the AdSense loader in the document', () => {
-    // Ordering matters: the very first ad request must already carry a consent
-    // signal. Both are rendered inline in <head>, so source order is document
-    // order.
-    // Anchor on the rendered JSX, not on prose: the comment above the consent
-    // snippet names adsbygoogle.js while explaining this very ordering rule, so
-    // a bare substring search would compare a comment against the real tag.
-    const defaultsAt = LAYOUT_SOURCE.indexOf('consentDefault }}');
-    const loaderAt = LAYOUT_SOURCE.indexOf(
-      'pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
-    );
-    expect(defaultsAt).toBeGreaterThan(-1);
-    expect(loaderAt).toBeGreaterThan(-1);
-    expect(
-      defaultsAt,
-      'the Consent Mode default script must precede the AdSense loader in layout.tsx'
-    ).toBeLessThan(loaderAt);
+  it('keeps the Consent Mode defaults inline in the root <head> and the AdSense loader out of the root layout', () => {
+    // The loader moved to the content-route layouts (K7), so it can no longer be
+    // compared with the defaults by source position in layout.tsx.
+    expect(LAYOUT_SOURCE).toMatch(/<head>[\s\S]*consentDefault \}\}[\s\S]*<\/head>/);
+    expect(LAYOUT_SOURCE).not.toContain('pagead2.googlesyndication.com');
+    expect(AD_LOADER_SOURCE).toContain('pagead2.googlesyndication.com/pagead/js/adsbygoogle.js');
   });
 
   it('grants ad storage only via a consent update, never by editing the defaults', () => {

@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Header } from '@/components/layouts/header';
 import MainLayout from '@/app/(main)/layout';
+import { SiteChrome } from '@/components/layouts/site-chrome';
 import { ERROR_CODES } from '@/constants/error-codes';
 
 vi.mock('next/navigation', () => ({
@@ -58,9 +59,9 @@ describe('K10: no Sign In entry point where signing in cannot work', () => {
     expect(withoutAuth).not.toContain('href="/login"');
   });
 
-  it('the layout passes authAvailable true when Supabase is configured', () => {
+  it('the shared chrome passes authAvailable true when Supabase is configured', () => {
     configureAuth(true);
-    const layout = MainLayout({ children: null }) as React.ReactElement<{ children: React.ReactElement<{ authAvailable?: boolean }>[] }>;
+    const layout = SiteChrome({ children: null }) as React.ReactElement<{ children: React.ReactElement<{ authAvailable?: boolean }>[] }>;
     const header = (Array.isArray(layout.props.children) ? layout.props.children : [layout.props.children])[0];
     expect(header.props.authAvailable).toBe(true);
   });

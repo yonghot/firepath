@@ -5,9 +5,10 @@
  *
  * Renders the AdSense <ins> unit only when NEXT_PUBLIC_ADSENSE_CLIENT_ID is set;
  * otherwise renders an inert, labelled placeholder (so the layout is honest and
- * the build/free site work with no ad env). The AdSense loader script is now
- * injected UNCONDITIONALLY in <head> (app/layout.tsx); ad personalization is
- * governed by Consent Mode v2, not by whether this script loads.
+ * the build/free site work with no ad env). The AdSense loader script is
+ * rendered by AdLoader in the content-route layout ((main)/layout.tsx), never
+ * on utility, embed, auth or error routes; ad personalization is governed by
+ * Consent Mode v2, not by whether this script loads.
  *
  * Placement policy: free-tier surfaces only (guides, result page). Never on the
  * calculator INPUT screen. Premium users render NOTHING — callers gate this via

@@ -23,9 +23,9 @@ export const PAGE_LOADERS: Record<string, () => Promise<PageModule>> = {
   '/methodology': () => import('@/app/(main)/methodology/page'),
   '/privacy': () => import('@/app/(main)/privacy/page'),
   '/terms': () => import('@/app/(main)/terms/page'),
-  '/contact': () => import('@/app/(main)/contact/page'),
-  '/premium': () => import('@/app/(main)/premium/page'),
-  '/embed-this': () => import('@/app/(main)/embed-this/page'),
+  '/contact': () => import('@/app/(utility)/contact/page'),
+  '/premium': () => import('@/app/(utility)/premium/page'),
+  '/embed-this': () => import('@/app/(utility)/embed-this/page'),
 };
 
 export function renderWithProviders(node: ReactNode): string {
