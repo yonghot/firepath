@@ -207,13 +207,14 @@ describe('content-pages — 부속P CODE-06 information-gain guard', () => {
 });
 
 describe('content-pages — 부속M K02 indexable-page-depth audit', () => {
-  // sitemap.ts's utility-page allowlist (/premium, /contact, /embed-this) —
+  // sitemap.ts's utility-page allowlist (/contact, /embed-this; /premium is
+  // listed in src/data/noindex-paths.json and therefore left out) —
   // real, hand-authored, non-templated pages that sit outside the
   // hasUniqueData-gated content registry (see that file's header comment).
   // Kept here as a literal, not an import, so this test independently
   // verifies the count sitemap.ts's own console.log reports rather than
   // trivially re-deriving it from the same source.
-  const SITEMAP_UTILITY_PAGE_COUNT = 3;
+  const SITEMAP_UTILITY_PAGE_COUNT = 2;
 
   // 부속W §2.4 correction: the original assertion here was ">= 15 indexable
   // URLs", which the registry satisfied only by counting the 7 DB-authored
@@ -239,10 +240,10 @@ describe('content-pages — 부속M K02 indexable-page-depth audit', () => {
     }
   });
 
-  it('deduped canonical-path count from getIndexablePages() + utility pages is >= 11 (statically routable pages only)', () => {
+  it('deduped canonical-path count from getIndexablePages() + utility pages is >= 10 (statically routable pages only)', () => {
     const uniqueCanonicalPaths = new Set(getIndexablePages().map((p) => p.canonicalPath));
     const totalIndexable = uniqueCanonicalPaths.size + SITEMAP_UTILITY_PAGE_COUNT;
-    expect(totalIndexable).toBeGreaterThanOrEqual(11);
+    expect(totalIndexable).toBeGreaterThanOrEqual(10);
   });
 
   it('every indexable page is hasUniqueData:true (never a flag-forced/bypassed thin page — 부속M K02 anti-pattern guard)', () => {

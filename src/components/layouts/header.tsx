@@ -13,10 +13,12 @@ const NAV_ITEMS = [
   { href: '/', label: 'Calculator' },
   { href: '/fire-guide', label: 'FIRE Guide' },
   { href: '/guide', label: 'Guides' },
-  { href: '/premium', label: 'Premium' },
 ];
 
-export function Header() {
+const PREMIUM_NAV_ITEM = { href: '/premium', label: 'Premium' };
+
+export function Header({ premiumAvailable = false }: { premiumAvailable?: boolean }) {
+  const navItems = premiumAvailable ? [...NAV_ITEMS, PREMIUM_NAV_ITEM] : NAV_ITEMS;
   const [open, setOpen] = useState(false);
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
@@ -38,7 +40,7 @@ export function Header() {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -78,7 +80,7 @@ export function Header() {
           </SheetTrigger>
           <SheetContent side="right" className="w-64">
             <nav className="flex flex-col gap-4 mt-8">
-              {NAV_ITEMS.map((item) => (
+              {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}

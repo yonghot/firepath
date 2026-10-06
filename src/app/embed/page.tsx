@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { CalculatorClient } from '@/components/features/calculator/calculator-client';
 import { AnswerBlock } from '@/components/common/answer-block';
 import { MAIN_CALCULATOR_ANSWER } from '@/lib/seo/geo-entities';
+import { isPremiumPurchasable } from '@/lib/premium-availability';
 import { EmbedAttribution } from './embed-attribution';
 import { EmbedResizeScript } from './embed-resize-script';
 
@@ -32,7 +33,7 @@ export default function EmbedPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-4">
       <EmbedResizeScript />
-      <CalculatorClient />
+      <CalculatorClient premiumAvailable={isPremiumPurchasable()} />
       <AnswerBlock entity={MAIN_CALCULATOR_ANSWER} idPrefix="embed-geo" className="mt-6" />
       <EmbedAttribution />
     </div>

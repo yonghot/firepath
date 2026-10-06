@@ -10,8 +10,8 @@ import Stripe from 'stripe';
  *
  * Every Stripe surface in FIREPath is ENV-GUARDED: when STRIPE_SECRET_KEY is
  * absent (the default for the free, open-source build), `getStripe()` returns
- * null and callers degrade gracefully (the upgrade button stays "Coming Soon",
- * checkout/portal/webhook routes 503). The production build MUST still succeed
+ * null and callers degrade gracefully (Premium links and the upgrade button are
+ * not rendered, checkout/portal/webhook routes 503). The production build MUST still succeed
  * and the free site MUST keep working with no Stripe env vars set.
  *
  * Never throw at module load — that would break `next build`.

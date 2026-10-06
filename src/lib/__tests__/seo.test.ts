@@ -48,8 +48,8 @@ const ROUTE_MATRIX: Record<string, { title: string; h1: string }> = {
     h1: 'FIRE Guides',
   },
   '/premium': {
-    title: 'Unlock Your FIRE Potential: Go Premium for $4.99/mo',
-    h1: 'Unlock Your FIRE Potential',
+    title: 'Premium Plans: FIREPath Calculator and Guides Are Free',
+    h1: 'Premium Plans',
   },
   '/contact': {
     title: 'Contact Us: Reach the FIREPath Support Team Directly',

@@ -14,6 +14,7 @@ import { EmbedSnippet } from '@/components/common/embed-snippet';
 import { AnswerBlock } from '@/components/common/answer-block';
 import { MAIN_CALCULATOR_ANSWER } from '@/lib/seo/geo-entities';
 import { getPremiumStatus } from '@/lib/subscription/premium';
+import { isPremiumPurchasable } from '@/lib/premium-availability';
 import { getFiguresLastUpdated } from '@/lib/figures';
 import { buildMeta } from '@/lib/seo';
 
@@ -83,7 +84,7 @@ export default async function CalculatorPage() {
         {/* 부속I T16 — renders nothing until localStorage has entries (client-only, no hydration mismatch). */}
         <RecentCalculations className="mb-6" />
 
-        <CalculatorClient />
+        <CalculatorClient premiumAvailable={isPremiumPurchasable()} />
 
         {/* Unified monetization stack — below calculator result output, env-gated.
             Includes CTA, programmatic ad, featured partners, sponsor, email capture.

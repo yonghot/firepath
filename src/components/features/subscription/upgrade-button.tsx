@@ -15,8 +15,8 @@ interface ApiErrorShape {
 /**
  * Premium upgrade / manage button.
  *
- * - When Stripe is NOT configured (`enabled=false`), renders a disabled
- *   "Coming Soon" button — preserving the existing free-build behavior.
+ * - When Stripe is NOT configured (`enabled=false`), renders nothing: a
+ *   control that cannot be used is not shown.
  * - When the user is already premium, offers a Customer Portal link.
  * - Otherwise, requires auth (redirects to /login) then starts Stripe Checkout.
  */
@@ -31,20 +31,7 @@ export function UpgradeButton({
   const { user, loading } = useAuth();
   const [busy, setBusy] = useState(false);
 
-  // Stripe unconfigured → keep the original "Coming Soon" affordance.
-  if (!enabled) {
-    return (
-      <>
-        <Button className="w-full mt-4" disabled>
-          <Crown className="h-4 w-4 mr-2" />
-          Coming Soon
-        </Button>
-        <p className="text-xs text-muted-foreground text-center mt-2">
-          Premium subscriptions launching soon.
-        </p>
-      </>
-    );
-  }
+  if (!enabled) return null;
 
   async function postJson(url: string): Promise<{ url: string }> {
     const res = await fetch(url, { method: 'POST' });

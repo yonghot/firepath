@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { ManageConsentLink } from '@/components/common/manage-consent-link';
 import { ClearMyDataLink } from '@/components/common/clear-my-data-link';
 
-export function Footer() {
+export function Footer({ premiumAvailable = false }: { premiumAvailable?: boolean }) {
   return (
     <footer className="border-t bg-muted/30">
       <div className="mx-auto max-w-7xl px-4 py-8">
@@ -24,7 +24,9 @@ export function Footer() {
               <h4 className="text-sm font-semibold">Product</h4>
               <nav className="flex flex-col gap-1">
                 <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Calculator</Link>
-                <Link href="/premium" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Premium</Link>
+                {premiumAvailable && (
+                  <Link href="/premium" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Premium</Link>
+                )}
                 <Link href="/embed-this" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Embed the Calculator</Link>
               </nav>
             </div>

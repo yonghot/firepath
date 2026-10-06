@@ -45,7 +45,7 @@ function bucketTargetAmount(targetAmount: number): string {
   return 'over_2.5m';
 }
 
-export function CalculatorClient() {
+export function CalculatorClient({ premiumAvailable = false }: { premiumAvailable?: boolean }) {
   const { input, output, interactionCount, setInput } = useCalculatorStore();
   const { scenarios, compareIds } = useScenarioStore();
   const [highlightedType, setHighlightedType] = useState<FIREType | null>(null);
@@ -207,19 +207,20 @@ export function CalculatorClient() {
                   and a distinct treatment from AdSlot's dashed placeholder. */}
               <ResultRelated hasResult={interactionCount > 0} output={output} />
 
-              {/* Monte Carlo Simulation */}
-              <MonteCarloPanel
-                input={input}
-                results={output.results}
-                isPremium={false}
-              />
-
-              {/* Portfolio Optimization */}
-              <PortfolioPanel
-                input={input}
-                results={output.results}
-                isPremium={false}
-              />
+              {premiumAvailable && (
+                <>
+                  <MonteCarloPanel
+                    input={input}
+                    results={output.results}
+                    isPremium={false}
+                  />
+                  <PortfolioPanel
+                    input={input}
+                    results={output.results}
+                    isPremium={false}
+                  />
+                </>
+              )}
             </>
           )}
         </div>

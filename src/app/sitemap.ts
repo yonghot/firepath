@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { getIndexablePages } from '@/lib/content-pages';
+import { isNoindexed } from '@/lib/noindex-paths';
 
 /**
  * 부속I T09 (strengthened by 부속P CODE-06) — sitemap enumerates ONLY pages
@@ -29,7 +30,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const seenPaths = new Set<string>();
   const contentPages: MetadataRoute.Sitemap = [];
   for (const page of getIndexablePages()) {
-    if (seenPaths.has(page.canonicalPath)) continue;
+    if (seenPaths.has(page.canonicalPath) || isNoindexed(page.canonicalPath)) continue;
     seenPaths.add(page.canonicalPath);
     contentPages.push({
       url: page.canonicalPath === '/' ? baseUrl : `${baseUrl}${page.canonicalPath}`,
@@ -45,10 +46,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // /result and /saved are intentionally excluded (personalized /
   // auth-gated content, already robots-noindexed in their own metadata).
   const utilityPages: MetadataRoute.Sitemap = [
-    { url: `${baseUrl}/premium`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/contact`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
-    { url: `${baseUrl}/embed-this`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
-  ];
+    { path: '/premium', priority: 0.6 },
+    { path: '/contact', priority: 0.5 },
+    { path: '/embed-this', priority: 0.5 },
+  ]
+    .filter(({ path }) => !isNoindexed(path))
+    .map(({ path, priority }) => ({
+      url: `${baseUrl}${path}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority,
+    }));
 
   const allEntries = [...contentPages, ...utilityPages];
 

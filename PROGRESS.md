@@ -1653,3 +1653,12 @@ postbuild (simulated prod) — [indexnow] submitted 18 urls — verified end-to-
 - **회귀 테스트**: `tests/regressions/guide-pages-missing-supabase-env.test.ts`(404 를 Next 의 `NEXT_HTTP_ERROR_FALLBACK;404` 로 한정, 허브 링크 전수 실존 라우트, 카드 href ⊂ `getIndexablePages()`, 표에 원문 경로 0·5행, 카피 과장 0, ItemList 5건 이상·`SITE_URL` 접두(env 로 호스트를 바꿔 하드코딩 검출), 카드 5개가 추적 링크 사용, 클릭 이벤트), `tests/regressions/footer-no-dead-links.test.ts`(푸터 링크 전수 실존 라우트·`/guide/what-is-` 0·앵커 id 실존·`scroll-mt-20`). Codex 변경분만 적용한 상태에서 5건 실패(원문 경로 셀, 4행 표, 카피, 하드코딩 호스트, scroll-mt) → 수정 후 통과.
 - **재발 방지**: 라우트 해석 헬퍼 `tests/regressions/helpers/app-routes.ts`(`src/app` 을 걸어 실존 정적 라우트 판정)로 이후 링크 검증이 같은 기준을 쓴다. DB 가이드 슬러그를 하드링크하지 않는다. `/guide` 라우트는 삭제하지 않는다.
 - **범위 밖(후속 커밋)**: 푸터의 `/premium` 링크는 커밋 2, 푸터 하단 행의 빌드 시점 연도·발행자 표기는 커밋 6, 허브 답변 문단의 "last verified" 날짜 문구는 커밋 15 에서 처리한다.
+
+### [2026-10-07] /premium 막다른 길 제거 + noindex 데이터 목록 (FIRE-02)
+- **증상**: 라이브 `/premium` 이 "Coming Soon" 비활성 버튼과 "Premium subscriptions launching soon." 을 보여주며 색인·sitemap 에 포함됐고, SERP 제목이 "Go Premium for $4.99/mo". 헤더·푸터 링크, 홈·`/embed` 의 "Unlock with Premium" 잠금 타일 2개도 같은 구매 불가 상품을 홍보. 프로덕션 env 에 `STRIPE_*` 가 없어 구매는 영구 불가.
+- **근본 원인**: Premium UI 가 Stripe 미구성 상태로 출하됐고, `calculator-client.tsx` 가 `isPremium={false}` 를 하드코딩해 잠금 타일이 항상 렌더됐다.
+- **조치(결제 로직 불변)**: `src/lib/premium-availability.ts` 의 `isPremiumPurchasable()` 이 기존 `isStripeConfigured() && isPremiumPriceConfigured()` 만 재사용. 구매 불가면 헤더·푸터의 Premium 링크, 홈·`/embed` 의 잠금 타일, `/premium` 의 가격표·"Most Popular"·"$4.99" 를 렌더하지 않고, `/premium` 은 "Premium plans are not offered right now" 한 문장과 홈 링크만 보인다. `UpgradeButton` 의 "Coming Soon" 분기는 null 렌더(죽은 CTA 제거 — 리더 보고 대상). 메타 제목·설명에서 가격 제거(`Premium Plans: FIREPath Calculator and Guides Are Free`). 라우트는 삭제하지 않았다.
+- **K8 데이터 기반 noindex**: `src/data/noindex-paths.json`({path, reason, since}) + `src/lib/noindex-paths.ts`(`isNoindexed`, `robotsForPath`). 페이지 robots 와 sitemap 이 이 목록 하나를 읽는다. 이 사이트는 템플릿 패밀리 인스턴스가 없어 K8 일괄 noindex 대상은 0이고, 목록에는 K1/K10 근거의 `/premium` 만 있다. 광고 로더 제외는 라우트 그룹 분리(후속 커밋)로 처리한다.
+- **현재 noindex 목록**: `/premium` — 구매 가능한 플랜이 없어 상태 문장 외 내용 없음(2026-10-07). **복원 절차**: `src/data/noindex-paths.json` 에서 해당 항목 삭제 → 배포 → IndexNow 로 해당 URL 제출.
+- **회귀 테스트**: `tests/regressions/premium-dead-end.test.ts`(Stripe 미설정/설정 양쪽에서 헤더·푸터·계산기·홈·embed·`/premium` 렌더, 메타 robots, sitemap 10개, noindex 목록 단위), `tests/regressions/no-visible-draft-placeholders.test.ts`(K1 소스 스캔, homeequitycard-compare 55d3827 에서 이식). 기존 `seo.test.ts` 의 `/premium` 행렬 항목과 `content-pages.test.ts` 의 sitemap 유틸 페이지 수(3→2, 하한 11→10)는 새 현실에 맞게 정정.
+

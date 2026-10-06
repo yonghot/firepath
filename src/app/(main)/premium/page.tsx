@@ -1,19 +1,25 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check, X, Crown } from 'lucide-react';
 import { UpgradeButton } from '@/components/features/subscription/upgrade-button';
-import { isStripeConfigured, isPremiumPriceConfigured } from '@/lib/stripe/server';
+import { isPremiumPurchasable } from '@/lib/premium-availability';
+import { robotsForPath } from '@/lib/noindex-paths';
 import { getPremiumStatus } from '@/lib/subscription/premium';
 import { buildMeta } from '@/lib/seo';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
 
-export const metadata: Metadata = buildMeta({
-  title: 'Unlock Your FIRE Potential: Go Premium for $4.99/mo',
-  description:
-    'Upgrade to FIREPath Premium for Monte Carlo simulations, portfolio optimization, unlimited saves, and PDF reports. $4.99/month.',
-  path: '/premium',
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMeta({
+    title: 'Premium Plans: FIREPath Calculator and Guides Are Free',
+    description: isPremiumPurchasable()
+      ? 'Compare the free FIREPath plan with Premium: Monte Carlo simulations, portfolio optimization, unlimited saves, and PDF reports.'
+      : 'Premium plans are not offered right now. The FIREPath calculator, guides and data downloads are free to use.',
+    path: '/premium',
+    robots: robotsForPath('/premium'),
+  });
+}
 
 const FEATURES = [
   { name: 'FIRE Calculator', free: true, premium: true },
@@ -40,9 +46,23 @@ function FeatureCheck({ value }: { value: boolean | string }) {
 }
 
 export default async function PremiumPage() {
-  // Stripe is "live" only when the secret key AND the premium price id are set.
-  // Otherwise the upgrade button stays a disabled "Coming Soon" (free build).
-  const stripeEnabled = isStripeConfigured() && isPremiumPriceConfigured();
+  if (!isPremiumPurchasable()) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-12">
+        <Breadcrumbs items={[{ name: 'Premium', path: '/premium' }]} />
+        <h1 className="text-4xl font-bold">Premium Plans</h1>
+        <p className="text-muted-foreground mt-3 max-w-xl">
+          Premium plans are not offered right now. The calculator, guides and data downloads are free.
+        </p>
+        <p className="mt-6">
+          <Link href="/" className="font-medium underline underline-offset-4 hover:text-primary">
+            Open the calculator
+          </Link>
+        </p>
+      </div>
+    );
+  }
+
   const { isPremium } = await getPremiumStatus();
 
   return (
@@ -53,7 +73,7 @@ export default async function PremiumPage() {
           <Crown className="h-3 w-3 mr-1" />
           Premium
         </Badge>
-        <h1 className="text-4xl font-bold">Unlock Your FIRE Potential</h1>
+        <h1 className="text-4xl font-bold">Premium Plans</h1>
         <p className="text-muted-foreground mt-2">
           Advanced simulations and unlimited saves for serious FIRE planners.
         </p>
@@ -94,7 +114,7 @@ export default async function PremiumPage() {
                 <FeatureCheck value={f.premium} />
               </div>
             ))}
-            <UpgradeButton enabled={stripeEnabled} isPremium={isPremium} />
+            <UpgradeButton enabled isPremium={isPremium} />
           </CardContent>
         </Card>
       </div>

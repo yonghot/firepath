@@ -1,0 +1,7 @@
+[
+  {
+    "path": "/premium",
+    "reason": "No paid plan can be purchased in this deployment, so the page holds only a status line and nothing a search result should lead to",
+    "since": "2026-10-07"
+  }
+]

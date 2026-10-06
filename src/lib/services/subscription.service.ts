@@ -32,7 +32,7 @@ export class SubscriptionService {
   /**
    * Start a Stripe Checkout session (mode: subscription) for the premium price.
    * ENV-GUARDED: throws STRIPE_NOT_CONFIGURED (→ 503) when Stripe keys or the
-   * price id are absent, so the UI shows "coming soon" rather than crashing.
+   * price id are absent; the UI never offers checkout in that state.
    */
   async createCheckout(userId: string, userEmail?: string) {
     const stripe = getStripe();
