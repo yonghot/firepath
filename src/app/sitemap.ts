@@ -45,6 +45,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // FIRE-education content graph the hasUniqueData gate governs.
   // /result and /saved are intentionally excluded (personalized /
   // auth-gated content, already robots-noindexed in their own metadata).
+  // A path listed in src/data/noindex-paths.json is dropped by the filter below.
   const utilityPages: MetadataRoute.Sitemap = [
     { path: '/premium', priority: 0.6 },
     { path: '/contact', priority: 0.5 },

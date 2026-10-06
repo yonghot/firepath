@@ -3,6 +3,7 @@ import { Mail } from 'lucide-react';
 import { ContactForm } from '@/components/features/contact/contact-form';
 import { buildMeta } from '@/lib/seo';
 import { PUBLISHER } from '@/lib/site';
+import { robotsForPath } from '@/lib/noindex-paths';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
 
 export const metadata: Metadata = buildMeta({
@@ -10,6 +11,7 @@ export const metadata: Metadata = buildMeta({
   description:
     'Email the FIREPath publisher with a question, feedback or a correction. Include the page address and the figure or statement in question.',
   path: '/contact',
+  robots: robotsForPath('/contact'),
 });
 
 export default function ContactPage() {

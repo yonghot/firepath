@@ -3,5 +3,15 @@
     "path": "/premium",
     "reason": "No paid plan can be purchased in this deployment, so the page holds only a status line and nothing a search result should lead to",
     "since": "2026-10-07"
+  },
+  {
+    "path": "/contact",
+    "reason": "Utility page with the publisher email and an optional message form; it has no content of its own for a search result to lead to",
+    "since": "2026-10-07"
+  },
+  {
+    "path": "/embed-this",
+    "reason": "Utility page that only holds a copy-and-paste embed snippet for site owners; it has no guide content of its own",
+    "since": "2026-10-07"
   }
 ]

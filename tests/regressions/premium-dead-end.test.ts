@@ -107,7 +107,7 @@ describe('K1/K10: a plan that cannot be bought is not advertised', () => {
   it('the sitemap lists no /premium URL and still lists the content pages', () => {
     const urls = sitemap().map((entry) => entry.url);
     expect(urls.filter((url) => url.includes('/premium'))).toEqual([]);
-    expect(urls).toHaveLength(10);
+    expect(urls).toHaveLength(8);
     expect(urls.some((url) => url.endsWith('/fire-guide'))).toBe(true);
   });
 });

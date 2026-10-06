@@ -2,12 +2,14 @@ import type { Metadata } from 'next';
 import { EmbedSnippet } from '@/components/common/embed-snippet';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
 import { buildMeta } from '@/lib/seo';
+import { robotsForPath } from '@/lib/noindex-paths';
 
 export const metadata: Metadata = buildMeta({
   title: 'Embed the FIRE Calculator: Free Widget for Your Site',
   description:
     'Add the free FIREPath calculator to your own website or blog with a simple iframe embed. Copy the snippet — includes the attribution link.',
   path: '/embed-this',
+  robots: robotsForPath('/embed-this'),
 });
 
 export default function EmbedThisPage() {
