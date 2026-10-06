@@ -3,11 +3,8 @@
 /**
  * ResultRelated — internal sibling-link module at the result moment (부속I T06).
  *
- * NOT the same thing as src/components/common/related-calculators.tsx (that
- * component links the 4 sibling COST-CALCULATOR SITES and fires
- * outbound_click — a cross-SITE module). This component links INTERNAL
- * FIREPath content pages (FIRE-type deep dives, guides, the healthcare
- * bridge tool) and fires related_click {link_module:'result_related'}.
+ * Links INTERNAL FIREPath content pages (FIRE-type deep dives, guides, the
+ * healthcare bridge tool) and fires related_click {link_module:'result_related'}.
  *
  * Renders ONLY after a real user-driven result exists — gated on the same
  * hasUserInteracted signal T03 uses (interactionCount > 0 from

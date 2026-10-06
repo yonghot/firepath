@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { Flame } from 'lucide-react';
 import { CalculatorClient } from '@/components/features/calculator/calculator-client';
 import { FAQSection } from '@/components/common/faq-section';
-import { RelatedCalculators } from '@/components/common/related-calculators';
 import { calculatorAppJsonLd, breadcrumbJsonLd } from '@/components/common/json-ld';
 import { ResultMonetization } from '@/components/monetization/ResultMonetization';
 import { EmailMyResultsGate } from '@/components/features/calculator/email-my-results-gate';
@@ -115,8 +114,6 @@ export default async function CalculatorPage() {
       <div className="mx-auto max-w-3xl px-4 pb-12">
         <EmbedSnippet />
       </div>
-
-      <RelatedCalculators />
     </>
   );
 }
