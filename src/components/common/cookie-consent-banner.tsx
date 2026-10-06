@@ -28,6 +28,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { isCanonicalProductionHost } from '@/lib/site';
 import { Cookie } from 'lucide-react';
 
 const CONSENT_KEY = 'firepath_cookie_consent';
@@ -80,33 +81,6 @@ function updateConsent(state: typeof GRANTED): void {
   window.gtag('consent', 'update', state);
 }
 
-/**
- * True when the current hostname is the canonical production domain
- * (부속I T01 — gates GA4 initialization to kill preview/localhost/mirror
- * noise, which was ~96% of measured sessions). Requires BOTH:
- *   - NEXT_PUBLIC_VERCEL_ENV === 'production' (Vercel-injected; absent on
- *     Preview/Development builds and on localhost)
- *   - window.location.hostname matches the canonical host from
- *     NEXT_PUBLIC_APP_URL (with or without the "www." prefix)
- */
-function isCanonicalProductionHost(): boolean {
-  if (typeof window === 'undefined') return false;
-  if (process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production') return false;
-
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-  if (!appUrl) return false;
-
-  let canonicalHost: string;
-  try {
-    canonicalHost = new URL(appUrl).hostname;
-  } catch {
-    return false;
-  }
-
-  const host = window.location.hostname;
-  return host === canonicalHost || host === `www.${canonicalHost}`;
-}
-
 /** NEXT_PUBLIC_GA_DEBUG=1 is set only on Vercel Preview deploys — lets GA
  *  load there in a debug_mode + internal-traffic posture so preview visits
  *  land in DebugView and the internal filter, never in production reports. */
@@ -132,7 +106,10 @@ function initGA(): void {
   if (!measurementId) return;
   if (typeof window === 'undefined') return;
 
-  const canonical = isCanonicalProductionHost();
+  const canonical = isCanonicalProductionHost(
+    window.location.hostname,
+    process.env.NEXT_PUBLIC_VERCEL_ENV,
+  );
   const debugPreview = isGaDebugPreview();
   if (!canonical && !debugPreview) return;
 
