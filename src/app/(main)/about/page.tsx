@@ -114,7 +114,7 @@ export default function AboutPage() {
             </div>
             <p className="text-sm text-muted-foreground">
               When a FIRE target cannot be reached by age 80 under your inputs,
-              we show &ldquo;80+&rdquo; — not a fabricated date. Projections are
+              we show &ldquo;80+&rdquo; instead of a date. Projections are
               estimates, not guarantees.
             </p>
           </div>

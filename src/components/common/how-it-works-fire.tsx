@@ -125,7 +125,7 @@ export function HowItWorksFire() {
             .
           </li>
           <li>
-            Starting from the default net worth, the engine compounds
+            Starting from the default net worth, the calculator compounds
             annual savings at the nominal return, year by year, until the
             portfolio crosses each FIRE type&apos;s target — that crossing
             year becomes the &quot;reach age&quot; shown on the chart and
@@ -145,9 +145,8 @@ export function HowItWorksFire() {
       </div>
 
       <p className="text-xs text-muted-foreground border-t border-border pt-4">
-        Figures on this page are computed live by the same calculation
-        engine that powers the calculator above, using its default input
-        values. Core assumption defaults (return, inflation, SWR) were last
+        Figures on this page are calculated with the same formulas as the
+        calculator above, using its default input values. Core assumption defaults (return, inflation, SWR) were last
         verified {CORE_ASSUMPTIONS_LAST_VERIFIED} — see{' '}
         <Link href="/methodology" className="underline underline-offset-2">
           methodology &amp; sources

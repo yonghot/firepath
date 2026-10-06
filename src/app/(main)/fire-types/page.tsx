@@ -22,7 +22,7 @@ import { CORE_ASSUMPTIONS_LAST_VERIFIED } from "@/lib/figures";
 export const metadata: Metadata = buildMeta({
   title: "FIRE Types Explained: Lean, Fat, Coast and Barista",
   description:
-    "Understand all 5 FIRE types — Lean, Regular, Fat, Coast, Barista — with real formulas, worked examples, and computed targets from the FIREPath engine.",
+    "Understand all 5 FIRE types — Lean, Regular, Fat, Coast, Barista — with formulas, worked examples, and target amounts at default inputs.",
   path: "/fire-types",
   ogType: "article",
 });
@@ -334,7 +334,7 @@ export default function FireTypesPage() {
           costs, downsizing, or moving to a lower cost-of-living area.
         </p>
         <p className="font-mono text-sm bg-muted/50 rounded px-3 py-2">
-          Target = (annualExpenses × 0.6) ÷ SWR
+          Target = (annual expenses × 0.6) ÷ SWR
         </p>
         <p>
           At the default {(safeWithdrawalRate * 100).toFixed(0)}% SWR and{" "}
@@ -369,7 +369,7 @@ export default function FireTypesPage() {
           defined.
         </p>
         <p className="font-mono text-sm bg-muted/50 rounded px-3 py-2">
-          Target = annualExpenses ÷ SWR
+          Target = annual expenses ÷ SWR
         </p>
         <p>
           This is the famous &quot;25× rule&quot; at a 4% SWR: spend $40,000/yr → need $1,000,000.
@@ -416,7 +416,7 @@ export default function FireTypesPage() {
           a larger safety margin.
         </p>
         <p className="font-mono text-sm bg-muted/50 rounded px-3 py-2">
-          Target = (annualExpenses × 1.5) ÷ SWR
+          Target = (annual expenses × 1.5) ÷ SWR
         </p>
         <p>
           At the defaults:{" "}
@@ -447,14 +447,14 @@ export default function FireTypesPage() {
           compound to the Regular FIRE target by your chosen retirement age.
         </p>
         <p className="font-mono text-sm bg-muted/50 rounded px-3 py-2">
-          CoastTarget = RegularTarget ÷ (1 + realReturn)^yearsToRetirement
+          Coast target = Regular FIRE target ÷ (1 + real return)^(years to retirement)
         </p>
         <p>
           In the default scenario (retire at {retirementAge}, real return ≈{" "}
           {((((1 + DEFAULT_INPUT.expectedReturn) / (1 + DEFAULT_INPUT.inflation) - 1) * 100)).toFixed(1)}
           %):{" "}
           <span className="font-mono text-sm">
-            {fmt(defaultResults.regular.targetAmount)} ÷ (1 + realReturn)^
+            {fmt(defaultResults.regular.targetAmount)} ÷ (1 + real return)^
             {retirementAge - currentAge} = {fmt(defaultResults.coast.targetAmount)}
           </span>
           .
@@ -487,7 +487,7 @@ export default function FireTypesPage() {
           benefits even for part-time work.
         </p>
         <p className="font-mono text-sm bg-muted/50 rounded px-3 py-2">
-          Target = (annualExpenses × 0.5) ÷ SWR
+          Target = (annual expenses × 0.5) ÷ SWR
         </p>
         <p>
           At the defaults:{" "}
@@ -514,13 +514,13 @@ export default function FireTypesPage() {
 
       {/* Methodology note */}
       <p className="text-xs text-muted-foreground border-t border-border pt-4">
-        <strong>Methodology note:</strong> All targets computed by the FIREPath engine using the
+        <strong>Methodology note:</strong> All targets use the
         formula <span className="font-mono">(expenses × multiplier) ÷ SWR</span>, with Coast FIRE
         discounted by the Fisher real return over years to retirement. Multipliers sourced from
         published FIRE literature (see sources). Monthly income ={" "}
-        <span className="font-mono">(target × SWR) ÷ 12</span>. Full derivation at{" "}
+        <span className="font-mono">(target × SWR) ÷ 12</span>. The full derivation is on{" "}
         <Link href="/methodology" className="underline underline-offset-2">
-          /methodology
+          the methodology page
         </Link>
         .
       </p>

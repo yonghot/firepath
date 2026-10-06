@@ -21,7 +21,7 @@ import { CORE_ASSUMPTIONS_LAST_VERIFIED } from "@/lib/figures";
 export const metadata: Metadata = buildMeta({
   title: "Healthcare Bridge Estimator: Your Cost Before Medicare",
   description:
-    "Estimate private health insurance cost from early retirement to Medicare at 65. Enter your own premium — no ACA subsidies fabricated.",
+    "Estimate private health insurance cost from early retirement to Medicare at 65. Enter your own premium; ACA subsidies are not estimated.",
   path: "/healthcare-bridge",
 });
 
@@ -50,7 +50,7 @@ const SOURCES: SourceItem[] = [
     id: 4,
     label: "KFF — 2023 Employer Health Benefits Survey",
     url: "https://www.kff.org/health-costs/report/2023-employer-health-benefits-survey/",
-    note: "Historical context for annual premium growth rates; not used to fabricate individual estimates.",
+    note: "Historical context for annual premium growth rates, not a forecast of your own premium.",
   },
 ];
 
@@ -108,7 +108,7 @@ const HEALTHCARE_BRIDGE_ANSWER: GeoAnswerEntity | null = exampleResult
           ],
         })),
       factors: [
-        "Your annual health insurance premium (user-supplied, never fabricated)",
+        "Your annual health insurance premium (you enter it; the tool does not estimate one)",
         "Annual premium growth rate — historically ~5%/yr per KFF survey data",
         "Number of bridge years between your retirement age and Medicare eligibility at 65",
         "Whether you have access to COBRA continuation coverage (18-36 months, employer-specific)",
@@ -137,7 +137,7 @@ const HEALTHCARE_BRIDGE_FAQ: FaqItem[] = [
   },
   {
     q: "Does this tool calculate my ACA subsidy?",
-    a: "No, and it never will. ACA subsidies depend on your Modified Adjusted Gross Income, household size, plan tier, and state — a tool that guesses a subsidy from age and income alone is fabricating a number. Get a real subsidy quote at healthcare.gov.",
+    a: "No. ACA subsidies depend on your Modified Adjusted Gross Income, household size, plan tier, and state, so a figure guessed from age and income alone would not be reliable. Get a real subsidy quote at healthcare.gov.",
   },
   {
     q: "What premium number should I enter?",
@@ -165,7 +165,7 @@ const toolJsonLd = {
   applicationCategory: "FinanceApplication",
   operatingSystem: "Web",
   description:
-    "Informational tool to estimate the cost of bridging private health insurance from early retirement to Medicare eligibility at age 65. User-supplied premiums; no ACA subsidies fabricated.",
+    "Informational tool to estimate the cost of bridging private health insurance from early retirement to Medicare eligibility at age 65. User-supplied premiums; ACA subsidies are not estimated.",
   offers: {
     "@type": "Offer",
     price: "0",
@@ -197,8 +197,8 @@ export default function HealthcareBridgePage() {
         <p className="text-muted-foreground">
           One of the biggest hidden costs in early retirement is health insurance. If you retire
           before 65, you need private coverage until Medicare kicks in. This tool helps you estimate
-          that bridge cost using <strong>your own premium figures</strong> — we never fabricate
-          subsidy amounts.
+          that bridge cost using <strong>your own premium figures</strong>. It does not estimate
+          ACA subsidies.
         </p>
       </div>
 
@@ -241,11 +241,11 @@ export default function HealthcareBridgePage() {
           compounding annual increases:
         </p>
         <p className="font-mono text-sm">
-          totalCost = premium × ((1 + growthRate)^bridgeYears − 1) / growthRate
+          Total cost = premium × ((1 + growth rate)^(bridge years) − 1) ÷ growth rate
         </p>
         <p>
           When no growth rate is provided (or it is 0%), the formula simplifies to{" "}
-          <span className="font-mono text-sm">premium × bridgeYears</span>.
+          <span className="font-mono text-sm">premium × bridge years</span>.
         </p>
         <p>All computation happens entirely in your browser — no data is sent to a server.</p>
 
@@ -301,8 +301,8 @@ export default function HealthcareBridgePage() {
         <ul>
           <li>
             <strong>No ACA subsidy calculations.</strong> Subsidy amounts depend on your Modified
-            Adjusted Gross Income, household size, plan tier, and state. Any tool that generates a
-            subsidy from age and income alone is fabricating a figure. We do not fabricate. Get
+            Adjusted Gross Income, household size, plan tier, and state. A figure generated from
+            age and income alone would be a guess, so this tool does not produce one. Get
             real quotes at{" "}
             <a href="https://www.healthcare.gov" target="_blank" rel="noopener noreferrer">
               healthcare.gov

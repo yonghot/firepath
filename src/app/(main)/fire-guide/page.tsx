@@ -71,7 +71,7 @@ function SavingsRateTable() {
     <div className="mt-4 overflow-x-auto rounded-xl border border-border">
       <table className="w-full text-sm border-collapse">
         <caption className="sr-only">
-          Regular FIRE reach age by savings rate, computed by this calculator&apos;s engine at
+          Regular FIRE reach age by savings rate, calculated with this calculator&apos;s formulas at
           default age {DEFAULT_INPUT.currentAge}, {formatCurrencyFull(DEFAULT_INPUT.annualIncome)}/yr
           income, and {formatCurrencyFull(DEFAULT_INPUT.annualExpenses)}/yr expenses.
         </caption>
@@ -107,7 +107,7 @@ function SavingsRateTable() {
         </tbody>
       </table>
       <p className="px-3 py-2 text-xs text-muted-foreground border-t border-border">
-        Computed live by this calculator&apos;s engine, holding age ({DEFAULT_INPUT.currentAge}),
+        Calculated with this calculator&apos;s formulas, holding age ({DEFAULT_INPUT.currentAge}),
         income ({formatCurrencyFull(DEFAULT_INPUT.annualIncome)}/yr), expenses (
         {formatCurrencyFull(DEFAULT_INPUT.annualExpenses)}/yr), and a{' '}
         {formatPercent(DEFAULT_INPUT.expectedReturn)} nominal return constant — only the

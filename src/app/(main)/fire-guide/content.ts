@@ -60,7 +60,7 @@ export const GUIDE_FACTS: GuideFact[] = [
     sourceUrl: 'https://www.healthcare.gov/retirees/',
   },
   {
-    fact: 'Compounding, not income, is the engine that powers early retirement',
+    fact: 'Compounding, not income, is what drives early retirement',
     detail:
       "Investor.gov (the SEC's investor-education site) frames long-term wealth building as regular contributions plus time producing compound growth — the same mechanism behind every projection this calculator runs (see Methodology). Raising your savings RATE shortens the years needed far more reliably than raising income alone, because a higher rate compounds a larger base sooner.",
     sourceUrl: 'https://www.investor.gov/introduction-investing/investing-basics/glossary/compound-interest',
@@ -133,7 +133,7 @@ export const GUIDE_SECTIONS: GuideSection[] = [
   {
     heading: 'Your Savings Rate: The Variable That Actually Moves Your Timeline',
     prose:
-      "Of every input in the FIRE formula, savings rate has the largest effect on how many years you work — far more than a raise, because a raise that gets fully spent doesn't change your timeline at all. The mechanism is compounding: a higher savings rate means more money invested sooner, which has more years to compound before you need it. The table below uses this calculator's own engine — the same formula behind every result on this site — to show Regular FIRE reach age at the site's default $80,000 income and $40,000 expenses, varying only the savings rate.",
+      "Of every input in the FIRE formula, savings rate has the largest effect on how many years you work — far more than a raise, because a raise that gets fully spent doesn't change your timeline at all. The mechanism is compounding: a higher savings rate means more money invested sooner, which has more years to compound before you need it. The table below uses this calculator's own formulas — the same ones behind every result on this site — to show Regular FIRE reach age at the site's default $80,000 income and $40,000 expenses, varying only the savings rate.",
     bullets: [
       "Two people with identical income can reach FIRE decades apart purely because of savings rate, not income level.",
       'Cutting expenses moves the needle twice: it lowers your FIRE target AND (if income stays flat) raises your savings rate.',

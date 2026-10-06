@@ -215,7 +215,7 @@ export default function MethodologyPage() {
           inflation rate, the real return is:
         </p>
         <p className="font-mono text-sm">
-          realReturn = (1 + expectedReturn) / (1 + inflation) − 1
+          Real return = (1 + expected return) ÷ (1 + inflation) − 1
         </p>
 
         <h2>4. Year-by-year compounding</h2>
@@ -224,11 +224,10 @@ export default function MethodologyPage() {
           (annual income × savings rate) and grow the balance by the real return.
           We project from your current age through age 80 and find the first age at
           which your net worth reaches each FIRE target. If a target isn&apos;t
-          reached by age 80, the result honestly shows &quot;80+&quot; rather than a
-          fabricated date.
+          reached by age 80, the result shows &quot;80+&quot; instead of a date.
         </p>
         <p className="font-mono text-sm">
-          nextNetWorth = netWorth × (1 + realReturn) + annualSavings
+          Next year&apos;s net worth = this year&apos;s net worth × (1 + real return) + annual savings
         </p>
 
         <h2>5. Monthly passive income</h2>

@@ -145,8 +145,8 @@ export function HealthcareBridgeCalculator() {
         <div className="flex gap-2">
           <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
           <p>
-            <strong>Informational estimate only.</strong> Annual premiums are user-supplied. We do{' '}
-            <strong>not</strong> fabricate ACA subsidy figures. Your actual premium, subsidy, and
+            <strong>Informational estimate only.</strong> Annual premiums are user-supplied. This tool does{' '}
+            <strong>not</strong> estimate ACA subsidies. Your actual premium, subsidy, and
             eligibility depend on income, household size, plan, and state.{' '}
             <a
               href="https://www.healthcare.gov"

@@ -34,7 +34,7 @@ import { buildSynthesisSentence } from "@/lib/content-pages";
 export const metadata: Metadata = buildMeta({
   title: "FIRE Statistics: FIRE Target Amounts Compared 2026",
   description:
-    "Original FIRE-target statistics computed live from the FIREPath engine — ranked by FIRE type, compared across retirement ages, with downloadable JSON/CSV data.",
+    "FIRE target amounts at default inputs, ranked by FIRE type and compared across retirement ages, with downloadable JSON and CSV data.",
   path: "/fire-statistics",
   ogType: "article",
 });
@@ -62,7 +62,7 @@ const SOURCES: SourceItem[] = dataset.sources.map((s, i) => ({
   id: i + 1,
   label: s.label,
   url: s.url,
-  note: "Underlying assumption cited on /methodology.",
+  note: "Underlying assumption described on the methodology page.",
 }));
 
 export default function FireStatisticsPage() {
@@ -86,9 +86,9 @@ export default function FireStatisticsPage() {
         </div>
         <AuthorByline lastUpdated={dataset.dataVerifiedDate} className="mb-4" />
         <p className="text-muted-foreground">
-          Original statistics aggregated from the same FIRE calculation engine that powers the
-          interactive calculator — every figure below is a real computed value, not a fabricated
-          or estimated placeholder.
+          Target amounts for each FIRE type at the default inputs, ranked and compared across
+          retirement ages. Every figure is calculated with the same formulas as the interactive
+          calculator.
         </p>
       </div>
 
@@ -268,12 +268,12 @@ export default function FireStatisticsPage() {
       </section>
 
       <p className="text-xs text-muted-foreground border-t border-border pt-4">
-        <strong>Methodology note:</strong> All figures computed live by the FIREPath engine
-        (<span className="font-mono">calculateFIRE()</span>) using the same formulas documented at{" "}
+        <strong>Methodology note:</strong> All figures are calculated with the same formulas as
+        the calculator, documented on{" "}
         <Link href="/methodology" className="underline underline-offset-2">
-          /methodology
+          the methodology page
         </Link>
-        . No figure on this page is estimated, rounded from a third-party source, or fabricated.
+        . They are scenario figures at default inputs, not survey data.
       </p>
 
       <DisclaimerBanner />
