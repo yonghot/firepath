@@ -3,6 +3,7 @@ import { Mail } from 'lucide-react';
 import { ContactForm } from '@/components/features/contact/contact-form';
 import { buildMeta } from '@/lib/seo';
 import { PUBLISHER } from '@/lib/site';
+import { isMessageEndpointConfigured } from '@/lib/feedback-endpoint';
 import { robotsForPath } from '@/lib/noindex-paths';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
 
@@ -15,7 +16,7 @@ export const metadata: Metadata = buildMeta({
 });
 
 export default function ContactPage() {
-  const formEnabled = Boolean(process.env.FEEDBACK_ENDPOINT?.trim());
+  const formEnabled = isMessageEndpointConfigured();
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">

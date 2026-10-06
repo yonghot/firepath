@@ -13,7 +13,7 @@
  *
  * The list must also be specific to gofirepath.com: ten sibling sites share one
  * publisher id, so the vendors pinned below are the ones THIS repo really
- * contacts — the AdSense loader in src/app/layout.tsx, the GA tag injected by
+ * contacts — the AdSense loader in src/components/ads/ad-loader.tsx, the GA tag injected by
  * cookie-consent-banner.tsx, and Vercel always, plus the Supabase browser
  * client and the Stripe-hosted checkout redirect only where those features are
  * configured (a vendor for a feature that cannot be used is a false statement).
@@ -102,6 +102,11 @@ describe('CODE-08 — privacy policy required elements', () => {
 
   it('does not claim the opt-out removes advertising', () => {
     expect(PRIVACY_SOURCE).toMatch(/Opting out does not remove advertising/);
+  });
+
+  it('names Google Funding Choices as the EEA/UK/CH consent screen and says what Decline does', () => {
+    expect(PRIVACY_SOURCE).toContain('Funding Choices');
+    expect(PRIVACY_SOURCE).toMatch(/Decline tells Google to deny/);
   });
 
   it('keeps the vendor list honest when no ad client is configured', () => {

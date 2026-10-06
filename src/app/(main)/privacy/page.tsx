@@ -7,6 +7,7 @@ import { PUBLISHER } from '@/lib/site';
 import { isSupabaseConfigured } from '@/lib/supabase/client';
 import { isPremiumPurchasable } from '@/lib/premium-availability';
 import { adsEnabled } from '@/lib/ads-env';
+import { isMessageEndpointConfigured } from '@/lib/feedback-endpoint';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -29,10 +30,13 @@ export default function PrivacyPage() {
   // Accounts and billing exist only where Supabase / a purchasable plan are configured.
   const ACCOUNTS = isSupabaseConfigured();
   const PAYMENTS = isPremiumPurchasable();
+  // Same flag the contact page uses to show its form: messages are collected only when a collector is configured.
+  const MESSAGES = isMessageEndpointConfigured();
   const SECTION_2 = [
     ACCOUNTS && 'account',
     ACCOUNTS && 'saved',
     PAYMENTS && 'payment',
+    MESSAGES && 'messages',
     'usage',
     'log',
     'local',
@@ -108,17 +112,50 @@ export default function PrivacyPage() {
             </>
           )}
 
+          {MESSAGES && (
+            <>
+              <h3>{sub2('messages')}. Messages You Send Us</h3>
+              <p>
+                If you use the contact form, we collect the <strong>name</strong>,{' '}
+                <strong>email address</strong> and <strong>message</strong> you type. If you send
+                feedback with the Feedback button, we collect your message, the type of feedback
+                you choose, an optional email address, the page address you were on (the path and
+                query string, without anything after a #), and your browser&apos;s user agent.
+                Our server forwards these messages to a collection service configured by{' '}
+                {PUBLISHER.name}, the publisher, which uses them to answer you and to correct or
+                improve the site. They are not sent to advertisers. Writing to{' '}
+                <a href={`mailto:${PUBLISHER.email}`}>{PUBLISHER.email}</a> by email needs neither form.
+              </p>
+            </>
+          )}
+
           <h3>{sub2('usage')}. Usage and Analytics Data</h3>
           <p>
             We use <strong>Google Analytics 4 (GA4)</strong> to collect anonymized usage data,
             including pages visited, session duration, browser type, operating system, and
             approximate geographic location (country/region level). GA4 uses cookies to
             distinguish users. This data helps us understand how the calculator is used and
-            improve the product. How analytics is initialized depends on your location: visitors
-            in the EEA, UK, and Switzerland are asked for consent via the cookie banner before
-            analytics cookies are set; visitors elsewhere (e.g. the United States) are subject
-            to a notice-and-opt-out model under which analytics loads on the first visit and
-            you may opt out at any time.
+            improve the product. How analytics starts depends on your location.{' '}
+            {ADS_ENABLED ? (
+              <>
+                In the EEA, UK, and Switzerland, consent is collected by Google&apos;s certified
+                consent message (a Google Funding Choices consent management platform); until you
+                consent, Google Analytics runs with analytics storage denied, so it sets no
+                analytics cookies and receives only limited, cookieless signals.
+              </>
+            ) : (
+              <>
+                In the EEA, UK, and Switzerland, analytics storage stays denied: no analytics
+                cookies are set and Google Analytics receives only limited, cookieless signals.
+              </>
+            )}{' '}
+            Elsewhere (e.g. the United States), analytics loads on your first visit under a
+            notice-and-opt-out model. Use the &ldquo;Do Not Sell or Share My Personal
+            Information / Manage Consent&rdquo; link in the site footer to open a notice with a
+            Decline button. Decline tells Google to deny analytics and advertising storage
+            straight away. Your choice is saved in your browser (local storage key{' '}
+            <code>firepath_cookie_consent</code>), is not sent to our servers, and is applied
+            again on every later visit.
           </p>
 
           <h3>{sub2('log')}. Log Data</h3>
@@ -136,8 +173,9 @@ export default function PrivacyPage() {
             {ACCOUNTS && <> unless you explicitly choose to save a calculation while signed in (see Section&nbsp;{sub2('saved')})</>}
             . All FIRE calculations you perform{ACCOUNTS ? ' without saving' : ''} are
             computed entirely in your browser using JavaScript running on your device —
-            no network request carries your slider values, and no analytics event includes
-            your calculator inputs.
+            no network request carries your slider values, and the analytics events we send
+            carry at most a coarse size band of the result (for example whether the target
+            amount is under $500,000), never the exact figures you entered.
           </p>
         </section>
 
@@ -156,7 +194,7 @@ export default function PrivacyPage() {
               <li>
                 Visitors may see display ads served by <strong>Google AdSense</strong>.
                 Advertising cookies are subject to geo-differentiated consent: visitors in the
-                EEA, UK, and Switzerland must opt in via the cookie/consent banner before
+                EEA, UK, and Switzerland choose in Google&apos;s certified consent message before
                 personalized advertising cookies are set; visitors elsewhere (e.g. the United
                 States) operate under a notice-and-opt-out model. See Section&nbsp;4c for
                 details and opt-out options.
@@ -171,15 +209,17 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2>4. Cookies and Tracking Technologies</h2>
+          <h2 id="4-cookies-and-tracking-technologies">4. Cookies and Tracking Technologies</h2>
           <p>We use the following types of cookies and similar technologies:</p>
 
           <h3>4a. Strictly Necessary Cookies</h3>
           <p>
             These cookies are required for the site to function. FIREPath sets a first-party
             cookie named <code>visitor_country</code> that holds a two-letter country code
-            taken from your request, so the consent setting that fits your region can be
-            applied; it expires after one day.
+            taken from your request, so the notice that fits your region can be shown; it
+            expires after one day. If you make a cookie choice, it is saved in your
+            browser&apos;s local storage under <code>firepath_cookie_consent</code> and is not
+            sent to our servers.
             {ACCOUNTS && <> If you sign in, Supabase also sets session cookies to keep you authenticated, and signing in does not work without them.</>}
           </p>
 
@@ -187,14 +227,15 @@ export default function PrivacyPage() {
           <p>
             Google Analytics 4 sets first-party cookies (such as <code>_ga</code> and{' '}
             <code>_ga_*</code>) to measure user behavior. For visitors in the EEA, UK, and
-            Switzerland, these cookies are set only after you accept our consent banner
+            Switzerland, these cookies are set only after you consent
+            {ADS_ENABLED ? <> in Google&apos;s certified consent message</> : null}{' '}
             (opt-in required). For visitors elsewhere (e.g. the United States), analytics
             loads on your first visit under a notice-and-opt-out model; you may opt out at
-            any time by clearing your browser cookies, using the{' '}
+            any time by choosing Decline in the notice opened from the footer link, clearing
+            your browser cookies, or using the{' '}
             <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener noreferrer">
               Google Analytics Opt-out Browser Add-on
-            </a>,
-            or adjusting your preference via the link in our site footer.
+            </a>.
           </p>
 
           {ADS_ENABLED && (
@@ -208,23 +249,29 @@ export default function PrivacyPage() {
                 activity. These cookies are set by Google, not by FIREPath.
               </p>
               <p>
-                We use <strong>Google Consent Mode v2</strong> together with a{' '}
-                <strong>Google-certified Consent Management Platform (CMP)</strong> to implement
-                geo-differentiated consent:
+                We use <strong>Google Consent Mode v2</strong> to implement geo-differentiated
+                consent:
               </p>
               <ul>
                 <li>
-                  <strong>EEA, UK, and Switzerland (opt-in):</strong> Personalized-advertising
-                  and analytics cookies are set only <em>after</em> you grant consent via the
-                  cookie/consent banner. Until you consent, ads run in a non-personalized /
-                  limited mode.
+                  <strong>EEA, UK, and Switzerland (opt-in):</strong> Consent is collected by
+                  Google&apos;s certified consent message (a Google Funding Choices consent
+                  management platform), which is the only consent screen shown there; our own
+                  cookie notice is not shown. Personalized-advertising and analytics cookies are
+                  set only <em>after</em> you grant consent in that message. Until you consent,
+                  ads run in a non-personalized / limited mode. The &ldquo;Do Not Sell or Share
+                  My Personal Information / Manage Consent&rdquo; link in the site footer
+                  reopens Google&apos;s message so you can change or withdraw your choice.
                 </li>
                 <li>
                   <strong>United States and other regions (notice-and-opt-out):</strong>{' '}
                   Advertising and analytics cookies load on your first visit, consistent with
-                  applicable US and CCPA standards. You may opt out or withdraw consent at any
-                  time via the &ldquo;Do Not Sell or Share My Personal Information&rdquo; link
-                  in the site footer, or through the options listed below.
+                  applicable US and CCPA standards. The &ldquo;Do Not Sell or Share My Personal
+                  Information / Manage Consent&rdquo; link in the site footer opens a notice with
+                  a Decline button; Decline tells Google to deny advertising and analytics
+                  storage straight away, and the choice is saved in your browser and applied
+                  again on each later visit. You can also opt out through the options listed
+                  below.
                 </li>
               </ul>
               <p>
@@ -254,7 +301,7 @@ export default function PrivacyPage() {
             Google's ad settings, and (3) a NAMED list of the third-party
             vendors serving/loading on THIS site. The list below is derived from
             what gofirepath.com actually contacts — the loader in
-            src/app/layout.tsx, the GA tag injected by cookie-consent-banner.tsx,
+            src/components/ads/ad-loader.tsx, the GA tag injected by cookie-consent-banner.tsx,
             the Supabase browser client, the Stripe-hosted checkout redirect, and
             the Vercel edge — not copied from a sibling site. Supabase and Stripe are
             listed only when their feature is configured (ACCOUNTS, PAYMENTS). Keep it in sync
@@ -287,8 +334,9 @@ export default function PrivacyPage() {
               <li>
                 <strong>Google AdSense</strong> (
                 <code>pagead2.googlesyndication.com</code>,{' '}
-                <code>googleads.g.doubleclick.net</code>) — serves the display advertising
-                shown to visitors below the calculator results and on the FIRE guide pages.
+                <code>googleads.g.doubleclick.net</code>) — Google may show ads, including
+                automatically placed ads, on content pages, and delivers its certified consent
+                message (Google Funding Choices) to visitors in the EEA, UK, and Switzerland.
                 Google AdSense is the only advertising network loaded on this site. See{' '}
                 <a href="https://policies.google.com/technologies/ads" rel="noopener noreferrer">
                   How Google uses cookies in advertising
@@ -352,8 +400,9 @@ export default function PrivacyPage() {
 
           <h3>{ADS_ENABLED ? '4e' : '4d'}. How to Manage Cookies</h3>
           <p>
-            You can control cookies through your browser settings or by clicking
-            &ldquo;Decline&rdquo; in our cookie consent banner (where shown).
+            You can control cookies through your browser settings. In the EEA, UK, and
+            Switzerland, use the footer link to reopen the consent message; elsewhere, use the
+            footer link to open our notice and choose &ldquo;Decline&rdquo;.
             {ACCOUNTS && <> Note that disabling strictly necessary cookies will prevent you from signing in.</>}{' '}
             For Google Analytics specifically, you may also use the{' '}
             <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener noreferrer">
@@ -438,6 +487,14 @@ export default function PrivacyPage() {
                 Stripe processes payment data under Stripe&apos;s own privacy policy.
               </li>
             )}
+            {MESSAGES && (
+              <li>
+                <strong>Message collection service:</strong> The contact-form and feedback
+                messages described in Section&nbsp;{sub2('messages')} are forwarded by our server
+                to a collection service configured by {PUBLISHER.name} so they can be read and
+                answered.
+              </li>
+            )}
             <li>
               <strong>Google Analytics:</strong> Anonymous usage statistics. Sent after consent
               for EEA/UK/Switzerland visitors; sent on first visit under notice-and-opt-out for
@@ -505,8 +562,8 @@ export default function PrivacyPage() {
               <strong>Server logs:</strong> Typically retained for 30 days.
             </li>
             <li>
-              <strong>Analytics data:</strong> Subject to Google Analytics&apos; retention
-              settings, which we configure for 14 months.
+              <strong>Analytics data:</strong> Subject to Google Analytics&apos; own retention
+              settings.
             </li>
           </ul>
         </section>
