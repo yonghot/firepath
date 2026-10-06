@@ -4,14 +4,12 @@
  * These return plain objects; render them via a <script type="application/ld+json">
  * tag with JSON.stringify(obj) (same pattern already used across the repo).
  *
- * URLs are absolute (built from NEXT_PUBLIC_APP_URL) where a stable identity is
+ * URLs are absolute (built from SITE_URL) where a stable identity is
  * required (Organization, SoftwareApplication, breadcrumbs) so search engines /
  * AI parsers can resolve them. No ratings/reviews are fabricated.
  */
 
-import { PUBLISHER } from '@/lib/site';
-
-const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://gofirepath.com').replace(/\/$/, '');
+import { PUBLISHER, SITE_URL } from '@/lib/site';
 
 const abs = (path: string) =>
   path.startsWith('http') ? path : `${SITE_URL}${path.startsWith('/') ? path : `/${path}`}`;

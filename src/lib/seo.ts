@@ -17,8 +17,8 @@
  */
 
 import type { Metadata } from 'next';
+import { SITE_URL } from '@/lib/site';
 
-const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://gofirepath.com').replace(/\/$/, '');
 const SITE_NAME = 'FIREPath';
 
 export interface BuildMetaOptions {

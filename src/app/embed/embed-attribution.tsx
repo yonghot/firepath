@@ -18,8 +18,8 @@
 
 import { useEffect } from 'react';
 import { trackEvent } from '@/lib/analytics';
+import { SITE_URL } from '@/lib/site';
 
-const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://gofirepath.com').replace(/\/$/, '');
 
 function hostDomain(): string {
   if (typeof document === 'undefined' || !document.referrer) return 'unknown';

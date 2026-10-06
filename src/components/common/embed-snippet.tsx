@@ -27,8 +27,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Copy, Check } from 'lucide-react';
+import { SITE_URL } from '@/lib/site';
 
-const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://gofirepath.com').replace(/\/$/, '');
 const ATTRIBUTION_URL = `${SITE_URL}/?utm_source=embed&utm_medium=widget&utm_campaign=embed`;
 
 const SNIPPET = `<iframe

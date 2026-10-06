@@ -8,10 +8,7 @@ import {
   isStripeConfigured,
   isPremiumPriceConfigured,
 } from '@/lib/stripe/server';
-
-function appUrl(): string {
-  return (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, '');
-}
+import { SITE_URL } from '@/lib/site';
 
 export class SubscriptionService {
   constructor(
@@ -65,8 +62,8 @@ export class SubscriptionService {
       subscription_data: { metadata: { supabase_user_id: userId } },
       metadata: { supabase_user_id: userId },
       allow_promotion_codes: true,
-      success_url: `${appUrl()}/premium?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appUrl()}/premium?checkout=cancelled`,
+      success_url: `${SITE_URL}/premium?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${SITE_URL}/premium?checkout=cancelled`,
     });
 
     if (!session.url) {
@@ -92,7 +89,7 @@ export class SubscriptionService {
 
     const session = await stripe.billingPortal.sessions.create({
       customer: subscription.stripe_customer_id,
-      return_url: `${appUrl()}/premium`,
+      return_url: `${SITE_URL}/premium`,
     });
 
     return { portalUrl: session.url };

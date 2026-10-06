@@ -9,6 +9,7 @@
  */
 
 import { buildFireStatisticsDataset } from '@/lib/seo/statistics';
+import { SITE_URL } from '@/lib/site';
 
 export const dynamic = 'force-static';
 export const revalidate = 86400;
@@ -18,7 +19,7 @@ export function GET(): Response {
 
   const body = JSON.stringify(
     {
-      source: 'https://gofirepath.com/fire-statistics',
+      source: `${SITE_URL}/fire-statistics`,
       lastUpdated: dataset.lastUpdated,
       headline: dataset.headline,
       rankedFireTypes: dataset.rankedFireTypes,

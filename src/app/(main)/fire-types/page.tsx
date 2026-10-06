@@ -19,6 +19,7 @@ import { AnswerBlock } from "@/components/common/answer-block";
 import { buildAnswerBlock, type GeoAnswerEntity } from "@/lib/seo/geo";
 import { EXPECTED_RETURN_STAT } from "@/lib/figures";
 import { getPageLastModified } from "@/lib/content-pages";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = buildMeta({
   title: "FIRE Types Explained: Lean, Fat, Coast and Barista",
@@ -161,7 +162,6 @@ const FIRE_TYPES_FAQ: FaqItem[] = [
   },
 ];
 
-const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://gofirepath.com").replace(/\/$/, "");
 
 const pageJsonLd = {
   "@context": "https://schema.org",

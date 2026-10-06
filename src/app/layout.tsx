@@ -5,6 +5,7 @@ import { Providers } from '@/components/providers';
 import { organizationJsonLd, publisherJsonLd } from '@/components/common/json-ld';
 import { resolveAdsenseClientId } from '@/lib/ads-env';
 import { ConsentDefault } from '@/components/ads/consent-default';
+import { SITE_URL } from '@/lib/site';
 
 const inter = Inter({
   variable: '--font-sans',
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
   description:
     'Compare 5 FIRE types (Lean, Regular, Fat, Coast, Barista) on one interactive timeline. Free FIRE calculator with real-time charts.',
   keywords: ['FIRE calculator', 'financial independence', 'early retirement', 'LeanFIRE', 'FatFIRE', 'CoastFIRE', 'BaristaFIRE'],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://gofirepath.com'),
+  metadataBase: new URL(SITE_URL),
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
@@ -57,8 +58,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://gofirepath.com').replace(/\/$/, '');
-
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',

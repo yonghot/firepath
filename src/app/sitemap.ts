@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { getIndexablePages } from '@/lib/content-pages';
 import { isNoindexed } from '@/lib/noindex-paths';
+import { SITE_URL } from '@/lib/site';
 
 /**
  * 부속I T09 (strengthened by 부속P CODE-06) — sitemap enumerates ONLY pages
@@ -19,8 +20,6 @@ import { isNoindexed } from '@/lib/noindex-paths';
  * pages collapse to their canonicalPath and de-dupe here.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://gofirepath.com';
-
   const priorityByKind: Record<'core' | 'hub' | 'spoke', number> = {
     core: 0.6,
     hub: 0.8,
@@ -33,7 +32,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     if (seenPaths.has(page.canonicalPath) || isNoindexed(page.canonicalPath)) continue;
     seenPaths.add(page.canonicalPath);
     contentPages.push({
-      url: page.canonicalPath === '/' ? baseUrl : `${baseUrl}${page.canonicalPath}`,
+      url: page.canonicalPath === '/' ? SITE_URL : `${SITE_URL}${page.canonicalPath}`,
       ...(page.lastModified ? { lastModified: page.lastModified } : {}),
       changeFrequency: page.canonicalPath === '/' ? 'weekly' : 'monthly',
       priority: page.canonicalPath === '/' ? 1.0 : priorityByKind[page.kind],
@@ -53,7 +52,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ]
     .filter(({ path }) => !isNoindexed(path))
     .map(({ path, priority }) => ({
-      url: `${baseUrl}${path}`,
+      url: `${SITE_URL}${path}`,
       changeFrequency: 'monthly' as const,
       priority,
     }));

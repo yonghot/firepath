@@ -19,6 +19,7 @@ import { DEFAULT_INPUT } from '@/constants/fire-defaults';
 import { formatCurrencyFull, formatPercent } from '@/lib/utils/format';
 import { GUIDE_PUBLISHED, GUIDE_FACTS, GUIDE_SECTIONS, GUIDE_SOURCES } from './content';
 import { getPageLastModified } from '@/lib/content-pages';
+import { SITE_URL } from '@/lib/site';
 
 const PAGE_PATH = '/fire-guide';
 const PAGE_UPDATED = getPageLastModified(PAGE_PATH);
@@ -33,7 +34,6 @@ export const metadata: Metadata = buildMeta({
   ogType: 'article',
 });
 
-const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://gofirepath.com').replace(/\/$/, '');
 
 const articleJsonLd = {
   '@context': 'https://schema.org',

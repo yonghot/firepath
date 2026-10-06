@@ -17,6 +17,7 @@ import { formatCurrencyFull } from "@/lib/utils/format";
 import { AnswerBlock } from "@/components/common/answer-block";
 import { buildAnswerBlock, type GeoAnswerEntity } from "@/lib/seo/geo";
 import { getPageLastModified } from "@/lib/content-pages";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = buildMeta({
   title: "Healthcare Bridge Estimator: Your Cost Before Medicare",
@@ -155,7 +156,6 @@ const HEALTHCARE_BRIDGE_FAQ: FaqItem[] = [
   },
 ];
 
-const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://gofirepath.com").replace(/\/$/, "");
 
 const toolJsonLd = {
   "@context": "https://schema.org",
