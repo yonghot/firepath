@@ -1908,3 +1908,11 @@ postbuild (simulated prod) — [indexnow] submitted 18 urls — verified end-to-
 - **조치**: `SiteChrome`·`Footer` 가 `cmpAvailable`(기본 거짓)을 받아 `ManageConsentLink` 에 넘기고, `(main)` 레이아웃만 로더와 함께 `cmpAvailable` 을 켠다. `openConsentChoices(win, country, cmpAvailable)` 는 EEA 이면서 런타임이 없는 페이지에서 큐에 쌓지 않고 `/privacy#4-cookies-and-tracking-technologies`(로더 페이지의 4절, 푸터 링크가 거기서 동작)로 이동시킨다. 런타임이 있는 페이지의 EEA 동작과 비EEA 동작은 그대로. 링크는 숨기지 않았다(어느 페이지에서도 동의 변경 경로가 보여야 하므로). Privacy 본문은 바꾸지 않았다.
 - **회귀 테스트**: `tests/regressions/consent-link-loader-free.test.ts`(수정 전 4건 실패): EEA 3개국 + 런타임 없음 → 이동·큐 없음, 런타임 있음 → 큐, 비EEA 는 둘 다 알림, 링크 컴포넌트의 클릭 핸들러가 prop 을 따름, 목적지 제목 id 존재, 레이아웃이 로더를 마운트할 때만 `cmpAvailable` 을 넘김, chrome→footer→link 전달·기본값. `consent-runtime.test.ts` 의 `openConsentChoices` 호출 3곳은 새 인자만 추가(기대값 불변).
 - **배포 후 확인(K28)**: 로더 없는 페이지(`/contact`)에서 `visitor_country=DE` 쿠키로 링크를 누르면 `/privacy#4-cookies-and-tracking-technologies` 로 이동하고, `/privacy` 에서는 구글 메시지 재열기 큐가 쓰인다(CMP 대화상자는 헤드리스로 시험할 수 없어 리더 수동 1회).
+
+### [2026-10-07] 결과 카드 5장이 768~1275px 에서 레이아웃 밖으로 넘침 (UX P1-2, K26-5, K18, 적대 검증 WARNING)
+- **증상**: UX 보고서 P1-2 실측 — 가로 스크롤 폭이 768px 에서 +29px, 1024px 에서 +47px, 1280px 에서 컬럼 밖 +12px. UX 배치 2 는 모바일 스와이프 띠만 1열 스택으로 바꾸고 이 항목을 "범위 밖" 으로 남겼다.
+- **근본 원인**: 카드에 `min-w-[180px]` 가 있고 그리드는 `md:grid-cols-5`(트랙은 `minmax(0,1fr)` 이라 줄어듦)인데, 계산기 본문은 lg 이상에서 320px 사이드바 옆의 좁은 열이다. 1024px 에서 열 폭은 약 633px 라 트랙이 약 117px 인데 카드는 180px 로 트랙을 넘쳐 마지막 카드가 열과 페이지 밖으로 나갔다(993+63=1056, 실측과 일치). 1280px 에서도 트랙 약 171px < 180px.
+- **조치**: 카드의 고정 최소 폭을 제거하고 그리드 셀에 `min-w-0` 을 주었다. 열 수는 phones 1, md(768~1279) 3, xl(1280 이상) 5(`md:grid-cols-3 xl:grid-cols-5`). md~lg 에서는 열이 203px 이상이고(3+2 배열), xl 에서는 5열 트랙이 약 171px 이지만 최소 폭이 없어 넘치지 않으며 카드 안 라벨이 줄바꿈된다. `Card` 가 `overflow-hidden` 이라 내부 내용이 페이지 폭을 늘릴 수 없다.
+- **테스트 기대값 정정(삭제·skip 없음)**: `tests/regressions/ux-result-chips.test.ts` 가 `md:grid-cols-5` 를 고정하고 있었다. 같은 의도(스와이프 띠 아님, 모바일 스택)를 유지한 채 새 열 수를 단정하도록 바꿨다.
+- **회귀 테스트**: `tests/regressions/ux-result-cards-width.test.ts`(수정 전 3건 실패: 고정 `min-w-[…px]`, 셀 `min-w-0` 없음, 열 수).
+- **배포 후 확인(K28)**: `/` 를 768·1024·1280·1440 폭에서 열고 `documentElement.scrollWidth <= clientWidth` 이며 결과 카드 5장의 오른쪽 끝이 열 안인지 확인한다(브라우저 실측은 이 단계에서 금지라 코드·CSS 추론과 테스트만으로 닫았다).

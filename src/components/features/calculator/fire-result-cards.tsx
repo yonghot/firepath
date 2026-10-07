@@ -23,9 +23,9 @@ export function FIREResultCards({ results, onHighlight, embedded }: FIREResultCa
   };
 
   return (
-    <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-3 xl:grid-cols-5">
       {FIRE_TYPES.map((type) => (
-        <div key={type}>
+        <div key={type} className="min-w-0">
           <FIREResultCard
             type={type}
             result={results[type]}

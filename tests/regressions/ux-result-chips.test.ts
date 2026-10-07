@@ -113,7 +113,8 @@ describe('UX P0-1: the result cards no longer hide behind a sideways swipe on ph
     const open = html.match(/^<div class="([^"]*)"/)![1];
     expect(open).not.toMatch(/overflow-x-auto|snap-x|snap-mandatory/);
     expect(html).not.toMatch(/snap-start/);
-    expect(open).toContain('md:grid-cols-5');
+    expect(open).toContain('md:grid-cols-3');
+    expect(open).toContain('xl:grid-cols-5');
   });
 
   it('all five cards are still there, each stacked at phone width', () => {
