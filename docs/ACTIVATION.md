@@ -13,7 +13,7 @@ Names only. No value, link, id or phone number belongs in this file or in source
 | `NEXT_PUBLIC_APP_URL` | Optional canonical host override. Unset uses the site constant. |
 | `FEEDBACK_ENDPOINT` | Where the contact form and the feedback widget forward messages. Used only together with `FEEDBACK_DELIVERY_CONFIRMED`. |
 | `FEEDBACK_DELIVERY_CONFIRMED` | Set to `1` or `true` only after the publisher has confirmed that it reads what `FEEDBACK_ENDPOINT` collects. Unset, the contact form, the footer feedback link and the Privacy message-collection paragraph are hidden, /contact is email-first, and both message APIs answer 503. |
-| `INDEXNOW_KEY` | IndexNow key file and post-deploy submission. |
+| `INDEXNOW_KEY` | IndexNow key file and the postbuild submission on production deploys. It submits only URLs added, removed or re-dated against the live sitemap, and nothing if that comparison fails. After a build, `INDEXNOW_DRY_RUN=1 node scripts/indexnow.mjs` prints the delta and never posts. |
 
 ## Result-area slots (src/components/monetization/ResultMonetization.tsx)
 

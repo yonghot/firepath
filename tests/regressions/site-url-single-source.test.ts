@@ -68,13 +68,10 @@ describe('K20/K15: one SITE_URL source', () => {
     expect(offenders(/https:\/\/gofirepath\.com/, ORIGIN_LITERAL_ALLOWED)).toEqual([]);
   });
 
-  it('scripts/indexnow.mjs keeps its own fallback equal to the SITE_URL default', async () => {
+  it('scripts/indexnow.mjs keeps no origin of its own: the host comes from the built sitemap, which follows SITE_URL', () => {
     const script = readFileSync(path.join(ROOT, 'scripts', 'indexnow.mjs'), 'utf8');
-    const match = script.match(/process\.env\.NEXT_PUBLIC_APP_URL \|\| '([^']+)'/);
-    expect(match, 'indexnow.mjs fallback').not.toBeNull();
-    setAppUrl(undefined);
-    const site = await import('@/lib/site');
-    expect(match?.[1]).toBe(site.SITE_URL);
+    expect(script).not.toMatch(/NEXT_PUBLIC_APP_URL|gofirepath\.com/);
+    expect(script).toMatch(/new URL\(next\[0\]\.loc\)\.hostname/);
   });
 
   it.each([
