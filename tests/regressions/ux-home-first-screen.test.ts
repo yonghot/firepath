@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { calculateFIRE } from '@/lib/engine/fire-calculator';
 import { DEFAULT_INPUT } from '@/constants/fire-defaults';
 import { getPageLastModified } from '@/lib/content-pages';
@@ -101,6 +103,12 @@ describe('UX D2: the disclaimer is summarised on the first screen and written ou
     expect(full).toContain('It is not investment, tax, or financial advice.');
     expect(full).toContain('not a prediction or guarantee of actual results');
     expect(full).toContain('Consult a licensed financial advisor, tax professional, or attorney before acting on this scenario.');
+  });
+
+  it('the footer disclaimer link is a plain anchor, so a jump on the home page fires hashchange and the share state is restored', () => {
+    const src = readFileSync(join(__dirname, '..', '..', 'src', 'components', 'layouts', 'footer.tsx'), 'utf8');
+    expect(src).toMatch(/<a href="\/#results-disclaimer"/);
+    expect(src).not.toMatch(/<Link href="\/#results-disclaimer"/);
   });
 
   it('the footer keeps its short disclaimer and links to the full text', () => {

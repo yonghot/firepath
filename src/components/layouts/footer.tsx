@@ -75,9 +75,9 @@ export function Footer({ premiumAvailable = false }: { premiumAvailable?: boolea
           </p>
           <p>
             Not financial advice. Past performance does not guarantee future results.{' '}
-            <Link href="/#results-disclaimer" className="underline underline-offset-4 hover:text-foreground transition-colors duration-200">
+            <a href="/#results-disclaimer" className="underline underline-offset-4 hover:text-foreground transition-colors duration-200">
               Full disclaimer
-            </Link>
+            </a>
           </p>
         </div>
       </div>
