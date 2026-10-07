@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Header } from '@/components/layouts/header';
 import { Footer } from '@/components/layouts/footer';
 import { isPremiumPurchasable } from '@/lib/premium-availability';
-import { isSupabaseConfigured } from '@/lib/supabase/client';
+import { isSupabaseConfigured } from '@/lib/supabase/config';
 
 export function SiteChrome({ children, cmpAvailable = false }: { children: ReactNode; cmpAvailable?: boolean }) {
   const premiumAvailable = isPremiumPurchasable();

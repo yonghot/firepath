@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
 import { PUBLISHER } from '@/lib/site';
-import { isSupabaseConfigured } from '@/lib/supabase/client';
+import { isSupabaseConfigured } from '@/lib/supabase/config';
 import { isPremiumPurchasable } from '@/lib/premium-availability';
 
 export async function generateMetadata(): Promise<Metadata> {
