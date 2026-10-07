@@ -47,9 +47,8 @@ describe('UX P0-2 / D1: which results are an example and which are the visitor\'
     expect(resolveScenario({ ...DEFAULT_INPUT, savingsRate: 0.31 })).toEqual({ kind: 'custom' });
   });
 
-  it('a preset that equals the default inputs reads as the default example', () => {
-    const same = CALCULATOR_PRESETS.find((p) => p.id === 'young-saver')!;
-    expect(resolveScenario(same.input)).toEqual({ kind: 'default' });
+  it('a copy of the default inputs reads as the default example', () => {
+    expect(resolveScenario({ ...DEFAULT_INPUT })).toEqual({ kind: 'default' });
   });
 
   it('before consent a custom scenario is withheld: the example shows, never the visitor\'s numbers', () => {

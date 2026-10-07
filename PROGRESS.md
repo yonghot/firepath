@@ -1916,3 +1916,9 @@ postbuild (simulated prod) — [indexnow] submitted 18 urls — verified end-to-
 - **테스트 기대값 정정(삭제·skip 없음)**: `tests/regressions/ux-result-chips.test.ts` 가 `md:grid-cols-5` 를 고정하고 있었다. 같은 의도(스와이프 띠 아님, 모바일 스택)를 유지한 채 새 열 수를 단정하도록 바꿨다.
 - **회귀 테스트**: `tests/regressions/ux-result-cards-width.test.ts`(수정 전 3건 실패: 고정 `min-w-[…px]`, 셀 `min-w-0` 없음, 열 수).
 - **배포 후 확인(K28)**: `/` 를 768·1024·1280·1440 폭에서 열고 `documentElement.scrollWidth <= clientWidth` 이며 결과 카드 5장의 오른쪽 끝이 열 안인지 확인한다(브라우저 실측은 이 단계에서 금지라 코드·CSS 추론과 테스트만으로 닫았다).
+
+### [2026-10-07] 프리셋 1 이 기본값과 같아 눌러도 변화 없음 (UX P0-1, 적대 검증 WARNING)
+- **증상**: 첫 프리셋 "Try: 30, $80k income, 30% savings" 는 `DEFAULT_INPUT` 과 필드 하나까지 같아 눌러도 결과·차트·결과 칩이 그대로였다. 배치 1 은 "프리셋 값 핀 테스트를 바꾸고 새 시나리오 값을 정해야 한다" 며 보류했다.
+- **조치**: 프리셋 1(`young-saver`)을 "Try: 25, $60k income, 40% savings"(나이 25, 연소득 60,000, 저축률 40%, 나머지 필드는 기본값)로 바꿨다. 통계·평균이 아니라 사용자가 직접 넣을 수 있는 입력 시나리오이며 값은 모두 슬라이더 범위 안이고 엔진(`calculateFIRE`) 출력은 그대로다(Lean 41, Regular 49, Fat 56, Coast 34, Barista 39; 기본값은 46·54·61·42·44). 라벨의 숫자는 입력과 일치한다.
+- **테스트 기대값 정정(삭제·skip 없음)**: `calculator-presets.test.ts` 가 "young-saver 는 DEFAULT_INPUT 그 자체" 를 고정하고 있었으므로 새 값·"나머지 필드는 기본값" 단정으로 바꿨고, `ux-example-consent-model.test.ts` 의 "기본값과 같은 프리셋은 기본 예시로 읽힌다" 는 "기본값의 복사본은 기본 예시로 읽힌다" 로 바꿨다(프리셋이 더 이상 기본값과 같지 않으므로 같은 규칙을 기본값 자체로 단정). 프리셋의 "Example · …" 라벨은 이제 세 프리셋 모두 프리셋 이름으로 나온다.
+- **회귀 테스트**: `tests/regressions/ux-presets-distinct.test.ts`(수정 전 3건 실패: 모든 프리셋이 기본값과 한 필드 이상 다르고, Regular FIRE 목표·도달 나이가 기본 예시와 달라지며, `resolveScenario` 가 `preset` 으로 읽는지, 라벨이 인용하는 나이·소득·저축률이 실제 값과 일치). 프리셋을 더 추가해도 같은 불변식이 적용된다.

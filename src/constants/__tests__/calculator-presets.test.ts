@@ -49,13 +49,14 @@ describe('CALCULATOR_PRESETS', () => {
     }
   });
 
-  it('preset "young-saver" (30, $80k income, 30% savings) IS the app\'s own DEFAULT_INPUT — literally the existing dataset default, not a new number', () => {
+  it('preset "young-saver" (25, $60k income, 40% savings) overrides only age, income and savings rate; every other field is the dataset default', () => {
     const preset = CALCULATOR_PRESETS.find((p) => p.id === 'young-saver');
     expect(preset).toBeDefined();
-    expect(preset!.input).toEqual(DEFAULT_INPUT);
-    expect(preset!.input.currentAge).toBe(30);
-    expect(preset!.input.annualIncome).toBe(80000);
-    expect(preset!.input.savingsRate).toBeCloseTo(0.3);
+    expect(preset!.input.currentAge).toBe(25);
+    expect(preset!.input.annualIncome).toBe(60000);
+    expect(preset!.input.savingsRate).toBeCloseTo(0.4);
+    const overridden: Array<keyof FIREInput> = ['currentAge', 'annualIncome', 'savingsRate'];
+    expect(omit(preset!.input, overridden)).toEqual(omit(DEFAULT_INPUT, overridden));
   });
 
   it('preset "mid-career" (40, $120k income, 25% savings) matches the 부속U §5 scenario exactly, with every other field pinned to DEFAULT_INPUT', () => {

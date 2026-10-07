@@ -12,14 +12,16 @@ import { DEFAULT_INPUT } from './fire-defaults';
  * T03 hasUserInteracted guard fires calc_input_start / calculator_complete
  * exactly as it would for a real edit. No new event, no `preset` param.
  *
- * NO FABRICATION (부속U §7 guardrail): every value below is either the
- * app's own existing DEFAULT_INPUT (SLIDER_CONFIGS defaultValue — see
- * fire-defaults.ts) or a direct override of age/income/savings-rate per the
- * 부속U §5 parameter table, spread onto DEFAULT_INPUT for every other field.
- * Nothing here is a statistic, average, or claim about real FIRE savers —
- * these are user-input scenarios fed through the real, unmodified
- * `calculateFIRE()` engine, identical to what a human typing the same
- * numbers would get. See calculator-presets.test.ts for the equality pins.
+ * NO FABRICATION (부속U §7 guardrail): every value below is a direct
+ * override of age/income/savings-rate (or of age/savings-rate) spread onto
+ * the app's own DEFAULT_INPUT (SLIDER_CONFIGS defaultValue — see
+ * fire-defaults.ts) for every other field. Nothing here is a statistic,
+ * average, or claim about real FIRE savers — these are user-input
+ * scenarios fed through the real, unmodified `calculateFIRE()` engine,
+ * identical to what a human typing the same numbers would get. Every
+ * preset must differ from DEFAULT_INPUT, or clicking it changes nothing
+ * (ux-presets-distinct.test.ts). See calculator-presets.test.ts for the
+ * equality pins.
  */
 
 export interface CalculatorPreset {
@@ -33,13 +35,9 @@ export interface CalculatorPreset {
 
 export const CALCULATOR_PRESETS: CalculatorPreset[] = [
   {
-    // This preset's values ARE the engine's own DEFAULT_INPUT — 부속U §5's
-    // "30세·$80k·저축30%" scenario is, field for field, the app's existing
-    // default. Spreading DEFAULT_INPUT (rather than retyping the numbers)
-    // guarantees they can never drift out of sync with the real dataset.
     id: 'young-saver',
-    label: 'Try: 30, $80k income, 30% savings',
-    input: { ...DEFAULT_INPUT },
+    label: 'Try: 25, $60k income, 40% savings',
+    input: { ...DEFAULT_INPUT, currentAge: 25, annualIncome: 60000, savingsRate: 0.4 },
   },
   {
     id: 'mid-career',
