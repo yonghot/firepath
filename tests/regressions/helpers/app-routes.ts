@@ -45,7 +45,7 @@ export function hasStaticRoute(pathname: string): boolean {
 }
 
 const PUBLIC_ROOT = path.resolve(__dirname, '../../../public');
-const UNVERIFIABLE_DYNAMIC = new Set(['[indexnowKey]', 'guide/[slug]']);
+const UNVERIFIABLE_DYNAMIC = new Set(['api/indexnow-key/[key]', 'guide/[slug]']);
 
 function collectPatterns(dir: string, segments: string[], acc: string[][]): void {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {

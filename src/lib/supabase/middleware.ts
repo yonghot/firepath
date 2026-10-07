@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+let warnedMissingConfig = false;
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -16,9 +18,12 @@ export async function updateSession(request: NextRequest) {
   // Public pages must still render; auth-gated features degrade gracefully.
   // See docs/PROGRESS.md → "인시던트 로그" [2026-06-27].
   if (!supabaseUrl || !supabaseKey) {
-    console.warn(
-      '[middleware] NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY missing — skipping Supabase session refresh.'
-    );
+    if (!warnedMissingConfig) {
+      warnedMissingConfig = true;
+      console.warn(
+        '[middleware] NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY missing — skipping Supabase session refresh.'
+      );
+    }
     return supabaseResponse;
   }
 

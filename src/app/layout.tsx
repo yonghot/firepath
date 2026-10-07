@@ -44,10 +44,8 @@ export const metadata: Metadata = {
     title: 'FIREPath — All FIRE Types in One Beautiful Calculator',
     description: 'Compare 5 FIRE types on one interactive timeline.',
   },
+  // No explicit index/follow: a 404 gets Next's own noindex, and an explicit "index, follow" beside it is a conflicting robots pair.
   robots: {
-    index: true,
-    follow: true,
-    // 부속M K09 — Discover/Images full-size image preview eligibility.
     'max-image-preview': 'large',
   },
   ..._adsenseId && { other: { 'google-adsense-account': _adsenseId } },

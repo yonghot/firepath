@@ -11,7 +11,7 @@
  * (return a 200 NextResponse) instead of throwing. Before the fix, every case
  * below threw "Your project's URL and Key are required to create a Supabase client!".
  */
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
@@ -62,5 +62,19 @@ describe('updateSession — missing/malformed Supabase env (regression)', () => 
     const res = await updateSession(req());
 
     expect(res.status).toBe(200);
+  });
+
+  it('warns about the missing configuration at most once per process, not on every request', async () => {
+    delete process.env[URL_KEY];
+    delete process.env[ANON_KEY];
+    vi.resetModules();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const { updateSession: fresh } = await import('@/lib/supabase/middleware');
+      for (let i = 0; i < 5; i += 1) expect((await fresh(req())).status).toBe(200);
+      expect(warn).toHaveBeenCalledTimes(1);
+    } finally {
+      warn.mockRestore();
+    }
   });
 });

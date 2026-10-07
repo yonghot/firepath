@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_VERCEL_ENV: process.env.VERCEL_ENV || process.env.NEXT_PUBLIC_VERCEL_ENV,
   },
+  async rewrites() {
+    return [
+      { source: '/:key([A-Za-z0-9_-]{8,128}).txt', destination: '/api/indexnow-key/:key' },
+    ];
+  },
   async headers() {
     return [
       {

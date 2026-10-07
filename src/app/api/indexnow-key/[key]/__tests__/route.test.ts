@@ -1,9 +1,11 @@
 /**
- * Unit tests for GET /{key}.txt — the IndexNow key verification route (부속I T14).
+ * Unit tests for GET /api/indexnow-key/{key} — the IndexNow key verification
+ * route (부속I T14), reached through the next.config.ts rewrite from /{key}.txt.
  *
  * Acceptance criteria: "curl https://{domain}/{key}.txt returns the key" and
  * (implicitly) every other path 404s — this dynamic segment must not become
- * an open wildcard route.
+ * an open wildcard route. The rewrite strips ".txt", so the param is the bare
+ * key.
  */
 
 import { describe, it, expect, afterEach } from 'vitest';
@@ -16,22 +18,22 @@ afterEach(() => {
   else process.env.INDEXNOW_KEY = ORIGINAL_KEY;
 });
 
-function makeParams(indexnowKey: string) {
-  return { params: Promise.resolve({ indexnowKey }) };
+function makeParams(key: string) {
+  return { params: Promise.resolve({ key }) };
 }
 
-describe('GET /[indexnowKey] — INDEXNOW_KEY unset', () => {
+describe('GET /api/indexnow-key/[key] — INDEXNOW_KEY unset', () => {
   it('404s for any path when INDEXNOW_KEY is unset', async () => {
     delete process.env.INDEXNOW_KEY;
-    const res = await GET(new Request('http://localhost/anything.txt'), makeParams('anything.txt'));
+    const res = await GET(new Request('http://localhost/anything.txt'), makeParams('anything'));
     expect(res.status).toBe(404);
   });
 });
 
-describe('GET /[indexnowKey] — INDEXNOW_KEY set', () => {
-  it('returns 200 with the bare key when the path matches {key}.txt exactly', async () => {
+describe('GET /api/indexnow-key/[key] — INDEXNOW_KEY set', () => {
+  it('returns 200 with the bare key when the segment equals the key exactly', async () => {
     process.env.INDEXNOW_KEY = 'abc123def456';
-    const res = await GET(new Request('http://localhost/abc123def456.txt'), makeParams('abc123def456.txt'));
+    const res = await GET(new Request('http://localhost/abc123def456.txt'), makeParams('abc123def456'));
     expect(res.status).toBe(200);
     const body = await res.text();
     expect(body).toBe('abc123def456');
@@ -44,15 +46,15 @@ describe('GET /[indexnowKey] — INDEXNOW_KEY set', () => {
     expect(res.status).toBe(404);
   });
 
-  it('404s for a path missing the .txt suffix', async () => {
+  it('404s when the segment still carries the .txt suffix (the rewrite already removed it)', async () => {
     process.env.INDEXNOW_KEY = 'abc123def456';
-    const res = await GET(new Request('http://localhost/abc123def456'), makeParams('abc123def456'));
+    const res = await GET(new Request('http://localhost/abc123def456.txt'), makeParams('abc123def456.txt'));
     expect(res.status).toBe(404);
   });
 
   it('404s for a path with the wrong key value', async () => {
     process.env.INDEXNOW_KEY = 'abc123def456';
-    const res = await GET(new Request('http://localhost/wrongkey.txt'), makeParams('wrongkey.txt'));
+    const res = await GET(new Request('http://localhost/wrongkey.txt'), makeParams('wrongkey'));
     expect(res.status).toBe(404);
   });
 });
