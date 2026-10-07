@@ -19,6 +19,7 @@ import { NextStep } from "@/components/common/next-step";
 import { fireTypesNextSteps } from "@/lib/next-steps";
 import { AnswerBlock } from "@/components/common/answer-block";
 import { buildAnswerBlock, type GeoAnswerEntity } from "@/lib/seo/geo";
+import { describeRankAmongExpenseMultiples } from "@/lib/seo/fire-type-facts";
 import { EXPECTED_RETURN_STAT } from "@/lib/figures";
 import { getPageLastModified } from "@/lib/content-pages";
 import { SITE_URL } from "@/lib/site";
@@ -140,11 +141,11 @@ const SOURCES: SourceItem[] = [
 const FIRE_TYPES_FAQ: FaqItem[] = [
   {
     q: "How much do I need for Lean FIRE?",
-    a: `Lean FIRE targets ${FIRE_MULTIPLIERS.lean * 100}% of your annual expenses divided by your SWR. At the default $${annualExpenses.toLocaleString('en-US')}/yr expenses and ${(safeWithdrawalRate * 100).toFixed(0)}% SWR, that works out to ${fmt(defaultResults.lean.targetAmount)}. It's the smallest of the five targets because it assumes you cut spending to essentials in retirement.`,
+    a: `Lean FIRE targets ${FIRE_MULTIPLIERS.lean * 100}% of your annual expenses divided by your SWR. At the default $${annualExpenses.toLocaleString('en-US')}/yr expenses and ${(safeWithdrawalRate * 100).toFixed(0)}% SWR, that works out to ${fmt(defaultResults.lean.targetAmount)}. It's ${describeRankAmongExpenseMultiples("lean")}, because it assumes you cut spending to essentials in retirement. Coast FIRE is left out of that ranking because its figure is a discounted seed, not an expense multiple.`,
   },
   {
     q: "What's the difference between Regular FIRE and Fat FIRE?",
-    a: `Regular FIRE covers 100% of your current expenses (${fmt(defaultResults.regular.targetAmount)} at the defaults); Fat FIRE covers 150% (${fmt(defaultResults.fat.targetAmount)}) for a larger cushion or higher discretionary spending. Fat FIRE's target is exactly 1.5× Regular FIRE's — same formula, different multiplier.`,
+    a: `Regular FIRE covers ${FIRE_MULTIPLIERS.regular * 100}% of your current expenses (${fmt(defaultResults.regular.targetAmount)} at the defaults); Fat FIRE covers ${FIRE_MULTIPLIERS.fat * 100}% (${fmt(defaultResults.fat.targetAmount)}) for a larger cushion or higher discretionary spending. Fat FIRE's target is exactly ${FIRE_MULTIPLIERS.fat / FIRE_MULTIPLIERS.regular}× Regular FIRE's — same formula, different multiplier.`,
   },
   {
     q: "How is the Coast FIRE number different from the others?",
@@ -160,7 +161,7 @@ const FIRE_TYPES_FAQ: FaqItem[] = [
   },
   {
     q: "Are these FIRE target formulas fixed, or can I adjust them?",
-    a: "The 4% SWR is a widely used default (see Sources below), but every input — expenses, SWR, expected return, inflation — is a slider you control. The FIRE type multipliers (0.6x/1.0x/1.5x/0.5x) are FIREPath's own modelling choices, fixed for each type and not adjustable, since changing them would make it a different FIRE type. They are not figures taken from the sources below, which define the types.",
+    a: `The ${(safeWithdrawalRate * 100).toFixed(0)}% SWR is a widely used default (see Sources below), but every input — expenses, SWR, expected return, inflation — is a slider you control. The FIRE type multipliers (${(["lean", "regular", "fat", "barista"] as const).map((t) => `${FIRE_MULTIPLIERS[t].toFixed(1)}x`).join("/")}) are FIREPath's own modelling choices, fixed for each type and not adjustable, since changing them would make it a different FIRE type. They are not figures taken from the sources below, which define the types.`,
   },
 ];
 
@@ -371,7 +372,7 @@ export default function FireTypesPage() {
           Target = annual expenses ÷ SWR
         </p>
         <p>
-          This is the famous &quot;25× rule&quot; at a 4% SWR: spend $40,000/yr → need $1,000,000.
+          This is the famous &quot;{1 / safeWithdrawalRate}× rule&quot; at a {(safeWithdrawalRate * 100).toFixed(0)}% SWR: spend {fmt(annualExpenses)}/yr → need {fmt(defaultResults.regular.targetAmount)}.
           Source: the{" "}
           <a
             href="https://en.wikipedia.org/wiki/Trinity_study"
@@ -499,7 +500,7 @@ export default function FireTypesPage() {
         <p>
           Barista FIRE reaches a lower target than{" "}
           <Link href="/fire-types#lean">Lean FIRE</Link>{" "}
-          (50% vs. 60% of expenses), so you can stop contributing to investments sooner — but you
+          ({FIRE_MULTIPLIERS.barista * 100}% vs. {FIRE_MULTIPLIERS.lean * 100}% of expenses), so you can stop contributing to investments sooner — but you
           will still need some earned income in early retirement. It is a popular choice for people
           who value leaving a stressful career but are not ready for full retirement.
         </p>

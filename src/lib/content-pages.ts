@@ -44,6 +44,8 @@
  * without adding data, never generate new thin spokes to fill a hub.
  */
 
+import { EXPENSE_MULTIPLE_FACTS } from '@/lib/seo/fire-type-facts';
+
 export type LinkModule = 'next_step' | 'inline' | 'breadcrumb' | 'hub' | 'compare_chain' | 'footer_crosslink';
 
 /** Minimum count of entity-specific, sibling-differing facts a spoke page must carry to be indexable (부속P CODE-06). */
@@ -122,10 +124,9 @@ export function computeHasUniqueData(page: Pick<ContentPage, 'kind' | 'different
  * FIRE-type sections on /fire-types — each has a real engine-computed
  * target/monthly/reachAge at default inputs (see FireTypeCard in
  * src/app/(main)/fire-types/page.tsx). differentiatingFacts below are
- * literal computed values at DEFAULT_INPUT (annualExpenses=$40,000,
- * SWR=4%) — see src/constants/fire-defaults.ts — kept as static strings
- * here (not re-imported from the engine) so this registry stays a plain
- * data file; fire-types/page.tsx itself renders the live computed values.
+ * computed from calculateFIRE(DEFAULT_INPUT) in src/lib/seo/fire-type-facts.ts
+ * (figures and rank claims are never typed here — K4-a); Coast carries no
+ * figures, so its facts are plain text.
  */
 export const FIRE_TYPE_PAGES: ContentPage[] = [
   {
@@ -136,12 +137,7 @@ export const FIRE_TYPE_PAGES: ContentPage[] = [
     fireType: 'lean',
     hasUniqueData: true,
     kind: 'spoke',
-    differentiatingFacts: [
-      'Target amount at default inputs: $600,000 (60% multiplier)',
-      'Monthly passive income at target: $2,000/mo',
-      'Second-lowest target of the 5 FIRE types — 40% below Regular FIRE',
-      '60% expense multiplier is unique to Lean FIRE (vs. 100%/150%/50% for the others)',
-    ],
+    differentiatingFacts: EXPENSE_MULTIPLE_FACTS.lean,
   },
   {
     path: '/fire-types#regular',
@@ -151,12 +147,7 @@ export const FIRE_TYPE_PAGES: ContentPage[] = [
     fireType: 'regular',
     hasUniqueData: true,
     kind: 'spoke',
-    differentiatingFacts: [
-      'Target amount at default inputs: $1,000,000 (100% multiplier)',
-      'Monthly passive income at target: $3,333/mo',
-      'The baseline "25x expenses" target every other FIRE type is defined relative to',
-      "100% expense multiplier — the only type that doesn't cut or inflate current spending",
-    ],
+    differentiatingFacts: EXPENSE_MULTIPLE_FACTS.regular,
   },
   {
     path: '/fire-types#fat',
@@ -166,12 +157,7 @@ export const FIRE_TYPE_PAGES: ContentPage[] = [
     fireType: 'fat',
     hasUniqueData: true,
     kind: 'spoke',
-    differentiatingFacts: [
-      'Target amount at default inputs: $1,500,000 (150% multiplier)',
-      'Monthly passive income at target: $5,000/mo',
-      'Highest target of the 5 FIRE types — 50% above Regular FIRE',
-      '150% expense multiplier is unique to Fat FIRE',
-    ],
+    differentiatingFacts: EXPENSE_MULTIPLE_FACTS.fat,
   },
   {
     path: '/fire-types#coast',
@@ -196,12 +182,7 @@ export const FIRE_TYPE_PAGES: ContentPage[] = [
     fireType: 'barista',
     hasUniqueData: true,
     kind: 'spoke',
-    differentiatingFacts: [
-      'Target amount at default inputs: $500,000 (50% multiplier)',
-      'Monthly passive income at target: $1,667/mo',
-      'The only FIRE type modeled with a supplementary part-time income assumption',
-      '50% multiplier is the lowest of the 5 types — 17% below Lean FIRE',
-    ],
+    differentiatingFacts: EXPENSE_MULTIPLE_FACTS.barista,
   },
 ];
 
@@ -364,7 +345,7 @@ export const CORE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'hub',
-    lastModified: '2026-10-07',
+    lastModified: '2026-10-08',
   },
   {
     path: '/healthcare-bridge',
