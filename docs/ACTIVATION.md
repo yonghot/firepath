@@ -11,7 +11,7 @@ Names only. No value, link, id or phone number belongs in this file or in source
 | `NEXT_PUBLIC_ADSENSE_SLOT_RESULT`, `NEXT_PUBLIC_ADSENSE_SLOT_GUIDE` | Optional per-placement overrides of the slot id. |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | GA4 stream id. |
 | `NEXT_PUBLIC_APP_URL` | Optional canonical host override. Unset uses the site constant. |
-| `FEEDBACK_ENDPOINT` | Where the contact form and the feedback widget forward messages. Unset hides the contact form. |
+| `FEEDBACK_ENDPOINT` | Where the contact form and the feedback widget forward messages. Unset hides the contact form and the footer feedback link, and the Privacy page drops its message-collection paragraph. |
 | `INDEXNOW_KEY` | IndexNow key file and post-deploy submission. |
 
 ## Result-area slots (src/components/monetization/ResultMonetization.tsx)

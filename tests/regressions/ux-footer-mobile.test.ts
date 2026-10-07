@@ -1,9 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Footer } from '@/components/layouts/footer';
 
+vi.stubEnv('FEEDBACK_ENDPOINT', 'http://127.0.0.1:9/collect');
 const html = renderToStaticMarkup(createElement(Footer));
+vi.unstubAllEnvs();
 
 function classTokens(attrs: string): string[] {
   return (/class="([^"]*)"/.exec(attrs)?.[1] ?? '').split(/\s+/).filter(Boolean);

@@ -5,6 +5,7 @@ import { ManageConsentLink } from '@/components/common/manage-consent-link';
 import { ClearMyDataLink } from '@/components/common/clear-my-data-link';
 import { FeedbackWidget } from '@/components/common/feedback-widget';
 import { PUBLISHER } from '@/lib/site';
+import { isMessageEndpointConfigured } from '@/lib/feedback-endpoint';
 
 const LINK = 'flex min-h-11 items-center text-sm text-muted-foreground hover:text-foreground transition-colors duration-200';
 
@@ -50,7 +51,7 @@ export function Footer({ premiumAvailable = false }: { premiumAvailable?: boolea
               <nav className="flex flex-col">
                 <Link href="/about" className={LINK}>About</Link>
                 <Link href="/contact" className={LINK}>Contact</Link>
-                <FeedbackWidget />
+                {isMessageEndpointConfigured() && <FeedbackWidget />}
               </nav>
             </div>
             <div className="min-w-0 space-y-2">

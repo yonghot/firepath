@@ -55,7 +55,9 @@ describe('K18: nothing is pinned to the bottom of the viewport on first paint', 
   });
 
   it('the footer carries the Send feedback launcher', () => {
+    vi.stubEnv('FEEDBACK_ENDPOINT', 'http://127.0.0.1:9/collect');
     const html = renderToStaticMarkup(createElement(Footer));
+    vi.unstubAllEnvs();
     expect(html).toContain('Send feedback');
     expect(fixedClassTokens(html)).toEqual([]);
   });

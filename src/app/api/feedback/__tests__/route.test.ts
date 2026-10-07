@@ -2,17 +2,32 @@
  * Unit tests for POST /api/feedback route.
  *
  * Tests cover:
- *  - Valid submission returns 200 { ok: true }.
+ *  - Valid submission returns 200 { ok: true } once the collector answers 2xx.
  *  - Invalid type / empty message / oversized message / invalid email → 400.
  *  - Malformed JSON → 400.
- *  - When FEEDBACK_ENDPOINT is unset → fetch is NOT called.
+ *  - When FEEDBACK_ENDPOINT is unset → 503, fetch is NOT called.
  *  - When FEEDBACK_ENDPOINT is set → fetch IS called with the record JSON.
- *  - External fetch failure → still returns 200 { ok: true } (user not blocked).
+ *  - External fetch failure or non-2xx answer → 502 { ok: false } (a dropped message is never reported as received).
  *  - Body too large → 400.
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { POST } from '../route';
+
+const COLLECTOR = 'https://example.com/collect';
+const originalFetch = global.fetch;
+const originalEndpoint = process.env.FEEDBACK_ENDPOINT;
+
+beforeEach(() => {
+  process.env.FEEDBACK_ENDPOINT = COLLECTOR;
+  global.fetch = vi.fn().mockResolvedValue(new Response('ok', { status: 200 }));
+});
+
+afterEach(() => {
+  global.fetch = originalFetch;
+  if (originalEndpoint === undefined) delete process.env.FEEDBACK_ENDPOINT;
+  else process.env.FEEDBACK_ENDPOINT = originalEndpoint;
+});
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -110,36 +125,19 @@ describe('POST /api/feedback — validation errors', () => {
 // ── Endpoint forwarding behaviour ─────────────────────────────────────────────
 
 describe('POST /api/feedback — FEEDBACK_ENDPOINT behaviour', () => {
-  const originalFetch = global.fetch;
-  const originalEnv = process.env.FEEDBACK_ENDPOINT;
-
-  beforeEach(() => {
-    vi.resetAllMocks();
-  });
-
-  afterEach(() => {
-    global.fetch = originalFetch;
-    if (originalEnv === undefined) {
-      delete process.env.FEEDBACK_ENDPOINT;
-    } else {
-      process.env.FEEDBACK_ENDPOINT = originalEnv;
-    }
-  });
-
-  it('does NOT call fetch when FEEDBACK_ENDPOINT is unset', async () => {
+  it('refuses with 503 and does NOT call fetch when FEEDBACK_ENDPOINT is unset', async () => {
     delete process.env.FEEDBACK_ENDPOINT;
 
     const mockFetch = vi.fn();
     global.fetch = mockFetch;
 
     const res = await POST(makeRequest(VALID));
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(503);
+    expect((await res.json()).ok).toBe(false);
     expect(mockFetch).not.toHaveBeenCalled();
   });
 
   it('calls fetch with the record when FEEDBACK_ENDPOINT is set', async () => {
-    process.env.FEEDBACK_ENDPOINT = 'https://example.com/collect';
-
     const mockFetch = vi.fn().mockResolvedValue(new Response('ok', { status: 200 }));
     global.fetch = mockFetch;
 
@@ -161,21 +159,29 @@ describe('POST /api/feedback — FEEDBACK_ENDPOINT behaviour', () => {
     expect(typeof forwarded.userAgent).toBe('string');
   });
 
-  it('returns 200 even when external fetch fails', async () => {
-    process.env.FEEDBACK_ENDPOINT = 'https://example.com/collect';
-
+  it('returns 502 { ok: false } when the external fetch fails, and logs the failure server-side', async () => {
     const mockFetch = vi.fn().mockRejectedValue(new Error('Network error'));
     global.fetch = mockFetch;
 
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const res = await POST(makeRequest(VALID));
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(502);
     const data = await res.json();
-    expect(data.ok).toBe(true);
+    expect(data.ok).toBe(false);
+    expect(typeof data.error).toBe('string');
 
-    // Error should be logged server-side.
     expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+
+  it('returns 502 { ok: false } when the collector answers non-2xx', async () => {
+    global.fetch = vi.fn().mockResolvedValue(new Response('boom', { status: 500 }));
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await POST(makeRequest(VALID));
+    expect(res.status).toBe(502);
+    expect((await res.json()).ok).toBe(false);
     consoleSpy.mockRestore();
   });
 });

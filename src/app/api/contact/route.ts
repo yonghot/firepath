@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
-import { PUBLISHER, SITE_URL } from '@/lib/site';
+import { SITE_URL } from '@/lib/site';
 import { forwardSubmission } from '@/lib/utils/forward-submission';
+import { messageEndpoint, UNDELIVERED_MESSAGE } from '@/lib/feedback-endpoint';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-
-const UNDELIVERED = `Your message could not be delivered. Please email ${PUBLISHER.email} instead.`;
 
 // Conservative RFC-5322-lite email check — good enough for capture validation.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -60,9 +59,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const endpoint = process.env.FEEDBACK_ENDPOINT?.trim();
+  const endpoint = messageEndpoint();
   if (!endpoint) {
-    return NextResponse.json({ ok: false, error: UNDELIVERED }, { status: 503 });
+    return NextResponse.json({ ok: false, error: UNDELIVERED_MESSAGE }, { status: 503 });
   }
 
   const delivered = await forwardSubmission(endpoint, {
@@ -76,7 +75,7 @@ export async function POST(request: Request) {
     receivedAt: new Date().toISOString(),
   });
   if (!delivered) {
-    return NextResponse.json({ ok: false, error: UNDELIVERED }, { status: 502 });
+    return NextResponse.json({ ok: false, error: UNDELIVERED_MESSAGE }, { status: 502 });
   }
 
   return NextResponse.json({ ok: true });
