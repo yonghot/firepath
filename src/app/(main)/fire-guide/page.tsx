@@ -172,7 +172,7 @@ function SectionLinkout({ sectionKey }: { sectionKey?: string }) {
         <p className="mt-3 text-sm text-muted-foreground">
           See a ranked, side-by-side comparison of all 5 FIRE-type targets on the{' '}
           <Link href="/fire-statistics" className="underline underline-offset-2 hover:text-primary transition-colors duration-150">
-            FIRE Statistics
+            FIRE Target Scenarios
           </Link>{' '}
           page.
         </p>

@@ -32,9 +32,9 @@ import { buildSynthesisSentence } from "@/lib/content-pages";
  */
 
 export const metadata: Metadata = buildMeta({
-  title: "FIRE Statistics: FIRE Target Amounts Compared 2026",
+  title: "FIRE Target Scenarios: Amounts by Type and Retirement Age",
   description:
-    "FIRE target amounts at default inputs, ranked by FIRE type and compared across retirement ages, with downloadable JSON and CSV data.",
+    "Calculated FIRE target amounts at default inputs, ranked by FIRE type and compared across retirement ages. Scenario figures, not survey data, with JSON and CSV downloads.",
   path: "/fire-statistics",
   ogType: "article",
 });
@@ -77,18 +77,18 @@ export default function FireStatisticsPage() {
     <div className="mx-auto max-w-3xl px-4 py-8 space-y-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: datasetJson }} />
 
-      <Breadcrumbs items={[{ name: "FIRE Statistics", path: "/fire-statistics" }]} />
+      <Breadcrumbs items={[{ name: "FIRE Target Scenarios", path: "/fire-statistics" }]} />
 
       <div>
         <div className="flex items-center gap-2 mb-2">
           <BarChart3 className="h-6 w-6 text-[var(--brand-primary)]" aria-hidden="true" />
-          <h1 className="text-4xl font-bold">FIRE Statistics</h1>
+          <h1 className="text-4xl font-bold">FIRE Target Scenarios</h1>
         </div>
         <AuthorByline lastUpdated={dataset.lastUpdated} className="mb-4" />
         <p className="text-muted-foreground">
           Target amounts for each FIRE type at the default inputs, ranked and compared across
           retirement ages. Every figure is calculated with the same formulas as the interactive
-          calculator.
+          calculator, so these are calculated scenarios, not survey data.
         </p>
       </div>
 
@@ -98,7 +98,7 @@ export default function FireStatisticsPage() {
         className="rounded-xl border bg-card p-6 space-y-3"
       >
         <h2 id="headline-stat-heading" className="text-2xl font-bold">
-          Headline stat
+          Headline figure
         </h2>
         <p className="text-3xl font-bold tabular-nums text-[var(--brand-primary)]">
           {dataset.headline.value}
@@ -219,7 +219,7 @@ export default function FireStatisticsPage() {
       {/* Quotable findings */}
       <section aria-labelledby="findings-heading" className="space-y-3">
         <h2 id="findings-heading" className="text-2xl font-bold">
-          Findings
+          What the scenarios show
         </h2>
         <ul className="space-y-3">
           {dataset.findings.map((finding, i) => (
@@ -279,7 +279,7 @@ export default function FireStatisticsPage() {
       <div className="p-6 rounded-xl bg-primary/5 border border-primary/20 text-center">
         <h2 className="text-2xl font-semibold mb-2">See your own numbers</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          These statistics use default inputs — plug in your own to see your personal FIRE targets.
+          These scenarios use default inputs — plug in your own to see your personal FIRE targets.
         </p>
         <Link href="/">
           <Button>

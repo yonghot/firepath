@@ -15,9 +15,8 @@ import { Breadcrumbs } from '@/components/common/breadcrumbs';
 import { AnswerBlock } from '@/components/common/answer-block';
 import { buildAnswerBlock, type GeoAnswerEntity } from '@/lib/seo/geo';
 import { calculateFIRE } from '@/lib/engine/fire-calculator';
-import { DEFAULT_INPUT, FIRE_MULTIPLIERS } from '@/constants/fire-defaults';
-import { FIRE_LABELS, FIRE_TYPES } from '@/constants/fire-colors';
-import { formatCurrencyFull, formatPercent } from '@/lib/utils/format';
+import { DEFAULT_INPUT } from '@/constants/fire-defaults';
+import { formatPercent } from '@/lib/utils/format';
 import { EXPECTED_RETURN_STAT } from '@/lib/figures';
 import { getPageLastModified } from '@/lib/content-pages';
 import { SITE_URL } from '@/lib/site';
@@ -50,22 +49,9 @@ const GUIDE_HUB_ANSWER: GeoAnswerEntity = buildAnswerBlock({
     `Regular FIRE needs ${fmtShortGuide(guideDefaultResults.regular.targetAmount)}, and Fat FIRE needs ` +
     `${fmtShortGuide(guideDefaultResults.fat.targetAmount)}. The published guides below explain these illustrative targets, withdrawal assumptions, and healthcare bridge scenarios. As of ${getPageLastModified('/guide')}, these are illustrative defaults, not guaranteed outcomes.`,
   lastUpdated: getPageLastModified('/guide'),
-  tableHeaders: ['FIRE Type', 'Multiplier', 'Target Amount'],
-  tableRows: FIRE_TYPES.map((type) => ({
-    label: type === 'coast' ? `${FIRE_LABELS.coast} (seed needed today)` : FIRE_LABELS[type],
-    values: [
-      type === 'coast' ? 'n/a' : `${(FIRE_MULTIPLIERS[type] * 100).toFixed(0)}%`,
-      formatCurrencyFull(guideDefaultResults[type].targetAmount),
-    ],
-  })),
-  factors: [
-    'Annual living expenses — the base every FIRE multiplier applies to',
-    'Safe withdrawal rate (SWR), typically 3.7%-4%',
-    'Expected annual investment return and inflation, which set the real return',
-    'Current age and target retirement age',
-    'Whether you plan to keep any part-time income (Barista FIRE) or stop contributing early (Coast FIRE)',
-    'Current net worth and savings rate, which determine how fast you reach any target',
-  ],
+  tableHeaders: [],
+  tableRows: [],
+  factors: [],
   stats: [
     {
       text: `${formatPercent(safeWithdrawalRate)} default Safe Withdrawal Rate`,
@@ -81,7 +67,7 @@ const PUBLISHED_GUIDES = [
   { href: '/fire-types', title: 'Compare the Five FIRE Types', description: 'Formulas, worked examples, and default assumptions for the five FIRE types.', fire_type: 'Comparison' },
   { href: '/healthcare-bridge', title: 'Healthcare Before Medicare', description: 'Estimate the years and premium costs between early retirement and age 65 using an illustrative scenario.', fire_type: 'Healthcare' },
   { href: '/methodology', title: 'How We Calculate', description: 'The formulas, inflation adjustment, simulation horizon, and assumptions behind the FIRE calculator.', fire_type: 'Methodology' },
-  { href: '/fire-statistics', title: 'FIRE Scenario Statistics', description: 'Compare default scenario targets and retirement-age sensitivities, with downloadable calculation data.', fire_type: 'Data' },
+  { href: '/fire-statistics', title: 'FIRE Target Scenarios', description: 'Compare default scenario targets and retirement-age sensitivities, with downloadable calculation data.', fire_type: 'Data' },
 ];
 
 export default async function GuidesIndexPage() {
@@ -133,7 +119,7 @@ export default async function GuidesIndexPage() {
         </p>
       </div>
 
-      <AnswerBlock entity={GUIDE_HUB_ANSWER} idPrefix="guide-hub-geo" className="mb-8" />
+      <AnswerBlock entity={GUIDE_HUB_ANSWER} idPrefix="guide-hub-geo" className="mb-8" summaryOnly />
 
       <div className="grid gap-4 md:grid-cols-2">
         {publishedGuides.map((guide) => (

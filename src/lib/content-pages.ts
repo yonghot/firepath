@@ -385,8 +385,8 @@ export const CORE_PAGES: ContentPage[] = [
   {
     path: '/fire-statistics',
     canonicalPath: '/fire-statistics',
-    title: 'FIRE Statistics',
-    description: 'Original FIRE-target statistics ranked and compared across scenarios.',
+    title: 'FIRE Target Scenarios',
+    description: 'Calculated FIRE target amounts ranked by type and compared across retirement ages (scenario figures, not survey data).',
     fireType: null,
     hasUniqueData: true,
     kind: 'spoke',
@@ -408,7 +408,7 @@ export const CORE_PAGES: ContentPage[] = [
     kind: 'spoke',
     lastModified: '2026-10-07',
     differentiatingFacts: [
-      '13 original prose sections (>=3-6 sentences each) covering the 4% rule\'s 1994 Bengen origin and the 1998 Trinity Study — not duplicated on /methodology, /fire-types, or any /guide/[slug] article',
+      '13 prose sections (>=3-6 sentences each) covering the 4% rule\'s 1994 Bengen origin and the 1998 Trinity Study — not duplicated on /methodology, /fire-types, or any /guide/[slug] article',
       'The only page site-wide citing 2026 IRS 401(k)/IRA/HSA contribution limits and the 2026 Social Security COLA/wage base',
       'A live-computed savings-rate sensitivity table (Regular FIRE reach age at 10%-60% savings rates) calculated at build time — a unique computed dataset not shown on any sibling page',
       'Cited sources include U.S. government agencies (IRS, SSA, HealthCare.gov, Investor.gov) alongside Morningstar, KFF, Bankrate and CNBC',

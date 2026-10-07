@@ -21,6 +21,7 @@ export function FIREResultCard({
   onHover,
 }: FIREResultCardProps) {
   const { reachAge, targetAmount, yearsToReach, monthlyPassiveIncome } = result;
+  const isCoast = type === 'coast';
 
   return (
     <Card
@@ -30,7 +31,11 @@ export function FIREResultCard({
       style={{ borderLeftWidth: '4px', borderLeftColor: color }}
       tabIndex={0}
       role="button"
-      aria-label={`${FIRE_LABELS[type]} FIRE — reach age ${reachAge ?? '80+'}, target ${formatCurrency(targetAmount)}`}
+      aria-label={
+        isCoast
+          ? `${FIRE_LABELS[type]} — coast-ready at age ${reachAge ?? '80+'}, seed needed today ${formatCurrency(targetAmount)}`
+          : `${FIRE_LABELS[type]} — reach age ${reachAge ?? '80+'}, target ${formatCurrency(targetAmount)}`
+      }
       onMouseEnter={() => onHover(type)}
       onMouseLeave={() => onHover(null)}
       onFocus={() => onHover(type)}
@@ -43,10 +48,12 @@ export function FIREResultCard({
           </span>
         </div>
 
+        {isCoast && <p className="text-xs text-muted-foreground">Coast-ready at age</p>}
         <div className="text-3xl font-bold tabular-nums">
           {reachAge !== null ? (
             <span>
-              {reachAge} <span className="text-sm font-normal text-muted-foreground">yrs</span>
+              {reachAge}
+              {!isCoast && <span className="text-sm font-normal text-muted-foreground"> yrs</span>}
             </span>
           ) : (
             <span className="text-lg text-muted-foreground">80+</span>
@@ -57,7 +64,7 @@ export function FIREResultCard({
 
         <div className="space-y-1 pt-1 border-t text-xs">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Target</span>
+            <span className="text-muted-foreground">{isCoast ? 'Seed needed today' : 'Target'}</span>
             <span className="font-medium tabular-nums">{formatCurrency(targetAmount)}</span>
           </div>
           {yearsToReach !== null && (
@@ -67,7 +74,7 @@ export function FIREResultCard({
             </div>
           )}
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Monthly</span>
+            <span className="text-muted-foreground">{isCoast ? 'Monthly at retirement' : 'Monthly'}</span>
             <span className="font-medium tabular-nums">{formatCurrencyFull(monthlyPassiveIncome)}/mo</span>
           </div>
         </div>

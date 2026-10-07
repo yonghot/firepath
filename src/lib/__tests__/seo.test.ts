@@ -38,6 +38,10 @@ const ROUTE_MATRIX: Record<string, { title: string; h1: string }> = {
     title: 'The Complete FIRE Guide (2026): 4% Rule, 5 FIRE Types',
     h1: 'The Complete FIRE Guide (2026)',
   },
+  '/fire-statistics': {
+    title: 'FIRE Target Scenarios: Amounts by Type and Retirement Age',
+    h1: 'FIRE Target Scenarios',
+  },
   '/fire-types': {
     title: 'FIRE Types Explained: Lean, Fat, Coast and Barista',
     h1: 'FIRE Types Explained',

@@ -17,7 +17,7 @@ import { getPageLastModified } from '@/lib/content-pages';
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 export const runtime = 'edge';
-export const alt = 'FIRE Statistics — FIRE target amounts compared across all 5 FIRE types';
+export const alt = 'FIRE Target Scenarios — calculated FIRE target amounts compared across all 5 FIRE types';
 
 export default async function Image() {
   const dataset = buildFireStatisticsDataset();
@@ -28,7 +28,7 @@ export default async function Image() {
   return new ImageResponse(
     buildOgVisual({
       eyebrow: 'FIREPath',
-      title: 'FIRE Statistics: Targets Compared Across 5 Types',
+      title: 'FIRE Target Scenarios: Compared Across 5 Types',
       stats: [
         { label: 'Lean FIRE (lowest)', value: formatCurrencyFull(lean.targetAmount), accent: FIRE_COLORS.lean },
         { label: 'Regular FIRE', value: formatCurrencyFull(regular.targetAmount), accent: FIRE_COLORS.regular },

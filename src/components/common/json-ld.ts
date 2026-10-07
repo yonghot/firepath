@@ -64,8 +64,8 @@ export function calculatorAppJsonLd(options?: { dateModified?: string }) {
 /**
  * Dataset JSON-LD for the /fire-statistics linkable-asset page (부속P
  * CODE-04). schema.org/Dataset is still supported (unlike FAQPage/HowTo —
- * see faq-section.tsx history) and is the correct entity for an
- * original-statistics page. `distribution` points at the same real
+ * see faq-section.tsx history) and is the correct entity for a page of
+ * calculated scenario figures (not survey data). `distribution` points at the same real
  * aggregate figures exposed as /data.json and /data.csv, so every surface
  * (page prose, JSON-LD, downloadable feeds) draws from one dataset.
  */
@@ -73,7 +73,7 @@ export function fireStatisticsDatasetJsonLd(options: { dateModified: string; des
   return {
     '@context': 'https://schema.org',
     '@type': 'Dataset',
-    name: 'FIREPath FIRE Target Statistics',
+    name: 'FIREPath FIRE Target Scenarios',
     description: options.description,
     url: abs('/fire-statistics'),
     license: 'https://creativecommons.org/licenses/by/4.0/',

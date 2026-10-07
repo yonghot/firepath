@@ -20,6 +20,7 @@ export function GET(): Response {
   const body = JSON.stringify(
     {
       source: `${SITE_URL}/fire-statistics`,
+      basis: 'Scenario figures calculated by FIREPath from annual expenses, the FIRE-type multipliers and the safe withdrawal rate at default inputs. Calculated, not survey data.',
       lastUpdated: dataset.lastUpdated,
       headline: dataset.headline,
       rankedFireTypes: dataset.rankedFireTypes,

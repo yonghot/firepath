@@ -22,9 +22,11 @@ interface AnswerBlockProps {
   /** Distinguishes multiple answer blocks' heading ids on one page. */
   idPrefix?: string;
   className?: string;
+  /** Heading, answer, date and sources only: no table or factor list (for a hub that links to the pages carrying them). */
+  summaryOnly?: boolean;
 }
 
-export function AnswerBlock({ entity, idPrefix = 'geo-answer', className }: AnswerBlockProps) {
+export function AnswerBlock({ entity, idPrefix = 'geo-answer', className, summaryOnly = false }: AnswerBlockProps) {
   const { query, answer, lastUpdated, tableHeaders, tableRows, factors, stats } = entity;
 
   return (
@@ -46,6 +48,7 @@ export function AnswerBlock({ entity, idPrefix = 'geo-answer', className }: Answ
         .
       </p>
 
+      {summaryOnly ? null : (
       <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse">
           <caption className="sr-only">Data breakdown for {query}</caption>
@@ -78,7 +81,9 @@ export function AnswerBlock({ entity, idPrefix = 'geo-answer', className }: Answ
           </tbody>
         </table>
       </div>
+      )}
 
+      {summaryOnly ? null : (
       <div>
         <h3 className="text-sm font-semibold mb-2">Factors that affect this number</h3>
         <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
@@ -87,6 +92,7 @@ export function AnswerBlock({ entity, idPrefix = 'geo-answer', className }: Answ
           ))}
         </ul>
       </div>
+      )}
 
       <ul className="space-y-1 text-xs text-muted-foreground border-t border-border pt-3">
         {stats.map((s, i) => (

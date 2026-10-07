@@ -2,8 +2,8 @@
  * lib/seo/statistics.ts — 부속P CODE-04 statistics aggregation.
  *
  * Aggregates the SAME compute engine used by the calculator (calculateFIRE)
- * across a fixed matrix of real scenarios into original, citable statistics
- * for the /fire-statistics "linkable asset" page: a headline stat, a ranked
+ * across a fixed matrix of real scenarios into citable scenario figures
+ * (calculated, not survey data) for the /fire-statistics page: a headline figure, a ranked
  * table, and 3-5 one-line quotable findings. Every number here is derived
  * from calculateFIRE()/figures.ts — nothing is fabricated or hand-typed.
  *
