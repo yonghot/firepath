@@ -254,12 +254,12 @@ function FireTypeCard({
 
         <div className="flex items-center gap-2 pt-2">
           <Link
-            href={`/#${type}`}
+            href="/"
             className="inline-flex items-center gap-1.5 text-xs font-medium underline underline-offset-2 hover:text-primary transition-colors duration-150"
-            aria-label={`See ${label} on the interactive calculator`}
+            aria-label={`Open the calculator to compare ${label} with the other types`}
           >
             <Calculator className="h-3.5 w-3.5" aria-hidden="true" />
-            See {label} in the calculator
+            Open the calculator
           </Link>
         </div>
       </div>
