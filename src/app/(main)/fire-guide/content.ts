@@ -4,6 +4,13 @@
 // AdSense "저가치 콘텐츠" 판정 대응 (부속U U-02). 모든 사실은 GUIDE_SOURCES 출처,
 // 변동 항목은 페이지 상 "verify at {official source}"로 프레이밍 — 날조 없음.
 
+import { formatAnnouncedOn, formatDollars, getRetirementLimitsState } from '@/lib/data/retirement-limits';
+
+const SS = getRetirementLimitsState().ssa.current;
+const SS_YEAR = SS.year;
+const COLA = `${SS.data.colaPercent}%`;
+const WAGE_BASE = formatDollars(SS.data.taxableWageBase);
+
 export interface GuideSection {
   heading: string;
   prose: string;
@@ -42,10 +49,9 @@ export const GUIDE_FACTS: GuideFact[] = [
     sourceUrl: 'https://www.irs.gov/pub/irs-drop/rp-25-19.pdf',
   },
   {
-    fact: "Social Security's 2026 COLA is 2.8%; the taxable wage base is $184,500",
-    detail:
-      'The Social Security Administration announced a 2.8% cost-of-living adjustment for benefits payable starting January 2026 (announced Oct. 24, 2025), and the taxable wage base — the income ceiling for the 12.4% Social Security payroll tax — rose to $184,500.',
-    sourceUrl: 'https://www.ssa.gov/news/en/press/releases/2025-10-24.html',
+    fact: `Social Security's ${SS_YEAR} COLA is ${COLA}; the taxable wage base is ${WAGE_BASE}`,
+    detail: `The Social Security Administration announced a ${COLA} cost-of-living adjustment for benefits payable starting January ${SS_YEAR} (announced ${formatAnnouncedOn(SS.data.announcedOn)}), and the taxable wage base — the income ceiling for the 12.4% Social Security payroll tax — rose to ${WAGE_BASE}.`,
+    sourceUrl: SS.data.colaSourceUrl,
   },
   {
     fact: 'The average employer family health plan cost $26,993/year in 2025',
@@ -154,10 +160,10 @@ export const GUIDE_SECTIONS: GuideSection[] = [
   {
     heading: 'Social Security and FIRE: What Early Retirees Should Know',
     prose:
-      "FIRE plans are usually built to be self-sufficient without Social Security, since benefits generally can't be claimed before age 62 and are reduced further the earlier you claim relative to your full retirement age. That said, Social Security is real, ongoing income most FIRE retirees will eventually receive, and it's worth tracking two figures that change every year: the cost-of-living adjustment (COLA), which raised benefits 2.8% for 2026, and the taxable wage base ($184,500 for 2026) — the income ceiling above which the 12.4% Social Security payroll tax no longer applies, relevant to anyone still earning a high income while working toward FIRE.",
+      `FIRE plans are usually built to be self-sufficient without Social Security, since benefits generally can't be claimed before age 62 and are reduced further the earlier you claim relative to your full retirement age. That said, Social Security is real, ongoing income most FIRE retirees will eventually receive, and it's worth tracking two figures that change every year: the cost-of-living adjustment (COLA), which raised benefits ${COLA} for ${SS_YEAR}, and the taxable wage base (${WAGE_BASE} for ${SS_YEAR}) — the income ceiling above which the 12.4% Social Security payroll tax no longer applies, relevant to anyone still earning a high income while working toward FIRE.`,
     bullets: [
-      "2026 COLA: 2.8% benefit increase, effective for benefits payable starting January 2026.",
-      '2026 taxable wage base: $184,500 — the income ceiling for the 12.4% Social Security payroll tax.',
+      `${SS_YEAR} COLA: ${COLA} benefit increase, effective for benefits payable starting January ${SS_YEAR}.`,
+      `${SS_YEAR} taxable wage base: ${WAGE_BASE} — the income ceiling for the 12.4% Social Security payroll tax.`,
       "Benefit estimates and claiming-age trade-offs are highly individual — check your own record at ssa.gov rather than using a generic average.",
     ],
   },
@@ -242,12 +248,12 @@ export const GUIDE_SOURCES: GuideSource[] = [
     url: 'https://www.irs.gov/pub/irs-drop/rp-25-19.pdf',
   },
   {
-    name: 'SSA — Social Security Announces 2.8 Percent Benefit Increase for 2026',
-    url: 'https://www.ssa.gov/news/en/press/releases/2025-10-24.html',
+    name: `SSA — Social Security Announces ${SS.data.colaPercent} Percent Benefit Increase for ${SS_YEAR}`,
+    url: SS.data.colaSourceUrl,
   },
   {
-    name: 'SSA — Contribution and Benefit Base (2026 taxable wage base $184,500)',
-    url: 'https://www.ssa.gov/oact/cola/cbb.html',
+    name: `SSA — Contribution and Benefit Base (${SS_YEAR} taxable wage base ${WAGE_BASE})`,
+    url: SS.data.wageBaseSourceUrl,
   },
   {
     name: 'KFF — 2025 Employer Health Benefits Survey',
@@ -276,7 +282,7 @@ export const GUIDE_SOURCES: GuideSource[] = [
 export const GUIDE_VERIFY_NOTES: string[] = [
   '2026 IRS contribution limits (401(k) $24,500, IRA $7,500, HSA $4,400/$8,750, catch-ups) are finalized via Notice 2025-67 and Revenue Procedure 2025-19 as of this writing, but the IRS republishes new limits every year — verify at irs.gov before contributing in a future year.',
   "Morningstar's 3.9% base-case safe withdrawal rate is a research estimate that moves with market valuations and is republished annually (4.0% in 2023, 3.7% in 2024, 3.9% in 2025/2026) — re-check morningstar.com rather than treating 3.9% as fixed.",
-  "Social Security's 2.8% COLA and $184,500 wage base apply to 2026 only; the SSA recalculates both every year — reverify at ssa.gov for any year other than 2026.",
+  `Social Security's ${COLA} COLA and ${WAGE_BASE} wage base apply to ${SS_YEAR} only; the SSA recalculates both every year — reverify at ssa.gov for any year other than ${SS_YEAR}.`,
   "KFF's $9,325 (single) / $26,993 (family) average premiums are from the 2025 Employer Health Benefits Survey (that plan year); KFF publishes a new survey annually — reverify at kff.org for the current year's figures.",
   'ACA Marketplace subsidy eligibility (federal poverty level thresholds, premium tax credit formulas) changes annually and can shift with federal legislation — reverify at healthcare.gov before enrolling.',
 ];

@@ -1,44 +1,34 @@
 /**
  * season-badge.tsx — unit tests (부속U U-04).
  *
- * `nextAnnouncement()` is pure (no window/Date.now() access beyond the
- * injected `now`), so its date math is fully unit-testable without RTL/jsdom
- * (this repo runs vitest in the plain `node` environment — see ad-slot.test.ts).
- * The component's JSX/token-styling contract is checked via source
- * inspection, matching every other "render test" in this repo.
+ * The badge reads the retirement-limits data state (src/lib/data/retirement-limits.ts),
+ * never the clock; tests/regressions/data-state-no-clock.test.ts holds the clock-independence
+ * and page-string derivation assertions. This file keeps the component's styling and
+ * honest-framing contract and the source citation, which now lives in the data module.
+ * Runs in the plain `node` environment, so the JSX contract is checked via source inspection.
  */
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { nextAnnouncement } from '../season-badge';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { SeasonBadge } from '../season-badge';
+import { getRetirementLimitsState } from '@/lib/data/retirement-limits';
 
-describe('nextAnnouncement() — real IRS COLA announcement cadence (November)', () => {
-  it('on 2026-07-18 (today, per project context) resolves to "announce Nov 2026, limits year 2027" — matches 부속U §5\'s literal example', () => {
-    const result = nextAnnouncement(new Date('2026-07-18T00:00:00Z'));
-    expect(result).toEqual({ announceYear: 2026, limitsYear: 2027 });
+describe('SeasonBadge — text from the data state', () => {
+  const text = renderToStaticMarkup(createElement(SeasonBadge)).replace(/<[^>]*>/g, '').trim();
+
+  it('names the next unpublished IRS limits year while it is unpublished', () => {
+    const { irs } = getRetirementLimitsState();
+    expect(irs.next.status).toBe('unpublished');
+    expect(irs.next.data).toBeNull();
+    expect(text).toBe(`IRS typically announces ${irs.next.year} retirement limits in October or November — bookmark your plan`);
   });
 
-  it('in January (well before November) still targets that same year\'s November', () => {
-    const result = nextAnnouncement(new Date('2026-01-05T00:00:00Z'));
-    expect(result).toEqual({ announceYear: 2026, limitsYear: 2027 });
-  });
-
-  it('in October (the month before) still targets that same year\'s November', () => {
-    const result = nextAnnouncement(new Date('2026-10-31T00:00:00Z'));
-    expect(result).toEqual({ announceYear: 2026, limitsYear: 2027 });
-  });
-
-  it('in December (after November has passed) rolls forward to next year\'s November', () => {
-    const result = nextAnnouncement(new Date('2026-12-15T00:00:00Z'));
-    expect(result).toEqual({ announceYear: 2027, limitsYear: 2028 });
-  });
-
-  it('never regresses to a past announcement year relative to `now`', () => {
-    const now = new Date('2030-03-01T00:00:00Z');
-    const result = nextAnnouncement(now);
-    expect(result.announceYear).toBeGreaterThanOrEqual(now.getFullYear());
-    expect(result.limitsYear).toBeGreaterThan(result.announceYear);
+  it('forwards className to the pill', () => {
+    const html = renderToStaticMarkup(createElement(SeasonBadge, { className: 'ml-0' }));
+    expect(html).toMatch(/class="[^"]*\bml-0\b/);
   });
 });
 
@@ -47,19 +37,19 @@ describe('SeasonBadge — token styling and honest framing (부속U §7: no fabr
 
   it('uses the same subtle token pill styling as UpdatedBadge, never AdSlot\'s dashed placeholder', () => {
     expect(src).toMatch(/border-border bg-muted\/40/);
-    // Strip block comments — the file's own JSDoc explains in prose that it
-    // must NOT use AdSlot's dashed treatment, which would otherwise
-    // false-positive a raw substring match against the documentation itself.
-    const codeOnly = src.replace(/\/\*[\s\S]*?\*\//g, '');
-    expect(codeOnly).not.toMatch(/border-dashed/);
+    expect(src.replace(/\/\*[\s\S]*?\*\//g, '')).not.toMatch(/border-dashed/);
   });
 
   it('frames the future announcement as an expectation ("typically") rather than asserting a confirmed IRS date', () => {
     expect(src).toMatch(/typically announces/i);
   });
+});
 
-  it('cites a real, verifiable IRS source URL and release number in a code comment (no fabrication)', () => {
-    expect(src).toMatch(/irs\.gov\/newsroom\/401k-limit-increases-to-24500-for-2026/);
-    expect(src).toMatch(/IR-2025-111/);
+describe('retirement-limits data module — cited IRS source (no fabrication)', () => {
+  it('records the real 2026 IRS announcement with its release number, notice and URL', () => {
+    const { irs } = getRetirementLimitsState();
+    expect(irs.current.data.sourceUrl).toMatch(/irs\.gov\/newsroom\/401k-limit-increases-to-24500-for-2026/);
+    expect(irs.current.data.pressRelease).toBe('IR-2025-111');
+    expect(irs.current.data.noticeNumber).toBe('Notice 2025-67');
   });
 });
