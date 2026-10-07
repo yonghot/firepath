@@ -13,7 +13,7 @@ import { DEFAULT_INPUT } from './fire-defaults';
  * exactly as it would for a real edit. No new event, no `preset` param.
  *
  * NO FABRICATION (부속U §7 guardrail): every value below is a direct
- * override of age/income/savings-rate (or of age/savings-rate) spread onto
+ * override of age/income/savings-rate (or of age/savings-rate/net worth) spread onto
  * the app's own DEFAULT_INPUT (SLIDER_CONFIGS defaultValue — see
  * fire-defaults.ts) for every other field. Nothing here is a statistic,
  * average, or claim about real FIRE savers — these are user-input
@@ -45,13 +45,9 @@ export const CALCULATOR_PRESETS: CalculatorPreset[] = [
     input: { ...DEFAULT_INPUT, currentAge: 40, annualIncome: 120000, savingsRate: 0.25 },
   },
   {
-    // Coast FIRE archetype: net worth already saved is left to compound with
-    // NO further contributions (savingsRate 0) from age 35 onward. Every
-    // other field stays the engine default — the point of this preset is to
-    // demonstrate the Coast FIRE calculation, not to assert a specific
-    // "already coasted" net worth that isn't in the dataset.
+    // Net worth must cover the Coast seed for the default retirement age or the Coast card reads 80+ (pinned in constants/__tests__).
     id: 'coast-fire-35',
     label: 'Try: Coast FIRE at 35',
-    input: { ...DEFAULT_INPUT, currentAge: 35, savingsRate: 0 },
+    input: { ...DEFAULT_INPUT, currentAge: 35, savingsRate: 0, currentNetWorth: 320000 },
   },
 ];

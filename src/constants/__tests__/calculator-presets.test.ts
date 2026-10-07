@@ -71,13 +71,28 @@ describe('CALCULATOR_PRESETS', () => {
     expect(omit(preset!.input, overridden)).toEqual(omit(DEFAULT_INPUT, overridden));
   });
 
-  it('preset "coast-fire-35" (Coast FIRE at 35) sets currentAge=35 and savingsRate=0 (the Coast archetype: no further contributions), with every other field from DEFAULT_INPUT', () => {
+  it('preset "coast-fire-35" (Coast FIRE at 35) sets currentAge=35, savingsRate=0 (the Coast archetype: no further contributions) and a net worth, with every other field from DEFAULT_INPUT', () => {
     const preset = CALCULATOR_PRESETS.find((p) => p.id === 'coast-fire-35');
     expect(preset).toBeDefined();
     expect(preset!.input.currentAge).toBe(35);
     expect(preset!.input.savingsRate).toBe(0);
-    const overridden: Array<keyof FIREInput> = ['currentAge', 'savingsRate'];
+    const overridden: Array<keyof FIREInput> = ['currentAge', 'savingsRate', 'currentNetWorth'];
     expect(omit(preset!.input, overridden)).toEqual(omit(DEFAULT_INPUT, overridden));
+  });
+
+  it('preset "coast-fire-35" starts coast-ready: its net worth covers the Coast seed the engine computes for it (W6)', () => {
+    const preset = CALCULATOR_PRESETS.find((p) => p.id === 'coast-fire-35')!;
+    const { coast } = calculateFIRE(preset.input).results;
+    expect(preset.input.currentNetWorth).toBeGreaterThanOrEqual(coast.targetAmount);
+    expect(coast.reachAge).toBe(preset.input.currentAge);
+    expect(coast.yearsToReach).toBe(0);
+  });
+
+  it('the Coast preset no longer reads 80+ for every FIRE type (the d91a670 preset left net worth at the default and reached none by 80)', () => {
+    const preset = CALCULATOR_PRESETS.find((p) => p.id === 'coast-fire-35')!;
+    const { results } = calculateFIRE(preset.input);
+    expect(Object.values(results).some((r) => r.reachAge !== null)).toBe(true);
+    expect(calculateFIRE({ ...preset.input, currentNetWorth: DEFAULT_INPUT.currentNetWorth }).results.coast.reachAge).toBeNull();
   });
 
   it('every preset feeds the real, unmodified calculateFIRE() engine without throwing and produces a full 5-type result (no mocked/fabricated output)', () => {
