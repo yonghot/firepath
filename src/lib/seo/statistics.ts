@@ -87,6 +87,10 @@ function fmtShort(n: number): string {
   return n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(2)}M` : `$${Math.round(n / 1000)}K`;
 }
 
+export function targetMeaning(type: FIREType): string {
+  return type === 'coast' ? 'Seed needed today (the Regular FIRE target discounted to today)' : 'Target amount';
+}
+
 /** Builds the full statistics dataset. Pure function — same output every call (no randomness; the date is the registry date). */
 export function buildFireStatisticsDataset(): FireStatisticsDataset {
   const { results: defaultResults } = calculateFIRE(DEFAULT_INPUT);
@@ -97,7 +101,7 @@ export function buildFireStatisticsDataset(): FireStatisticsDataset {
     multiplier: type === 'coast' ? ('discounted seed' as const) : FIRE_MULTIPLIERS[type],
     targetAmount: defaultResults[type].targetAmount,
     monthlyPassiveIncome: defaultResults[type].monthlyPassiveIncome,
-    targetMeaning: type === 'coast' ? 'Seed needed today (the Regular FIRE target discounted to today)' : 'Target amount',
+    targetMeaning: targetMeaning(type),
     monthlyMeaning:
       type === 'coast'
         ? 'Monthly passive income at retirement, from the full Regular FIRE target'
@@ -142,7 +146,7 @@ export function buildFireStatisticsDataset(): FireStatisticsDataset {
     return `${increment} to ${row.type === 'coast' ? 'the Coast FIRE seed' : row.label}`;
   });
 
-  const swrPct = (CORE_FIGURES.safeWithdrawalRate.value * 100).toFixed(0);
+  const swrPct = (DEFAULT_INPUT.safeWithdrawalRate * 100).toFixed(0);
   const expenses = DEFAULT_INPUT.annualExpenses.toLocaleString('en-US');
   const { count: multipleCount, lowest, highest } = expenseMultipleExtremes(rankedFireTypes);
   const spreadPct = ((highest.targetAmount / lowest.targetAmount - 1) * 100).toFixed(0);

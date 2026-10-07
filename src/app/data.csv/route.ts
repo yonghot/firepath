@@ -6,7 +6,7 @@
  * FIRE type x retirement-age scenario) for spreadsheet/journalist use.
  */
 
-import { buildFireStatisticsDataset } from '@/lib/seo/statistics';
+import { buildFireStatisticsDataset, targetMeaning } from '@/lib/seo/statistics';
 import { FIRE_TYPES } from '@/constants/fire-colors';
 
 export const dynamic = 'force-static';
@@ -20,7 +20,7 @@ function csvEscape(value: string | number): string {
 export function GET(): Response {
   const dataset = buildFireStatisticsDataset();
 
-  const header = ['retirement_age', 'fire_type', 'target_amount_usd', 'last_updated'];
+  const header = ['retirement_age', 'fire_type', 'target_amount_usd', 'amount_meaning', 'last_updated'];
   const rows: string[][] = [];
 
   for (const scenario of dataset.scenarios) {
@@ -29,6 +29,7 @@ export function GET(): Response {
         String(scenario.retirementAge),
         type,
         String(scenario.targets[type]),
+        targetMeaning(type),
         dataset.lastUpdated,
       ]);
     }

@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { calculateFIRE } from '@/lib/engine/fire-calculator';
 import { DEFAULT_INPUT, FIRE_MULTIPLIERS } from '@/constants/fire-defaults';
+import { CORE_FIGURES } from '@/lib/figures';
 import { FIRE_LABELS, FIRE_TYPES } from '@/constants/fire-colors';
 import type { FIREType } from '@/types/fire.types';
 import { formatCurrencyFull as money } from '@/lib/utils/format';
@@ -232,6 +233,15 @@ describe('K4-a C3: retirement-age claims follow the engine', () => {
     const first = scenarioResults[0].coast.targetAmount;
     const last = scenarioResults[scenarioResults.length - 1].coast.targetAmount;
     expect(finding).toContain(`${money(first)} to ${money(last)}`);
+    expect(finding).toContain(` by ${(Math.abs(1 - last / first) * 100).toFixed(0)}% (`);
+  });
+
+  it('the SWR quoted in the headline and the increment finding is the engine default the amounts use', () => {
+    const pct = `${(SWR * 100).toFixed(0)}%`;
+    expect(dataset.headline.text).toContain(`At the default ${pct} Safe Withdrawal Rate`);
+    expect(dataset.findings.find((f) => /every extra/.test(f))).toContain(`At the default ${pct} Safe Withdrawal Rate`);
+    expect(dataset.headline.text).toContain(`$${DEFAULT_INPUT.annualExpenses.toLocaleString('en-US')}/yr expenses`);
+    expect(CORE_FIGURES.safeWithdrawalRate.value).toBe(SWR);
   });
 
   it('the page sentence under the scenario table is the dataset note: independent types listed, Coast direction right', async () => {

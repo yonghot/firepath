@@ -23,7 +23,7 @@ describe('GET /data.csv', () => {
     const lines = body.trim().split('\n');
     const dataset = buildFireStatisticsDataset();
 
-    expect(lines[0]).toBe('retirement_age,fire_type,target_amount_usd,last_updated');
+    expect(lines[0]).toBe('retirement_age,fire_type,target_amount_usd,amount_meaning,last_updated');
     expect(lines.length - 1).toBe(dataset.scenarios.length * FIRE_TYPES.length);
   });
 
@@ -41,7 +41,8 @@ describe('GET /data.csv', () => {
         );
         expect(match).toBeDefined();
         expect(Number(match![2])).toBe(scenario.targets[type]);
-        expect(match![3]).toBe(dataset.lastUpdated);
+        expect(match![4]).toBe(dataset.lastUpdated);
+        expect(match![3]).toBe(type === 'coast' ? 'Seed needed today (the Regular FIRE target discounted to today)' : 'Target amount');
       }
     }
   });

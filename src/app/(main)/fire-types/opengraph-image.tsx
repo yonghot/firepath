@@ -29,7 +29,7 @@ export default async function Image() {
       stats: [
         { label: 'Lean FIRE', value: formatCurrencyFull(results.lean.targetAmount), accent: FIRE_COLORS.lean },
         { label: 'Fat FIRE', value: formatCurrencyFull(results.fat.targetAmount), accent: FIRE_COLORS.fat },
-        { label: 'Coast FIRE', value: formatCurrencyFull(results.coast.targetAmount), accent: FIRE_COLORS.coast },
+        { label: 'Coast seed today', value: formatCurrencyFull(results.coast.targetAmount), accent: FIRE_COLORS.coast },
         {
           label: 'Barista FIRE',
           value: formatCurrencyFull(results.barista.targetAmount),

@@ -8,7 +8,8 @@
  * or attached to outreach), and a machine-readable target for AI crawlers.
  */
 
-import { buildFireStatisticsDataset } from '@/lib/seo/statistics';
+import { buildFireStatisticsDataset, targetMeaning } from '@/lib/seo/statistics';
+import { FIRE_TYPES } from '@/constants/fire-colors';
 import { SITE_URL } from '@/lib/site';
 
 export const dynamic = 'force-static';
@@ -25,6 +26,7 @@ export function GET(): Response {
       headline: dataset.headline,
       rankedFireTypes: dataset.rankedFireTypes,
       scenarios: dataset.scenarios,
+      scenarioTargetMeaning: Object.fromEntries(FIRE_TYPES.map((type) => [type, targetMeaning(type)])),
       findings: dataset.findings,
       sources: dataset.sources,
       license: 'CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/',

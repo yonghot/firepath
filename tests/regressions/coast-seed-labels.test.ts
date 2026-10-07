@@ -3,7 +3,10 @@ import { calculateFIRE } from '@/lib/engine/fire-calculator';
 import { DEFAULT_INPUT } from '@/constants/fire-defaults';
 import { formatCurrencyFull as money } from '@/lib/utils/format';
 import { buildFireStatisticsDataset } from '@/lib/seo/statistics';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { GET as getDataJson } from '@/app/data.json/route';
+import { GET as getDataCsv } from '@/app/data.csv/route';
 import { preloadPages, renderPage } from './helpers/render-pages';
 
 vi.mock('next/navigation', () => ({
@@ -64,6 +67,29 @@ describe('W1 (K4): the Coast seed never sits next to a bare "Target" or "Monthly
   it('the ranked table on /fire-statistics does the same', async () => {
     const text = visibleText(await renderPage('/fire-statistics'));
     expect(text).toContain(`Coast FIRE (seed needed today) ${COAST_ROW_TAIL}`);
+  });
+
+  it('the retirement-age table on /fire-statistics heads the Coast column as a seed', async () => {
+    const html = await renderPage('/fire-statistics');
+    const headers = [...html.matchAll(/<th scope="col"[^>]*>([^<]*)<\/th>/g)].map((m) => decode(m[1]).trim());
+    expect(headers).toContain('Coast (seed today)');
+    expect(headers).not.toContain('Coast');
+  });
+
+  it('/data.json scenarios and every /data.csv Coast row say the amount is a seed', async () => {
+    const body = await getDataJson().json();
+    expect(body.scenarioTargetMeaning.coast).toMatch(/^Seed needed today/);
+    expect(body.scenarioTargetMeaning.lean).toBe('Target amount');
+    const rows = (await getDataCsv().text()).trim().split('\n').slice(1).map((line) => line.split(','));
+    const coastRows = rows.filter((r) => r[1] === 'coast');
+    expect(coastRows.length).toBeGreaterThan(0);
+    for (const r of coastRows) expect(r[3]).toMatch(/^Seed needed today/);
+  });
+
+  it('the /fire-types OG card does not show the Coast seed under a bare type name', () => {
+    const src = readFileSync(join(__dirname, '..', '..', 'src', 'app', '(main)', 'fire-types', 'opengraph-image.tsx'), 'utf8');
+    expect(src).toMatch(/label: 'Coast seed today', value: formatCurrencyFull\(results\.coast\.targetAmount\)/);
+    expect(src).not.toMatch(/label: 'Coast FIRE'/);
   });
 
   it('/data.json says what the Coast amounts mean; the other rows say target amount', async () => {

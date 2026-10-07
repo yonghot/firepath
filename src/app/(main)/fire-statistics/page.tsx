@@ -189,7 +189,7 @@ export default function FireStatisticsPage() {
                   Fat
                 </th>
                 <th scope="col" className="text-left font-semibold py-2 px-4 text-xs uppercase tracking-wide text-muted-foreground">
-                  Coast
+                  Coast (seed today)
                 </th>
                 <th scope="col" className="text-left font-semibold py-2 px-4 text-xs uppercase tracking-wide text-muted-foreground">
                   Barista
