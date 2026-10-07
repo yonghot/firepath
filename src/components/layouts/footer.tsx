@@ -9,7 +9,7 @@ import { isMessageEndpointConfigured } from '@/lib/feedback-endpoint';
 
 const LINK = 'flex min-h-11 items-center text-sm text-muted-foreground hover:text-foreground transition-colors duration-200';
 
-export function Footer({ premiumAvailable = false }: { premiumAvailable?: boolean }) {
+export function Footer({ premiumAvailable = false, cmpAvailable = false }: { premiumAvailable?: boolean; cmpAvailable?: boolean }) {
   return (
     <footer className="border-t bg-muted/30">
       <div className="mx-auto max-w-7xl px-4 py-8">
@@ -59,7 +59,7 @@ export function Footer({ premiumAvailable = false }: { premiumAvailable?: boolea
               <nav className="flex flex-col">
                 <Link href="/privacy" className={LINK}>Privacy Policy</Link>
                 <Link href="/terms" className={LINK}>Terms of Service</Link>
-                <ManageConsentLink />
+                <ManageConsentLink cmpAvailable={cmpAvailable} />
                 <ClearMyDataLink />
               </nav>
             </div>

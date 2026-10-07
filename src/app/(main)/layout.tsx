@@ -9,7 +9,7 @@ export default function MainLayout({
   return (
     <>
       <AdLoader />
-      <SiteChrome>{children}</SiteChrome>
+      <SiteChrome cmpAvailable>{children}</SiteChrome>
     </>
   );
 }

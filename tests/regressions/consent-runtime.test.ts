@@ -175,7 +175,7 @@ describe('K14/K14-a/K14-b: consent runtime', () => {
     it('in EEA/UK/CH it queues showRevocationMessage on googlefc and does not open our banner', () => {
       for (const country of REGIONS) {
         const { target, reopened } = fakeWindow();
-        expect(consent.openConsentChoices(target, country)).toBe('cmp');
+        expect(consent.openConsentChoices(target, country, true)).toBe('cmp');
         expect(reopened()).toBe(0);
         const queue = target.googlefc?.callbackQueue;
         expect(queue).toHaveLength(1);
@@ -192,7 +192,7 @@ describe('K14/K14-a/K14-b: consent runtime', () => {
       const { target } = fakeWindow();
       const existing = () => undefined;
       target.googlefc = { callbackQueue: [existing] };
-      consent.openConsentChoices(target, 'FR');
+      consent.openConsentChoices(target, 'FR', true);
       expect(target.googlefc.callbackQueue).toHaveLength(2);
       expect(target.googlefc.callbackQueue?.[0]).toBe(existing);
     });
@@ -200,7 +200,7 @@ describe('K14/K14-a/K14-b: consent runtime', () => {
     it('elsewhere it dispatches the reopen event for our banner and leaves googlefc alone', () => {
       for (const country of [null, 'US', 'ZZ', 'CA']) {
         const { target, reopened } = fakeWindow();
-        expect(consent.openConsentChoices(target, country)).toBe('banner');
+        expect(consent.openConsentChoices(target, country, true)).toBe('banner');
         expect(reopened()).toBe(1);
         expect(target.googlefc).toBeUndefined();
       }

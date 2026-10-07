@@ -88,12 +88,23 @@ export function runConsentEvent(event: ConsentEvent, io: ConsentIO): void {
   if (event === 'mount') io.initAnalytics();
 }
 
+export const CONSENT_HELP_PATH = '/privacy#4-cookies-and-tracking-technologies';
+
 export interface ConsentWindow extends EventTarget {
   googlefc?: { callbackQueue?: Array<() => void>; showRevocationMessage?: () => void };
+  location?: { assign: (url: string) => void };
 }
 
-export function openConsentChoices(win: ConsentWindow, country: string | null | undefined): 'cmp' | 'banner' {
+export function openConsentChoices(
+  win: ConsentWindow,
+  country: string | null | undefined,
+  cmpAvailable: boolean,
+): 'cmp' | 'banner' | 'privacy' {
   if (isConsentRegion(country)) {
+    if (!cmpAvailable) {
+      win.location?.assign(CONSENT_HELP_PATH);
+      return 'privacy';
+    }
     const fc = (win.googlefc = win.googlefc || {});
     const queue = (fc.callbackQueue = fc.callbackQueue || []);
     queue.push(() => fc.showRevocationMessage?.());
