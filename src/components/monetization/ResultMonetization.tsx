@@ -300,13 +300,16 @@ function EmailCapture() {
  * EmailResultCapture) require client-side state/effects.
  *
  * @param isPremium - when true, suppresses the programmatic ad slot (free only).
+ * @param displayAd - false on routes without the ad loader, where a unit would stay blank.
  * @param featuredPartners - parsed by the server parent from MON_FEATURED_PARTNERS (server-only env, undefined in the browser bundle).
  */
 export function ResultMonetization({
   isPremium = false,
+  displayAd = true,
   featuredPartners = [],
 }: {
   isPremium?: boolean;
+  displayAd?: boolean;
   featuredPartners?: FeaturedPartner[];
 }) {
   return (
@@ -318,7 +321,7 @@ export function ResultMonetization({
       <PrimaryIntentCTA partners={featuredPartners} />
 
       {/* (b) Display slot — free tier only, ≥150px below result output */}
-      {!isPremium && (
+      {!isPremium && displayAd && (
         <DisplaySlot />
       )}
 

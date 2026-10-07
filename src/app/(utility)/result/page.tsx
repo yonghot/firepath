@@ -33,6 +33,7 @@ export default async function ResultPage() {
           Premium users see no programmatic ads (isPremium gates the display slot). */}
       <ResultMonetization
         isPremium={isPremium}
+        displayAd={false}
         featuredPartners={parseFeaturedPartners(process.env.MON_FEATURED_PARTNERS)}
       />
 

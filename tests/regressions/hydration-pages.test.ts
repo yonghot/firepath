@@ -22,7 +22,7 @@ const PAGES: Record<string, { page: Loader; layout: Loader }> = {
   '/methodology': { page: () => import('@/app/(main)/methodology/page'), layout: () => import('@/app/(main)/layout') },
   '/privacy': { page: () => import('@/app/(main)/privacy/page'), layout: () => import('@/app/(main)/layout') },
   '/terms': { page: () => import('@/app/(main)/terms/page'), layout: () => import('@/app/(main)/layout') },
-  '/result': { page: () => import('@/app/(main)/result/page'), layout: () => import('@/app/(main)/layout') },
+  '/result': { page: () => import('@/app/(utility)/result/page'), layout: () => import('@/app/(utility)/layout') },
   '/contact': { page: () => import('@/app/(utility)/contact/page'), layout: () => import('@/app/(utility)/layout') },
   '/embed-this': { page: () => import('@/app/(utility)/embed-this/page'), layout: () => import('@/app/(utility)/layout') },
 };

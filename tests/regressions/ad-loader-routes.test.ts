@@ -20,7 +20,6 @@ const LOADER_ROUTES = [
   '/healthcare-bridge',
   '/methodology',
   '/privacy',
-  '/result',
   '/terms',
 ];
 const NO_LOADER_ROUTES = [
@@ -31,6 +30,7 @@ const NO_LOADER_ROUTES = [
   '/premium',
   '/contact',
   '/saved',
+  '/result',
   'not-found',
   'error',
 ];
@@ -123,8 +123,8 @@ describe('K7: the ad loader is mounted only on content routes', () => {
     }
   });
 
-  it('premium, saved, contact and embed-this moved to (utility) and their URLs are unchanged', () => {
-    for (const dir of ['premium', 'saved', 'contact', 'embed-this']) {
+  it('premium, saved, contact, embed-this and result (noindex, example-only for crawlers) moved to (utility) and their URLs are unchanged', () => {
+    for (const dir of ['premium', 'saved', 'contact', 'embed-this', 'result']) {
       expect(existsSync(join(APP, '(utility)', dir, 'page.tsx')), `(utility)/${dir}`).toBe(true);
       expect(existsSync(join(APP, '(main)', dir)), `(main)/${dir} must be gone`).toBe(false);
       expect(staticRoutes().has(`/${dir}`), `/${dir}`).toBe(true);
