@@ -19,9 +19,9 @@ export function FIREResultCards({ results, onHighlight }: FIREResultCardsProps) 
   };
 
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory md:grid md:grid-cols-5 md:overflow-visible">
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-5">
       {FIRE_TYPES.map((type) => (
-        <div key={type} className="snap-start shrink-0 md:shrink">
+        <div key={type}>
           <FIREResultCard
             type={type}
             result={results[type]}

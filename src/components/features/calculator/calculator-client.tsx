@@ -7,6 +7,7 @@ import { useUrlState } from '@/hooks/use-url-state';
 import { CalculatorPanel } from '@/components/features/calculator/calculator-panel';
 import { CalculatorPresets } from '@/components/features/calculator/calculator-presets';
 import { ResultsPanel } from '@/components/features/calculator/results-panel';
+import { ResultSummaryChips } from '@/components/features/calculator/result-summary-chips';
 import { ScenarioManager } from '@/components/features/scenario/scenario-manager';
 import { ScenarioComparison } from '@/components/features/scenario/scenario-comparison';
 import { MonteCarloPanel } from '@/components/features/monte-carlo/monte-carlo-panel';
@@ -131,6 +132,8 @@ export function CalculatorClient({
 
   return (
     <div className="space-y-4">
+      <ResultSummaryChips gated={gated} />
+
       {/* 부속U U-01 — one-click preset scenarios, above-fold and adjacent to
           the calculator inputs on EVERY viewport (unlike CalculatorPanel,
           which lives inside a collapsed bottom sheet on mobile). */}
