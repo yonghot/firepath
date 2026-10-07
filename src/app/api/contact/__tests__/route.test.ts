@@ -14,6 +14,7 @@ import { POST } from '../route';
 
 beforeEach(() => {
   vi.stubEnv('FEEDBACK_ENDPOINT', 'http://127.0.0.1:9/collect');
+  vi.stubEnv('FEEDBACK_DELIVERY_CONFIRMED', '1');
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('ok', { status: 200 })));
 });
 

@@ -22,6 +22,7 @@ function configure(options: { ads: boolean; endpoint: boolean }) {
   vi.stubEnv('VERCEL_ENV', undefined);
   vi.stubEnv('NEXT_PUBLIC_VERCEL_ENV', undefined);
   vi.stubEnv('FEEDBACK_ENDPOINT', options.endpoint ? 'https://collector.example.test/hook' : '');
+  vi.stubEnv('FEEDBACK_DELIVERY_CONFIRMED', options.endpoint ? '1' : '');
   vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', '');
   vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', '');
   vi.stubEnv('STRIPE_SECRET_KEY', '');

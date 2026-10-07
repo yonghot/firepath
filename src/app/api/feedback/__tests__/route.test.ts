@@ -17,9 +17,11 @@ import { POST } from '../route';
 const COLLECTOR = 'https://example.com/collect';
 const originalFetch = global.fetch;
 const originalEndpoint = process.env.FEEDBACK_ENDPOINT;
+const originalConfirmed = process.env.FEEDBACK_DELIVERY_CONFIRMED;
 
 beforeEach(() => {
   process.env.FEEDBACK_ENDPOINT = COLLECTOR;
+  process.env.FEEDBACK_DELIVERY_CONFIRMED = '1';
   global.fetch = vi.fn().mockResolvedValue(new Response('ok', { status: 200 }));
 });
 
@@ -27,6 +29,8 @@ afterEach(() => {
   global.fetch = originalFetch;
   if (originalEndpoint === undefined) delete process.env.FEEDBACK_ENDPOINT;
   else process.env.FEEDBACK_ENDPOINT = originalEndpoint;
+  if (originalConfirmed === undefined) delete process.env.FEEDBACK_DELIVERY_CONFIRMED;
+  else process.env.FEEDBACK_DELIVERY_CONFIRMED = originalConfirmed;
 });
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

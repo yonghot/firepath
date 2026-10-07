@@ -19,6 +19,7 @@ function request(body: unknown = VALID): Request {
 let fetchMock: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
+  vi.stubEnv('FEEDBACK_DELIVERY_CONFIRMED', '1');
   fetchMock = vi.fn();
   vi.stubGlobal('fetch', fetchMock);
   vi.spyOn(console, 'error').mockImplementation(() => {});

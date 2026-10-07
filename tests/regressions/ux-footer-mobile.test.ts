@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { Footer } from '@/components/layouts/footer';
 
 vi.stubEnv('FEEDBACK_ENDPOINT', 'http://127.0.0.1:9/collect');
+vi.stubEnv('FEEDBACK_DELIVERY_CONFIRMED', '1');
 const html = renderToStaticMarkup(createElement(Footer));
 vi.unstubAllEnvs();
 
