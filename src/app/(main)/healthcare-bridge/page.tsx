@@ -94,7 +94,7 @@ const HEALTHCARE_BRIDGE_ANSWER: GeoAnswerEntity | null = exampleResult
   ? buildAnswerBlock({
       query: "How much do you need to retire early with a healthcare bridge before Medicare?",
       answer:
-        `At a $${EXAMPLE_INPUT.annualPremium.toLocaleString()}/yr premium with ${(EXAMPLE_INPUT.annualGrowthRate * 100).toFixed(0)}% ` +
+        `At a $${EXAMPLE_INPUT.annualPremium.toLocaleString('en-US')}/yr premium with ${(EXAMPLE_INPUT.annualGrowthRate * 100).toFixed(0)}% ` +
         `annual growth, retiring at ${EXAMPLE_INPUT.retirementAge} means ${exampleResult.bridgeYears} bridge years and ` +
         `${formatCurrencyFull(exampleResult.totalEstimatedCost)} total before Medicare at ${MEDICARE_ELIGIBILITY_AGE}. ` +
         `As of ${PAGE_UPDATED}, later retirement ages shorten the bridge and lower the total — retiring at 64 needs just 1 year of coverage.`,
@@ -145,7 +145,7 @@ const HEALTHCARE_BRIDGE_FAQ: FaqItem[] = [
   {
     q: "What premium number should I enter?",
     a: exampleResult
-      ? `Use a real quote from healthcare.gov, your COBRA notice, or a current private plan — not a guess. In the worked example above, a $${EXAMPLE_INPUT.annualPremium.toLocaleString()}/yr premium at age ${EXAMPLE_INPUT.currentAge} retiring at ${EXAMPLE_INPUT.retirementAge} produces a ${exampleResult.bridgeYears}-year bridge totaling ${formatCurrencyFull(exampleResult.totalEstimatedCost)} — swap in your own premium to get your own total.`
+      ? `Use a real quote from healthcare.gov, your COBRA notice, or a current private plan — not a guess. In the worked example above, a $${EXAMPLE_INPUT.annualPremium.toLocaleString('en-US')}/yr premium at age ${EXAMPLE_INPUT.currentAge} retiring at ${EXAMPLE_INPUT.retirementAge} produces a ${exampleResult.bridgeYears}-year bridge totaling ${formatCurrencyFull(exampleResult.totalEstimatedCost)} — swap in your own premium to get your own total.`
       : "Use a real quote from healthcare.gov, your COBRA notice, or a current private plan — not a guess.",
   },
   {
@@ -259,7 +259,7 @@ export default function HealthcareBridgePage() {
             <p>
               Say you&apos;re {EXAMPLE_INPUT.currentAge} years old, planning to retire early at{" "}
               {EXAMPLE_INPUT.retirementAge}, with a real quote of{" "}
-              ${EXAMPLE_INPUT.annualPremium.toLocaleString()}/yr for private coverage and an
+              ${EXAMPLE_INPUT.annualPremium.toLocaleString('en-US')}/yr for private coverage and an
               assumed {(EXAMPLE_INPUT.annualGrowthRate * 100).toFixed(0)}% annual premium growth
               rate (an adjustable assumption, not a published statistic). Here is the exact
               calculation:
@@ -273,7 +273,7 @@ export default function HealthcareBridgePage() {
               <li>
                 Since the growth rate is non-zero, the tool applies the geometric series:{" "}
                 <span className="font-mono text-sm">
-                  ${EXAMPLE_INPUT.annualPremium.toLocaleString()} × ((1.05)^
+                  ${EXAMPLE_INPUT.annualPremium.toLocaleString('en-US')} × ((1.05)^
                   {exampleResult.bridgeYears} − 1) / 0.05
                 </span>
                 .
@@ -294,7 +294,7 @@ export default function HealthcareBridgePage() {
                 (EXAMPLE_INPUT.annualPremium * exampleResult.bridgeYears)
               ).toFixed(2)}
               × the naive flat estimate ($
-              {(EXAMPLE_INPUT.annualPremium * exampleResult.bridgeYears).toLocaleString()}) you&apos;d
+              {(EXAMPLE_INPUT.annualPremium * exampleResult.bridgeYears).toLocaleString('en-US')}) you&apos;d
               get by ignoring premium growth — which is why the growth-rate field matters for
               longer bridges.
             </p>

@@ -346,7 +346,7 @@ export function FeedbackWidget() {
                   className="text-right text-xs tabular-nums text-[var(--muted-foreground)]"
                   aria-label={`${msgRemaining} characters remaining`}
                 >
-                  {msgRemaining.toLocaleString()} remaining
+                  {msgRemaining.toLocaleString('en-US')} remaining
                 </div>
               </div>
 

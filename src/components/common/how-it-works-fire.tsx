@@ -93,8 +93,8 @@ export function HowItWorksFire() {
         <h3>Worked example (default scenario)</h3>
         <p>
           Using the calculator&apos;s default inputs — age {currentAge},
-          retiring at {retirementAge}, ${annualIncome.toLocaleString()}/yr
-          income, ${annualExpenses.toLocaleString()}/yr expenses, a{' '}
+          retiring at {retirementAge}, ${annualIncome.toLocaleString('en-US')}/yr
+          income, ${annualExpenses.toLocaleString('en-US')}/yr expenses, a{' '}
           {(savingsRate * 100).toFixed(0)}% savings rate,{' '}
           {(expectedReturn * 100).toFixed(0)}% expected nominal return,{' '}
           {(inflation * 100).toFixed(0)}% inflation, and a{' '}
@@ -105,7 +105,7 @@ export function HowItWorksFire() {
           <li>
             Annual savings = income × savings rate ={' '}
             <span className="font-mono">
-              ${annualIncome.toLocaleString()} × {savingsRate} ={' '}
+              ${annualIncome.toLocaleString('en-US')} × {savingsRate} ={' '}
               {formatCurrencyFull(annualSavings)}/yr
             </span>
             .
@@ -113,7 +113,7 @@ export function HowItWorksFire() {
           <li>
             Regular FIRE target = expenses ÷ SWR ={' '}
             <span className="font-mono">
-              ${annualExpenses.toLocaleString()} ÷ {safeWithdrawalRate} ={' '}
+              ${annualExpenses.toLocaleString('en-US')} ÷ {safeWithdrawalRate} ={' '}
               {formatCurrencyFull(results.regular.targetAmount)}
             </span>
             .

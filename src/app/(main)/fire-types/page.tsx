@@ -47,7 +47,7 @@ const { annualExpenses, safeWithdrawalRate, currentAge, retirementAge } = DEFAUL
 const FIRE_TYPES_ANSWER: GeoAnswerEntity = buildAnswerBlock({
   query: "How much do you need to retire early with each FIRE type?",
   answer:
-    `At the common defaults (age ${currentAge}, $${annualExpenses.toLocaleString()}/yr expenses, ` +
+    `At the common defaults (age ${currentAge}, $${annualExpenses.toLocaleString('en-US')}/yr expenses, ` +
     `${formatPercent(safeWithdrawalRate)} SWR), Lean FIRE needs ${fmtShort(defaultResults.lean.targetAmount)}, ` +
     `Regular FIRE needs ${fmtShort(defaultResults.regular.targetAmount)}, Fat FIRE needs ` +
     `${fmtShort(defaultResults.fat.targetAmount)}, Coast FIRE needs a ${fmtShort(defaultResults.coast.targetAmount)} seed today, ` +
@@ -140,7 +140,7 @@ const SOURCES: SourceItem[] = [
 const FIRE_TYPES_FAQ: FaqItem[] = [
   {
     q: "How much do I need for Lean FIRE?",
-    a: `Lean FIRE targets ${FIRE_MULTIPLIERS.lean * 100}% of your annual expenses divided by your SWR. At the default $${annualExpenses.toLocaleString()}/yr expenses and ${(safeWithdrawalRate * 100).toFixed(0)}% SWR, that works out to ${fmt(defaultResults.lean.targetAmount)}. It's the smallest of the five targets because it assumes you cut spending to essentials in retirement.`,
+    a: `Lean FIRE targets ${FIRE_MULTIPLIERS.lean * 100}% of your annual expenses divided by your SWR. At the default $${annualExpenses.toLocaleString('en-US')}/yr expenses and ${(safeWithdrawalRate * 100).toFixed(0)}% SWR, that works out to ${fmt(defaultResults.lean.targetAmount)}. It's the smallest of the five targets because it assumes you cut spending to essentials in retirement.`,
   },
   {
     q: "What's the difference between Regular FIRE and Fat FIRE?",
@@ -244,7 +244,7 @@ function FireTypeCard({
         </div>
 
         <p className="text-xs text-muted-foreground italic">
-          Values shown use default inputs: age {currentAge}, ${annualExpenses.toLocaleString()}/yr
+          Values shown use default inputs: age {currentAge}, ${annualExpenses.toLocaleString('en-US')}/yr
           expenses, {(safeWithdrawalRate * 100).toFixed(0)}% SWR.{" "}
           <Link href="/" className="underline underline-offset-2 hover:text-primary transition-colors duration-150">
             Adjust in the calculator
@@ -337,10 +337,10 @@ export default function FireTypesPage() {
         </p>
         <p>
           At the default {(safeWithdrawalRate * 100).toFixed(0)}% SWR and{" "}
-          ${annualExpenses.toLocaleString()}/yr in expenses, the multiplier is{" "}
+          ${annualExpenses.toLocaleString('en-US')}/yr in expenses, the multiplier is{" "}
           {FIRE_MULTIPLIERS.lean}:{" "}
           <span className="font-mono text-sm">
-            ${(annualExpenses * FIRE_MULTIPLIERS.lean).toLocaleString()} ÷{" "}
+            ${(annualExpenses * FIRE_MULTIPLIERS.lean).toLocaleString('en-US')} ÷{" "}
             {safeWithdrawalRate} = {fmt(defaultResults.lean.targetAmount)}
           </span>
           .
@@ -385,7 +385,7 @@ export default function FireTypesPage() {
         <p>
           At the defaults:{" "}
           <span className="font-mono text-sm">
-            ${annualExpenses.toLocaleString()} ÷ {safeWithdrawalRate} ={" "}
+            ${annualExpenses.toLocaleString('en-US')} ÷ {safeWithdrawalRate} ={" "}
             {fmt(defaultResults.regular.targetAmount)}
           </span>
           . Monthly passive income at retirement:{" "}
@@ -420,7 +420,7 @@ export default function FireTypesPage() {
         <p>
           At the defaults:{" "}
           <span className="font-mono text-sm">
-            ${(annualExpenses * FIRE_MULTIPLIERS.fat).toLocaleString()} ÷ {safeWithdrawalRate} ={" "}
+            ${(annualExpenses * FIRE_MULTIPLIERS.fat).toLocaleString('en-US')} ÷ {safeWithdrawalRate} ={" "}
             {fmt(defaultResults.fat.targetAmount)}
           </span>
           . This is 1.5× the{" "}
@@ -491,7 +491,7 @@ export default function FireTypesPage() {
         <p>
           At the defaults:{" "}
           <span className="font-mono text-sm">
-            ${(annualExpenses * FIRE_MULTIPLIERS.barista).toLocaleString()} ÷ {safeWithdrawalRate}{" "}
+            ${(annualExpenses * FIRE_MULTIPLIERS.barista).toLocaleString('en-US')} ÷ {safeWithdrawalRate}{" "}
             = {fmt(defaultResults.barista.targetAmount)}
           </span>
           .

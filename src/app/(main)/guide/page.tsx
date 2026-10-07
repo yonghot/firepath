@@ -44,7 +44,7 @@ function fmtShortGuide(n: number): string {
 const GUIDE_HUB_ANSWER: GeoAnswerEntity = buildAnswerBlock({
   query: 'Which FIRE strategy should you learn first?',
   answer:
-    `At the common defaults (age ${currentAge}, $${annualExpenses.toLocaleString()}/yr expenses, ` +
+    `At the common defaults (age ${currentAge}, $${annualExpenses.toLocaleString('en-US')}/yr expenses, ` +
     `${formatPercent(safeWithdrawalRate)} SWR), Lean FIRE needs ${fmtShortGuide(guideDefaultResults.lean.targetAmount)}, ` +
     `Regular FIRE needs ${fmtShortGuide(guideDefaultResults.regular.targetAmount)}, and Fat FIRE needs ` +
     `${fmtShortGuide(guideDefaultResults.fat.targetAmount)}. The published guides below explain these illustrative targets, withdrawal assumptions, and healthcare bridge scenarios. As of ${getPageLastModified('/guide')}, these are illustrative defaults, not guaranteed outcomes.`,

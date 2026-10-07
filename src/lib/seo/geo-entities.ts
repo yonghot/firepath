@@ -32,7 +32,7 @@ const TRINITY_SOURCE = {
 
 /** One-line answer shown above the calculator on the home page (same engine output and default inputs as the answer block below). */
 export const HOME_ANSWER_LEAD = {
-  conditions: `age ${currentAge}, $${annualExpenses.toLocaleString()} a year in expenses, ${Number((safeWithdrawalRate * 100).toFixed(2))}% safe withdrawal rate`,
+  conditions: `age ${currentAge}, $${annualExpenses.toLocaleString('en-US')} a year in expenses, ${Number((safeWithdrawalRate * 100).toFixed(2))}% safe withdrawal rate`,
   regular: fmtShort(results.regular.targetAmount),
   lean: fmtShort(results.lean.targetAmount),
   fat: fmtShort(results.fat.targetAmount),
@@ -43,7 +43,7 @@ export const HOME_ANSWER_LEAD = {
 export const MAIN_CALCULATOR_ANSWER: GeoAnswerEntity = buildAnswerBlock({
   query: 'How much do you need to retire early (FIRE)?',
   answer:
-    `At the common defaults (age ${currentAge}, retiring by ${retirementAge}, $${annualExpenses.toLocaleString()}/yr expenses, ` +
+    `At the common defaults (age ${currentAge}, retiring by ${retirementAge}, $${annualExpenses.toLocaleString('en-US')}/yr expenses, ` +
     `${formatPercent(safeWithdrawalRate)} SWR), the baseline Regular FIRE target is ${fmtShort(results.regular.targetAmount)}. ` +
     `Lean FIRE lowers that to ${fmtShort(results.lean.targetAmount)}; Fat FIRE raises it to ${fmtShort(results.fat.targetAmount)}. ` +
     `As of ${getPageLastModified('/')}, each target equals annual expenses times a fixed multiplier, divided by the safe withdrawal rate.`,

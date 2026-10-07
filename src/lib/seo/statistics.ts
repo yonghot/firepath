@@ -93,7 +93,7 @@ export function buildFireStatisticsDataset(): FireStatisticsDataset {
   const coastReductionPct = ((1 - coastOldest / coastYoungest) * 100).toFixed(0);
 
   const findings: string[] = [
-    `Fat FIRE requires ${fatVsLeanPct}% more than Lean FIRE at the same $${DEFAULT_INPUT.annualExpenses.toLocaleString()}/yr expense base (${formatCurrencyFull(fatRow.targetAmount)} vs. ${formatCurrencyFull(leanRow.targetAmount)}).`,
+    `Fat FIRE requires ${fatVsLeanPct}% more than Lean FIRE at the same $${DEFAULT_INPUT.annualExpenses.toLocaleString('en-US')}/yr expense base (${formatCurrencyFull(fatRow.targetAmount)} vs. ${formatCurrencyFull(leanRow.targetAmount)}).`,
     `Regular FIRE's target is ${regularVsBaristaPct}% higher than Barista FIRE's (${formatCurrencyFull(regularRow.targetAmount)} vs. ${formatCurrencyFull(baristaRow.targetAmount)}), the exact gap made up by part-time income in the Barista strategy.`,
     `Retiring at ${oldest.retirementAge} instead of ${youngest.retirementAge} cuts the Coast FIRE seed amount needed today by ${coastReductionPct}% (${formatCurrencyFull(coastYoungest)} to ${formatCurrencyFull(coastOldest)}), because the portfolio has more years to compound.`,
     `Across all 5 retirement-age scenarios (${youngest.retirementAge}-${oldest.retirementAge}), the Regular FIRE target stays flat at ${formatCurrencyFull(regularRow.targetAmount)} — the "25x expenses" target does not depend on retirement age, only on annual expenses and SWR.`,
@@ -103,7 +103,7 @@ export function buildFireStatisticsDataset(): FireStatisticsDataset {
   return {
     lastUpdated: getPageLastModified('/fire-statistics'),
     headline: {
-      text: `At the default ${(CORE_FIGURES.safeWithdrawalRate.value * 100).toFixed(0)}% Safe Withdrawal Rate and $${DEFAULT_INPUT.annualExpenses.toLocaleString()}/yr expenses, FIRE targets range from ${formatCurrencyFull(leanRow.targetAmount)} (Lean) to ${formatCurrencyFull(fatRow.targetAmount)} (Fat) — a ${fatVsLeanPct}% spread across the 5 FIRE types.`,
+      text: `At the default ${(CORE_FIGURES.safeWithdrawalRate.value * 100).toFixed(0)}% Safe Withdrawal Rate and $${DEFAULT_INPUT.annualExpenses.toLocaleString('en-US')}/yr expenses, FIRE targets range from ${formatCurrencyFull(leanRow.targetAmount)} (Lean) to ${formatCurrencyFull(fatRow.targetAmount)} (Fat) — a ${fatVsLeanPct}% spread across the 5 FIRE types.`,
       value: `${formatCurrencyFull(leanRow.targetAmount)} – ${formatCurrencyFull(fatRow.targetAmount)}`,
     },
     rankedFireTypes,

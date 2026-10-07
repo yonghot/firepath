@@ -24,7 +24,7 @@ export function SaveCalculationButton() {
   if (authLoading || !user) return null;
 
   const handleSave = async () => {
-    const calcName = name.trim() || `Calculation ${new Date().toLocaleDateString()}`;
+    const calcName = name.trim() || `Calculation ${new Date().toLocaleDateString('en-US')}`;
 
     try {
       await saveMutation.mutateAsync({
