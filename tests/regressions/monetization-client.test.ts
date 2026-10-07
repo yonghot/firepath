@@ -126,6 +126,12 @@ describe('K33(1): browser-compiled monetization config equals the server config'
     NEXT_PUBLIC_VERCEL_ENV: 'production',
   };
 
+  // The first SWC transform loads the native binding and the server module graph imports cold; under load both exceed the timed test body.
+  beforeAll(async () => {
+    transformSync('export {}', { filename: 'warm.ts', jsc: { parser: { syntax: 'typescript' } } });
+    await import('@/lib/monetization');
+  });
+
   function compileForBrowser<T>(file: string, modules: Record<string, unknown> = {}): T {
     const { code } = transformSync(readFileSync(join(ROOT, file), 'utf8'), {
       filename: file,
