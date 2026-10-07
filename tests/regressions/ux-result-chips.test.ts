@@ -41,6 +41,12 @@ describe('UX P0-1: one line of result chips instead of a swipe-only card strip',
     expect(chipItems(chipsHtml(DEFAULT_INPUT, false))).toEqual(expected);
   });
 
+  it('the text itself has a space between label and age, so crawlers and readers do not get "Lean46"', () => {
+    const { results } = calculateFIRE(DEFAULT_INPUT);
+    const raw = decode(chipsHtml(DEFAULT_INPUT, false).replace(/<[^>]+>/g, ''));
+    for (const type of FIRE_TYPES) expect(raw).toContain(`${short(type)} ${results[type].reachAge ?? '80+'}`);
+  });
+
   it('an unreached type reads 80+ rather than a blank', () => {
     const output = calculateFIRE(DEFAULT_INPUT);
     const unreached = { ...output, results: { ...output.results, fat: { ...output.results.fat, reachAge: null } } };

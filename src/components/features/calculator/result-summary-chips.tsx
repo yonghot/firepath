@@ -24,8 +24,10 @@ export function ResultSummaryChips({ gated }: { gated: GatedResult }) {
                 className="h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ backgroundColor: FIRE_COLORS[type] }}
               />
-              <span>{FIRE_LABELS[type].replace(' FIRE', '')}</span>
-              <span className="font-semibold tabular-nums">{age ?? '80+'}</span>
+              <span>
+                {FIRE_LABELS[type].replace(' FIRE', '')}{' '}
+                <span className="font-semibold tabular-nums">{age ?? '80+'}</span>
+              </span>
             </li>
           );
         })}
