@@ -401,8 +401,9 @@ export default function PrivacyPage() {
           <h3>{ADS_ENABLED ? '4e' : '4d'}. How to Manage Cookies</h3>
           <p>
             You can control cookies through your browser settings. In the EEA, UK, and
-            Switzerland, use the footer link to reopen the consent message; elsewhere, use the
-            footer link to open our notice and choose &ldquo;Decline&rdquo;.
+            Switzerland, or when your country cannot be determined, use the footer link to reopen
+            the consent message; elsewhere, use the footer link to open our notice and choose
+            &ldquo;Decline&rdquo;.
             {ACCOUNTS && <> Note that disabling strictly necessary cookies will prevent you from signing in.</>}{' '}
             For Google Analytics specifically, you may also use the{' '}
             <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener noreferrer">
