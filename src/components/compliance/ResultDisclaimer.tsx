@@ -21,14 +21,16 @@
 import { AlertTriangle } from 'lucide-react';
 import { getFiguresPrimarySource } from '@/lib/figures';
 import { formatIsoDate } from '@/lib/utils/format';
+import { embedLinkProps } from '@/lib/embed-links';
 
 interface ResultDisclaimerProps {
   className?: string;
   /** ISO date of the page's last real content change; the date line is omitted when the caller has none. */
   lastUpdated?: string;
+  embedded?: boolean;
 }
 
-export function ResultDisclaimer({ className, lastUpdated }: ResultDisclaimerProps) {
+export function ResultDisclaimer({ className, lastUpdated, embedded }: ResultDisclaimerProps) {
   const primarySource = getFiguresPrimarySource();
 
   return (
@@ -63,6 +65,7 @@ export function ResultDisclaimer({ className, lastUpdated }: ResultDisclaimerPro
             ) : null}
             <a
               href={primarySource.url}
+              {...embedLinkProps(embedded)}
               className="underline underline-offset-2 hover:text-amber-900 dark:hover:text-amber-100 focus-visible:outline-none focus-visible:underline"
             >
               {primarySource.label}

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Crown } from 'lucide-react';
 import type { FIREInput, FIREOutput } from '@/types/fire.types';
 import Link from 'next/link';
+import { embedLinkProps } from '@/lib/embed-links';
 
 // Lazy-load premium content: portfolio engine + charts + sub-components
 // stay out of the main bundle until a user upgrades.
@@ -27,9 +28,10 @@ interface PortfolioPanelProps {
   input: FIREInput;
   results: FIREOutput['results'];
   isPremium?: boolean;
+  embedded?: boolean;
 }
 
-function PortfolioGate() {
+function PortfolioGate({ embedded }: { embedded?: boolean }) {
   return (
     <Card className="border-dashed border-2 border-muted">
       <CardContent className="p-6 text-center space-y-3">
@@ -41,7 +43,7 @@ function PortfolioGate() {
           Get personalized asset allocation recommendations based on your FIRE timeline,
           age, and risk profile. Compare Conservative, Moderate, and Aggressive strategies.
         </p>
-        <Link href="/premium">
+        <Link href="/premium" {...embedLinkProps(embedded)}>
           <Button className="mt-2">
             <Crown className="h-4 w-4 mr-2" />
             Unlock with Premium
@@ -52,7 +54,7 @@ function PortfolioGate() {
   );
 }
 
-export function PortfolioPanel({ input, results, isPremium = false }: PortfolioPanelProps) {
-  if (!isPremium) return <PortfolioGate />;
+export function PortfolioPanel({ input, results, isPremium = false, embedded }: PortfolioPanelProps) {
+  if (!isPremium) return <PortfolioGate embedded={embedded} />;
   return <PortfolioContent input={input} results={results} />;
 }

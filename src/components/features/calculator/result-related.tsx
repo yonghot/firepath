@@ -25,6 +25,7 @@ import Link from 'next/link';
 import { Compass } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
 import { getRelatedContentPages } from '@/lib/content-pages';
+import { embedLinkProps } from '@/lib/embed-links';
 import type { FIREOutput } from '@/types/fire.types';
 
 interface ResultRelatedProps {
@@ -33,6 +34,7 @@ interface ResultRelatedProps {
   /** Current scenario output — used to find the earliest-reachable FIRE type for relevance ranking. */
   output: FIREOutput;
   className?: string;
+  embedded?: boolean;
 }
 
 /** The FIRE type with the earliest reachAge in this scenario (nulls sort last) — a real per-scenario data point. */
@@ -44,7 +46,7 @@ function earliestReachableType(output: FIREOutput): FIREOutput['results'][keyof 
   return reachable[0].type;
 }
 
-export function ResultRelated({ hasResult, output, className }: ResultRelatedProps) {
+export function ResultRelated({ hasResult, output, className, embedded }: ResultRelatedProps) {
   if (!hasResult) return null;
 
   const fireType = earliestReachableType(output);
@@ -68,6 +70,7 @@ export function ResultRelated({ hasResult, output, className }: ResultRelatedPro
           <Link
             key={page.path}
             href={page.path}
+            {...embedLinkProps(embedded)}
             onClick={() =>
               trackEvent('related_click', { link_module: 'result_related', link_url: page.path })
             }

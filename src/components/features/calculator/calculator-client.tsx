@@ -45,7 +45,13 @@ function bucketTargetAmount(targetAmount: number): string {
   return 'over_2.5m';
 }
 
-export function CalculatorClient({ premiumAvailable = false }: { premiumAvailable?: boolean }) {
+export function CalculatorClient({
+  premiumAvailable = false,
+  embedded = false,
+}: {
+  premiumAvailable?: boolean;
+  embedded?: boolean;
+}) {
   const { input, output, interactionCount, setInput } = useCalculatorStore();
   const { scenarios, compareIds } = useScenarioStore();
   const [highlightedType, setHighlightedType] = useState<FIREType | null>(null);
@@ -195,7 +201,7 @@ export function CalculatorClient({ premiumAvailable = false }: { premiumAvailabl
                 </div>
 
                 {/* Disclaimer — placed directly adjacent to the result output it describes. */}
-                <ResultDisclaimer />
+                <ResultDisclaimer embedded={embedded} />
               </TermsGate>
 
               {/* 부속I T06 — internal sibling-link module, directly below the
@@ -205,7 +211,7 @@ export function CalculatorClient({ premiumAvailable = false }: { premiumAvailabl
                   (interactionCount > 0) so it never renders on the default SSR
                   render. mt-6 + its own card border gives >=24px visual separation
                   and a distinct treatment from AdSlot's dashed placeholder. */}
-              <ResultRelated hasResult={interactionCount > 0} output={output} />
+              <ResultRelated hasResult={interactionCount > 0} output={output} embedded={embedded} />
 
               {premiumAvailable && (
                 <>
@@ -213,11 +219,13 @@ export function CalculatorClient({ premiumAvailable = false }: { premiumAvailabl
                     input={input}
                     results={output.results}
                     isPremium={false}
+                    embedded={embedded}
                   />
                   <PortfolioPanel
                     input={input}
                     results={output.results}
                     isPremium={false}
+                    embedded={embedded}
                   />
                 </>
               )}

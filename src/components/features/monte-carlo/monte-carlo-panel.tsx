@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Crown } from 'lucide-react';
 import type { FIREInput, FIREOutput } from '@/types/fire.types';
 import Link from 'next/link';
+import { embedLinkProps } from '@/lib/embed-links';
 
 // Lazy-load premium content: heavy engine + charts stay out of the main bundle
 // until a user upgrades, which today is nobody. Keeps free-path JS lean.
@@ -27,9 +28,10 @@ interface MonteCarloPanelProps {
   input: FIREInput;
   results: FIREOutput['results'];
   isPremium?: boolean;
+  embedded?: boolean;
 }
 
-function MonteCarloGate() {
+function MonteCarloGate({ embedded }: { embedded?: boolean }) {
   return (
     <Card className="border-dashed border-2 border-muted">
       <CardContent className="p-6 text-center space-y-3">
@@ -41,7 +43,7 @@ function MonteCarloGate() {
           Run 1,000 market simulations to see the probability of reaching each FIRE type.
           Account for market volatility and uncertainty in your retirement planning.
         </p>
-        <Link href="/premium">
+        <Link href="/premium" {...embedLinkProps(embedded)}>
           <Button className="mt-2">
             <Crown className="h-4 w-4 mr-2" />
             Unlock with Premium
@@ -52,7 +54,7 @@ function MonteCarloGate() {
   );
 }
 
-export function MonteCarloPanel({ input, results, isPremium = false }: MonteCarloPanelProps) {
-  if (!isPremium) return <MonteCarloGate />;
+export function MonteCarloPanel({ input, results, isPremium = false, embedded }: MonteCarloPanelProps) {
+  if (!isPremium) return <MonteCarloGate embedded={embedded} />;
   return <MonteCarloContent input={input} results={results} />;
 }

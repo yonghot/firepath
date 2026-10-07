@@ -33,7 +33,7 @@ export default function EmbedPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-4">
       <EmbedResizeScript />
-      <CalculatorClient premiumAvailable={isPremiumPurchasable()} />
+      <CalculatorClient premiumAvailable={isPremiumPurchasable()} embedded />
       <AnswerBlock entity={MAIN_CALCULATOR_ANSWER} idPrefix="embed-geo" className="mt-6" />
       <EmbedAttribution />
     </div>

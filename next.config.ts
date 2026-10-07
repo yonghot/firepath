@@ -13,8 +13,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Apply security headers to all routes EXCEPT /embed (which must be frameable)
-        source: '/((?!embed).*)',
+        // Apply security headers to all routes EXCEPT /embed and /embed/* (which must be frameable); /embed-this and /embed-thing keep them
+        source: '/((?!embed(?:/|$)).*)',
         headers: [
           {
             key: 'X-Frame-Options',
