@@ -23,6 +23,7 @@ interface SliderInputProps {
   unit: FieldUnit;
   onChange: (value: number) => void;
   tooltip?: string;
+  thumbAlignment?: 'center' | 'edge';
 }
 
 export function SliderInput({
@@ -34,6 +35,7 @@ export function SliderInput({
   unit,
   onChange,
   tooltip,
+  thumbAlignment = 'edge',
 }: SliderInputProps) {
   const inputId = useId();
   const [draft, setDraft] = useState<FieldDraft | null>(null);
@@ -85,6 +87,7 @@ export function SliderInput({
         min={min}
         max={max}
         step={step}
+        thumbAlignment={thumbAlignment}
         onValueChange={(val) => {
           const v = Array.isArray(val) ? val[0] : val;
           onChange(v);

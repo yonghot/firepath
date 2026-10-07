@@ -28,6 +28,7 @@ export const SLIDER_CONFIGS: SliderConfig[] = [
     defaultValue: 65,
     unit: 'year',
     tooltip: 'The age you want to retire by',
+    advanced: true,
   },
   {
     key: 'annualIncome',
@@ -48,6 +49,7 @@ export const SLIDER_CONFIGS: SliderConfig[] = [
     defaultValue: 50000,
     unit: 'dollar',
     tooltip: 'Total savings + investments - debts',
+    advanced: true,
   },
   {
     key: 'savingsRate',
@@ -78,6 +80,7 @@ export const SLIDER_CONFIGS: SliderConfig[] = [
     defaultValue: 0.07,
     unit: 'percent',
     tooltip: 'Expected annual investment return (nominal)',
+    advanced: true,
   },
   {
     key: 'inflation',
@@ -88,6 +91,7 @@ export const SLIDER_CONFIGS: SliderConfig[] = [
     defaultValue: 0.03,
     unit: 'percent',
     tooltip: 'Expected annual inflation rate',
+    advanced: true,
   },
   {
     key: 'safeWithdrawalRate',
@@ -98,6 +102,7 @@ export const SLIDER_CONFIGS: SliderConfig[] = [
     defaultValue: 0.04,
     unit: 'percent',
     tooltip: 'Annual withdrawal rate in retirement (4% rule)',
+    advanced: true,
   },
 ];
 

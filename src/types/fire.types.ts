@@ -42,6 +42,7 @@ export interface SliderConfig {
   defaultValue: number;
   unit: 'dollar' | 'percent' | 'year';
   tooltip: string;
+  advanced?: boolean;
 }
 
 export interface Scenario {

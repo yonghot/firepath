@@ -17,6 +17,8 @@ interface CalculatorState {
    * default SSR render or on hash-restored state.
    */
   interactionCount: number;
+  advancedOpen: boolean;
+  setAdvancedOpen: (open: boolean) => void;
   updateInput: <K extends keyof FIREInput>(key: K, value: FIREInput[K]) => void;
   setInput: (input: FIREInput) => void;
   resetToDefaults: () => void;
@@ -28,6 +30,9 @@ export const useCalculatorStore = create<CalculatorState>((set) => ({
   input: DEFAULT_INPUT,
   output: initialOutput,
   interactionCount: 0,
+  advancedOpen: false,
+
+  setAdvancedOpen: (open) => set({ advancedOpen: open }),
 
   updateInput: (key, value) =>
     set((state) => {
