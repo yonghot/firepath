@@ -17,9 +17,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const APP_MAIN = join(__dirname, '..', '..', '..', 'app', '(main)');
+const APP_UTILITY = join(__dirname, '..', '..', '..', 'app', '(utility)');
 
-function read(relPath: string): string {
-  return readFileSync(join(APP_MAIN, relPath), 'utf-8');
+function read(relPath: string, root = APP_MAIN): string {
+  return readFileSync(join(root, relPath), 'utf-8');
 }
 
 describe('Ad exclusion zones — pages with calculator inputs never mount an ad in the input column (부속M K05)', () => {
@@ -56,12 +57,12 @@ describe('Ad exclusion zones — home page (/) buffer contract (부속M K05)', (
 
 describe('Ad exclusion zones — /result page has zero calculator inputs on the ad-bearing page (부속M K05)', () => {
   it('result/page.tsx does not import CalculatorPanel/SliderInput (no input controls on this page)', () => {
-    const src = read('result/page.tsx');
+    const src = read('result/page.tsx', APP_UTILITY);
     expect(src).not.toMatch(/SliderInput|CalculatorPanel/);
   });
 
   it('ResultClient (chart/result cards) and ResultMonetization (ad) are siblings, ad last', () => {
-    const src = read('result/page.tsx');
+    const src = read('result/page.tsx', APP_UTILITY);
     const resultIdx = src.indexOf('<ResultClient');
     const adIdx = src.indexOf('<ResultMonetization');
     expect(resultIdx).toBeGreaterThan(-1);
