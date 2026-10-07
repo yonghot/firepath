@@ -46,7 +46,7 @@ export function ResultsPanel({
             </div>
           )}
         </div>
-        <FIREResultCards results={output.results} onHighlight={onHighlight} />
+        <FIREResultCards results={output.results} onHighlight={onHighlight} embedded={embedded} />
       </div>
 
       <ResultDisclaimer embedded={embedded} />

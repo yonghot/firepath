@@ -16,9 +16,12 @@ import {
   resultNextSteps,
 } from '@/lib/next-steps';
 import { ResultRelated } from '@/components/features/calculator/result-related';
+import { FIREResultCards } from '@/components/features/calculator/fire-result-cards';
+import { FIREResultCard } from '@/components/features/calculator/fire-result-card';
+import { FIRE_COLORS, FIRE_LABELS, FIRE_TYPES } from '@/constants/fire-colors';
 import type { FIREInput } from '@/types/fire.types';
 import { hasStaticRoute } from './helpers/app-routes';
-import { preloadPages, renderPage } from './helpers/render-pages';
+import { preloadPages, renderPage, renderWithProviders } from './helpers/render-pages';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
@@ -262,5 +265,63 @@ describe('UX P0-4: clicks reuse related_click with the portfolio-wide module nam
       expect(tag).toMatch(/\starget="_blank"/);
       expect(tag).toMatch(/\srel="[^"]*noopener/);
     }
+  });
+});
+
+describe('UX P0-4 / K26-2: each result card leads to its formula', () => {
+  const cardsHtml = (embedded?: boolean) =>
+    renderWithProviders(createElement(FIREResultCards, { results: defaultOutput.results, embedded }));
+
+  it('puts one "How <type> is calculated" link under each of the five cards, in card order', () => {
+    const links = anchors(cardsHtml());
+    expect(links.map((l) => l.href)).toEqual(FIRE_TYPES.map((type) => `/fire-types#${type}`));
+    const labels = [...cardsHtml().matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/g)].map((m) => textOf(m[1]));
+    expect(labels).toEqual(FIRE_TYPES.map((type) => `How ${FIRE_LABELS[type]} is calculated`));
+  });
+
+  it('every link is a 44px target on this site and every fragment is a section of /fire-types', () => {
+    expect(anchors(cardsHtml())).toHaveLength(5);
+    for (const { href, tag } of anchors(cardsHtml())) {
+      expect(tag).toMatch(/\bmin-h-11\b/);
+      expect(tag).not.toMatch(/target=/);
+      expect(rendered['/fire-types']).toContain(`id="${href.split('#')[1]}"`);
+    }
+  });
+
+  it('the link sits next to the card, never inside the role="button" card', () => {
+    const type = FIRE_TYPES[0];
+    const single = renderWithProviders(
+      createElement(FIREResultCard, {
+        type,
+        result: defaultOutput.results[type],
+        color: FIRE_COLORS[type],
+        isHighlighted: false,
+        onHover: () => undefined,
+      }),
+    );
+    expect(single).toContain('role="button"');
+    expect(single).not.toContain('<a ');
+  });
+
+  it('is in the home HTML a crawler gets, inside the results section above the disclaimer', () => {
+    const home = rendered['/'];
+    const section = home.slice(home.indexOf('FIRE Numbers'), home.indexOf('id="results-disclaimer"'));
+    expect(section.length).toBeGreaterThan(0);
+    expect(anchors(section).map((l) => l.href)).toEqual(FIRE_TYPES.map((type) => `/fire-types#${type}`));
+  });
+
+  it('opens in a new tab inside the embed', () => {
+    expect(anchors(cardsHtml(true))).toHaveLength(5);
+    for (const { tag } of anchors(cardsHtml(true))) {
+      expect(tag).toMatch(/\starget="_blank"/);
+      expect(tag).toMatch(/\srel="[^"]*noopener/);
+    }
+  });
+
+  it('reports related_click with module compare_chain, the type as context and the plain path', () => {
+    const source = readFileSync(path.join(ROOT, 'src/components/features/calculator/fire-result-cards.tsx'), 'utf8');
+    expect(source).toMatch(
+      /trackEvent\('related_click',\s*\{\s*link_module:\s*'compare_chain',\s*link_context:\s*type,\s*link_url:\s*`\/fire-types#\$\{type\}`\s*\}\)/,
+    );
   });
 });
