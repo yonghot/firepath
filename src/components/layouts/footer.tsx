@@ -75,6 +75,7 @@ export function Footer({ premiumAvailable = false }: { premiumAvailable?: boolea
           </p>
           <p>
             Not financial advice. Past performance does not guarantee future results.{' '}
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- next/link hash jumps fire no hashchange, so the share hash would not be restored */}
             <a href="/#results-disclaimer" className="underline underline-offset-4 hover:text-foreground transition-colors duration-200">
               Full disclaimer
             </a>
