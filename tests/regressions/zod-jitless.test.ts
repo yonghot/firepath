@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { z } from 'zod';
@@ -51,9 +51,13 @@ describe('Zod v4 JIT is what builds code strings at runtime', () => {
 });
 
 describe('Zod jitless in the server routes (leader directive)', () => {
-  it('importing the two API routes sets jitless before their schemas are defined', async () => {
+  // Runs after the positive control above; the cold route imports take seconds under a loaded full suite.
+  beforeAll(async () => {
     await import('@/app/api/email-results/route');
     await import('@/app/api/calculations/route');
+  });
+
+  it('importing the two API routes sets jitless before their schemas are defined', async () => {
     expect(z.core.globalConfig.jitless).toBe(true);
     expect(zV4.core.globalConfig.jitless).toBe(true);
   });
