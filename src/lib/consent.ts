@@ -39,6 +39,11 @@ export function isConsentRegion(country: string | null | undefined): boolean {
   return EEA_UK_CH.includes((country || '').toUpperCase());
 }
 
+export function isCountryKnown(country: string | null | undefined): boolean {
+  const code = (country || '').toUpperCase();
+  return /^[A-Z]{2}$/.test(code) && code !== 'ZZ' && code !== 'XX';
+}
+
 export function readVisitorCountry(): string | null {
   if (typeof document === 'undefined') return null;
   const match = document.cookie.match(new RegExp(`(?:^|; )${COUNTRY_COOKIE}=([^;]*)`));
@@ -58,6 +63,9 @@ export function resolveConsentActions(input: {
 }): ConsentActions {
   if (isConsentRegion(input.country)) {
     return { show: input.event === 'mount' ? null : false, update: null, store: null };
+  }
+  if (input.event !== 'mount' && !isCountryKnown(input.country)) {
+    return { show: false, update: null, store: null };
   }
   switch (input.event) {
     case 'mount':
@@ -100,7 +108,7 @@ export function openConsentChoices(
   country: string | null | undefined,
   cmpAvailable: boolean,
 ): 'cmp' | 'banner' | 'privacy' {
-  if (isConsentRegion(country)) {
+  if (isConsentRegion(country) || !isCountryKnown(country)) {
     if (!cmpAvailable) {
       win.location?.assign(CONSENT_HELP_PATH);
       return 'privacy';

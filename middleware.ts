@@ -11,8 +11,8 @@ export async function middleware(request: NextRequest) {
   const response = await updateSession(request);
 
   // Vercel injects the geo header at the edge. Falls back to "ZZ" (unknown →
-  // treated as US/non-EEA posture client-side) when absent (local dev, other
-  // hosts). Readable (not httpOnly) so the client consent logic can read it.
+  // the client sends "Manage consent" to the Google CMP, as for EEA) when absent
+  // (local dev, other hosts). Readable (not httpOnly) so the client consent logic can read it.
   const country = request.headers.get('x-vercel-ip-country') || 'ZZ';
   response.cookies.set(COUNTRY_COOKIE, country, {
     path: '/',

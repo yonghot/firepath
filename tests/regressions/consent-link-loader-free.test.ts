@@ -59,6 +59,33 @@ describe('K14-b: the footer "Manage consent" link does something on every page',
     }
   });
 
+  it('a visitor with no country cookie gets the CMP path on a loader page and the privacy section elsewhere, never our notice', () => {
+    for (const country of [null, 'ZZ']) {
+      const withRuntime = fakeWindow();
+      expect(consent.openConsentChoices(withRuntime.target, country, true), String(country)).toBe('cmp');
+      expect(withRuntime.target.googlefc?.callbackQueue).toHaveLength(1);
+      expect(withRuntime.reopened()).toBe(0);
+      expect(withRuntime.assign).not.toHaveBeenCalled();
+
+      const without = fakeWindow();
+      expect(consent.openConsentChoices(without.target, country, false), String(country)).toBe('privacy');
+      expect(without.assign).toHaveBeenCalledExactlyOnceWith('/privacy#4-cookies-and-tracking-technologies');
+      expect(without.target.googlefc).toBeUndefined();
+      expect(without.reopened()).toBe(0);
+    }
+  });
+
+  it('the link component with the cookie blocked (empty document.cookie) queues the CMP, not the reopen event', () => {
+    const { target, assign, reopened } = fakeWindow();
+    vi.stubGlobal('window', target);
+    vi.stubGlobal('document', { cookie: '' });
+    const button = ManageConsentLink({ cmpAvailable: true }) as unknown as { props: { onClick: () => void } };
+    button.props.onClick();
+    expect(target.googlefc?.callbackQueue).toHaveLength(1);
+    expect(reopened()).toBe(0);
+    expect(assign).not.toHaveBeenCalled();
+  });
+
   it('the link component passes its page\'s runtime availability on to the click handler', () => {
     for (const [cmpAvailable, expectNavigation] of [
       [false, true],

@@ -197,12 +197,38 @@ describe('K14/K14-a/K14-b: consent runtime', () => {
       expect(target.googlefc.callbackQueue?.[0]).toBe(existing);
     });
 
-    it('elsewhere it dispatches the reopen event for our banner and leaves googlefc alone', () => {
-      for (const country of [null, 'US', 'ZZ', 'CA']) {
+    it('in a known country outside the regions it dispatches the reopen event for our banner and leaves googlefc alone', () => {
+      for (const country of ['US', 'CA', 'us']) {
         const { target, reopened } = fakeWindow();
         expect(consent.openConsentChoices(target, country, true)).toBe('banner');
         expect(reopened()).toBe(1);
         expect(target.googlefc).toBeUndefined();
+      }
+    });
+
+    it('with no usable country (no cookie, ZZ, XX, T1, junk) it queues the Google CMP like EEA/UK/CH and never opens our banner (K13-R(12))', () => {
+      for (const country of [null, undefined, '', 'ZZ', 'zz', 'XX', 'T1', 'USA', '1']) {
+        const { target, reopened } = fakeWindow();
+        expect(consent.openConsentChoices(target, country, true), String(country)).toBe('cmp');
+        expect(reopened(), String(country)).toBe(0);
+        const queue = target.googlefc?.callbackQueue;
+        expect(queue, String(country)).toHaveLength(1);
+        let shown = 0;
+        (target.googlefc as { showRevocationMessage?: () => void }).showRevocationMessage = () => {
+          shown += 1;
+        };
+        (queue as Array<() => void>)[0]();
+        expect(shown, String(country)).toBe(1);
+      }
+    });
+
+    it('a country that is neither known nor in a region never reaches our banner through any event, so no granted update can be sent', () => {
+      for (const country of [null, 'ZZ', 'XX']) {
+        const { io, log } = harness(country, null);
+        for (const event of ['reopen', 'accept', 'decline'] as const) consent.runConsentEvent(event, io);
+        expect(log.visible.includes(true), String(country)).toBe(false);
+        expect(log.updates, String(country)).toEqual([]);
+        expect(log.writes, String(country)).toEqual([]);
       }
     });
   });
