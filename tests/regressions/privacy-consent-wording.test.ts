@@ -49,6 +49,15 @@ describe('K5/K16: the privacy page describes the consent, collection and cookie 
     expect(privacy).not.toMatch(/via the cookie banner/i);
   });
 
+  it('every place that promises the footer notice also says unknown-country visitors get Google\'s message (07eb38c)', async () => {
+    configure({ ads: true, endpoint: true });
+    const privacy = text(await renderPage('/privacy'));
+    const promises = privacy.match(/[^.]*(?:notice with a Decline button|Decline in the notice opened from the footer link)[^.]*\./g) ?? [];
+    expect(promises.length).toBeGreaterThanOrEqual(3);
+    for (const sentence of promises) expect(sentence).toMatch(/cannot determine your country/);
+    expect(privacy).toMatch(/when your country cannot be determined, use the footer link to reopen the consent message/);
+  });
+
   it('the banner "Learn more" anchor resolves to a heading id on the page', async () => {
     configure({ ads: true, endpoint: true });
     const banner = readFileSync(join(ROOT, 'src', 'components', 'common', 'cookie-consent-banner.tsx'), 'utf8');
