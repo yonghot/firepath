@@ -1,11 +1,11 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createElement, type ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { runInNewContext } from 'node:vm';
 import { transformSync } from 'next/dist/build/swc';
-import { renderPage } from './helpers/render-pages';
+import { preloadPages, renderPage } from './helpers/render-pages';
 
 const ROOT = join(__dirname, '..', '..');
 const SRC = join(ROOT, 'src');
@@ -168,6 +168,10 @@ describe('K33(1): browser-compiled monetization config equals the server config'
 });
 
 describe('K33(1): ResultMonetization takes featured partners from its server parent', () => {
+  // Cold-importing the home page takes ~6s under load; load it once outside the timed test body.
+  beforeAll(async () => {
+    await preloadPages(['/']);
+  });
   async function load(env: Record<string, string | undefined> = {}) {
     vi.resetModules();
     for (const [key, value] of Object.entries(env)) vi.stubEnv(key, value);
