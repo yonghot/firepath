@@ -110,8 +110,10 @@ function SavingsRateTable() {
       <p className="px-3 py-2 text-xs text-muted-foreground border-t border-border">
         Calculated with this calculator&apos;s formulas, holding age ({DEFAULT_INPUT.currentAge}),
         income ({formatCurrencyFull(DEFAULT_INPUT.annualIncome)}/yr), expenses (
-        {formatCurrencyFull(DEFAULT_INPUT.annualExpenses)}/yr), and a{' '}
-        {formatPercent(DEFAULT_INPUT.expectedReturn)} nominal return constant — only the
+        {formatCurrencyFull(DEFAULT_INPUT.annualExpenses)}/yr), a starting net worth of{' '}
+        {formatCurrencyFull(DEFAULT_INPUT.currentNetWorth)}, a {formatPercent(DEFAULT_INPUT.expectedReturn)} nominal
+        return, {formatPercent(DEFAULT_INPUT.inflation)} inflation and a{' '}
+        {formatPercent(DEFAULT_INPUT.safeWithdrawalRate)} safe withdrawal rate constant — only the
         savings rate changes.{' '}
         <Link href="/" className="underline underline-offset-2 hover:text-primary transition-colors duration-150">
           Use your own numbers in the calculator

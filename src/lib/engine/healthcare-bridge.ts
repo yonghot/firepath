@@ -9,7 +9,7 @@
  * - Actual premiums, subsidies, and eligibility depend on income, household
  *   size, plan choice, and state — check healthcare.gov for real quotes.
  * - Medicare eligibility is set by law at age 65 (Social Security Act §226).
- *   Source: https://www.medicare.gov/basics/get-started-with-medicare/when-does-medicare-coverage-start
+ *   Source: https://www.medicare.gov/basics/get-started-with-medicare/sign-up/when-does-medicare-coverage-start
  *
  * Formula:
  *   bridgeYears = max(0, 65 - retirementAge)
@@ -40,10 +40,8 @@ export interface HealthcareBridgeInput {
   annualPremium: number;
   /**
    * Optional annual growth rate for premiums (fraction, e.g. 0.05 = 5 %).
-   * Default: 0 (no growth assumed).
-   * Historical US health-insurance premium growth has averaged ~5 %/yr
-   * (KFF Employer Health Benefits Survey, 2023).
-   * Source: https://www.kff.org/health-costs/report/2023-employer-health-benefits-survey/
+   * Default: 0 (no growth assumed). 5 % in the page examples is an
+   * adjustable assumption, not a published statistic.
    */
   annualGrowthRate?: number;
 }

@@ -249,7 +249,7 @@ export function HealthcareBridgeCalculator() {
               placeholder="e.g. 5"
             />
             <p className="text-[10px] text-muted-foreground">
-              US health premiums grew ~5 %/yr historically (KFF 2023 Survey). Leave blank for 0%.
+              Premiums tend to rise over time. 5 is an example assumption, not a published figure; use your own. Leave blank for 0%.
             </p>
           </div>
         </div>

@@ -158,7 +158,7 @@ const FIRE_TYPES_FAQ: FaqItem[] = [
   },
   {
     q: "Are these FIRE target formulas fixed, or can I adjust them?",
-    a: "The 4% SWR and expense multipliers are widely used defaults (see Sources below), but every input — expenses, SWR, expected return, inflation — is a slider you control. The FIRE type multipliers (0.6x/1.0x/1.5x/0.5x) are fixed definitions of each type, not adjustable, since changing them would make it a different FIRE type.",
+    a: "The 4% SWR is a widely used default (see Sources below), but every input — expenses, SWR, expected return, inflation — is a slider you control. The FIRE type multipliers (0.6x/1.0x/1.5x/0.5x) are FIREPath's own modelling choices, fixed for each type and not adjustable, since changing them would make it a different FIRE type. They are not figures taken from the sources below, which define the types.",
   },
 ];
 
@@ -513,8 +513,9 @@ export default function FireTypesPage() {
       <p className="text-xs text-muted-foreground border-t border-border pt-4">
         <strong>Methodology note:</strong> All targets use the
         formula <span className="font-mono">(expenses × multiplier) ÷ SWR</span>, with Coast FIRE
-        discounted by the Fisher real return over years to retirement. Multipliers sourced from
-        published FIRE literature (see sources). Monthly income ={" "}
+        discounted by the Fisher real return over years to retirement. The multipliers (Lean 60%,
+        Fat 150% and Barista 50% of Regular spending) are FIREPath&apos;s own modelling choices, fixed
+        in the calculator; the sources below define the FIRE types. Monthly income ={" "}
         <span className="font-mono">(target × SWR) ÷ 12</span>. The full derivation is on{" "}
         <Link href="/methodology" className="underline underline-offset-2">
           the methodology page

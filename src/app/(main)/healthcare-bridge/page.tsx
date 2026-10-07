@@ -32,14 +32,14 @@ const SOURCES: SourceItem[] = [
   {
     id: 1,
     label: "Medicare.gov — When Does Medicare Coverage Start?",
-    url: "https://www.medicare.gov/basics/get-started-with-medicare/when-does-medicare-coverage-start",
-    note: "Official Medicare source confirming eligibility begins at age 65 for most people.",
+    url: "https://www.medicare.gov/basics/get-started-with-medicare/sign-up/when-does-medicare-coverage-start",
+    note: "Official Medicare source: you can generally sign up when you turn 65.",
   },
   {
     id: 2,
-    label: "Social Security Act §226 — Entitlement to Hospital Insurance Benefits",
-    url: "https://www.ssa.gov/OP_Home/ssact/title18/1836.htm",
-    note: "Statutory basis for Medicare eligibility at age 65.",
+    label: "Social Security Act §226 (42 U.S.C. §426) — Entitlement to Hospital Insurance Benefits",
+    url: "https://www.govinfo.gov/content/pkg/USCODE-2023-title42/html/USCODE-2023-title42-chap7-subchapII-sec426.htm",
+    note: "Statutory basis for Medicare hospital insurance at age 65 (U.S. Code text from the Government Publishing Office).",
   },
   {
     id: 3,
@@ -49,9 +49,9 @@ const SOURCES: SourceItem[] = [
   },
   {
     id: 4,
-    label: "KFF — 2023 Employer Health Benefits Survey",
-    url: "https://www.kff.org/health-costs/report/2023-employer-health-benefits-survey/",
-    note: "Historical context for annual premium growth rates, not a forecast of your own premium.",
+    label: "KFF — 2025 Employer Health Benefits Survey",
+    url: "https://www.kff.org/health-costs/2025-employer-health-benefits-survey/",
+    note: "Context on employer health plan premiums. It does not measure the individual plans an early retiree buys, and the 5% growth used here is an adjustable assumption, not a KFF figure.",
   },
 ];
 
@@ -110,7 +110,7 @@ const HEALTHCARE_BRIDGE_ANSWER: GeoAnswerEntity | null = exampleResult
         })),
       factors: [
         "Your annual health insurance premium (you enter it; the tool does not estimate one)",
-        "Annual premium growth rate — historically ~5%/yr per KFF survey data",
+        "Annual premium growth rate — an adjustable assumption (the worked example uses 5%/yr; premiums are not guaranteed to follow it)",
         "Number of bridge years between your retirement age and Medicare eligibility at 65",
         "Whether you have access to COBRA continuation coverage (18-36 months, employer-specific)",
         "ACA marketplace subsidy eligibility, which depends on income and household size (not modeled here)",
@@ -120,12 +120,12 @@ const HEALTHCARE_BRIDGE_ANSWER: GeoAnswerEntity | null = exampleResult
         {
           text: `Medicare eligibility begins at age ${MEDICARE_ELIGIBILITY_AGE}`,
           sourceLabel: "Social Security Act §226",
-          sourceUrl: "https://www.ssa.gov/OP_Home/ssact/title18/1836.htm",
+          sourceUrl: "https://www.govinfo.gov/content/pkg/USCODE-2023-title42/html/USCODE-2023-title42-chap7-subchapII-sec426.htm",
         },
         {
-          text: "~5%/yr historical premium growth assumption",
-          sourceLabel: "KFF 2023 Employer Health Benefits Survey",
-          sourceUrl: "https://www.kff.org/health-costs/report/2023-employer-health-benefits-survey/",
+          text: "5%/yr premium growth in the worked example (an adjustable assumption, not a published figure)",
+          sourceLabel: "KFF 2025 Employer Health Benefits Survey (context on employer premiums)",
+          sourceUrl: "https://www.kff.org/health-costs/2025-employer-health-benefits-survey/",
         },
       ],
     })
@@ -148,7 +148,7 @@ const HEALTHCARE_BRIDGE_FAQ: FaqItem[] = [
   },
   {
     q: "Why does the estimate include a growth rate?",
-    a: "Health insurance premiums historically rise over time — the KFF 2023 Employer Health Benefits Survey found roughly 5%/yr average growth. Adding a growth rate compounds your premium forward year by year using a geometric series, instead of assuming a flat cost for every bridge year, which would understate the total for longer bridges.",
+    a: "Health insurance premiums tend to rise over time, but how fast depends on your plan, age and state. The growth rate is an adjustable assumption: the worked example uses 5%/yr, which is not a published statistic, and you can enter your own. Adding a growth rate compounds your premium forward year by year using a geometric series, instead of assuming a flat cost for every bridge year, which would understate the total for longer bridges.",
   },
   {
     q: "What if I plan to retire after 65?",
@@ -226,7 +226,7 @@ export default function HealthcareBridgePage() {
         <p>
           Medicare eligibility in the United States begins at age 65, as set by the{" "}
           <a
-            href="https://www.ssa.gov/OP_Home/ssact/title18/1836.htm"
+            href="https://www.govinfo.gov/content/pkg/USCODE-2023-title42/html/USCODE-2023-title42-chap7-subchapII-sec426.htm"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -257,7 +257,7 @@ export default function HealthcareBridgePage() {
               {EXAMPLE_INPUT.retirementAge}, with a real quote of{" "}
               ${EXAMPLE_INPUT.annualPremium.toLocaleString()}/yr for private coverage and an
               assumed {(EXAMPLE_INPUT.annualGrowthRate * 100).toFixed(0)}% annual premium growth
-              rate (roughly matching the KFF-reported historical average). Here is the exact
+              rate (an adjustable assumption, not a published statistic). Here is the exact
               calculation:
             </p>
             <ol>
@@ -284,7 +284,7 @@ export default function HealthcareBridgePage() {
               </li>
             </ol>
             <p>
-              That total is more than{" "}
+              That total is about{" "}
               {(
                 exampleResult.totalEstimatedCost /
                 (EXAMPLE_INPUT.annualPremium * exampleResult.bridgeYears)
@@ -324,7 +324,7 @@ export default function HealthcareBridgePage() {
         <strong>Methodology note:</strong> Bridge-years formula uses the publicly defined Medicare
         eligibility age (65) per{" "}
         <a
-          href="https://www.ssa.gov/OP_Home/ssact/title18/1836.htm"
+          href="https://www.govinfo.gov/content/pkg/USCODE-2023-title42/html/USCODE-2023-title42-chap7-subchapII-sec426.htm"
           target="_blank"
           rel="noopener noreferrer"
           className="underline underline-offset-2"
