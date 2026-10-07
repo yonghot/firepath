@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createElement, type ReactNode } from 'react';
 import { DEFAULT_INPUT } from '@/constants/fire-defaults';
-import { renderThenHydrate, type BrowserState, type PageUnderTest } from './helpers/hydrate';
+import { renderThenHydrate, type BrowserState } from './helpers/hydrate';
+import { home } from './helpers/home-page';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
@@ -22,17 +22,6 @@ const RETURNING_VISITOR: Record<string, string> = {
   cc_recent: JSON.stringify([{ calcType: 'fire_timeline', savedAt: '2026-10-01T00:00:00.000Z', path: '/' }]),
   firepath_cookie_consent: 'declined',
 };
-
-async function home(): Promise<PageUnderTest> {
-  const { Providers } = await import('@/components/providers');
-  const MainLayout = (await import('@/app/(main)/layout')).default;
-  const Page = (await import('@/app/(main)/page')).default;
-  const page = (await Page()) as ReactNode;
-  return {
-    tree: createElement(Providers, null, createElement(MainLayout, null, page)),
-    serverComponents: [MainLayout as never, Page as never],
-  };
-}
 
 function firstRender(browser: Partial<BrowserState>, serverNow: Date = BUILD_TIME) {
   return renderThenHydrate(home, serverNow, { now: VISIT_TIME, timeZone: 'America/New_York', ...browser });
