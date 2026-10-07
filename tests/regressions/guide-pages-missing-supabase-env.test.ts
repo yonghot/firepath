@@ -111,22 +111,17 @@ describe('public /guide pages — graceful degradation when Supabase env missing
     expect(hrefs.filter((href) => !indexable.has(href))).toEqual([]);
   });
 
-  it('answer table cells hold readable values, never raw route text', async () => {
+  it('table cells on the hub hold readable values, never raw route text', async () => {
     const html = renderToStaticMarkup(await GuidesIndexPage());
-    const table = html.match(/<table[\s\S]*?<\/table>/)?.[0] ?? '';
-    expect(table).not.toMatch(/<td[^>]*>\s*\//);
-    expect(table).not.toContain('Type Reference');
+    expect(html).not.toMatch(/<td[^>]*>\s*\//);
+    expect(html).not.toContain('Type Reference');
   });
 
-  it('answer table lists all five FIRE types', async () => {
+  it('keeps the one-paragraph answer with the three headline targets and no repeated five-type table', async () => {
     const html = renderToStaticMarkup(await GuidesIndexPage());
-    const table = html.match(/<table[\s\S]*?<\/table>/)?.[0] ?? '';
-    const rowLabels = [...table.matchAll(/<th scope="row"[^>]*>([^<]*)<\/th>/g)].map((m) => m[1]);
-    expect(rowLabels).toHaveLength(5);
-    for (const type of ['Lean FIRE', 'Regular FIRE', 'Fat FIRE', 'Coast FIRE', 'Barista FIRE']) {
-      expect(rowLabels.some((label) => label.startsWith(type))).toBe(true);
-    }
-    expect(rowLabels.find((label) => label.startsWith('Coast FIRE'))).toContain('seed needed today');
+    expect(html).not.toContain('<table');
+    const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+    for (const type of ['Lean FIRE needs', 'Regular FIRE needs', 'Fat FIRE needs']) expect(text).toContain(type);
   });
 
   it('copy promises only what the destination pages hold', async () => {
