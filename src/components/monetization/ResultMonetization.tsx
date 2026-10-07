@@ -157,7 +157,8 @@ function DisplaySlot() {
   // otherwise the canonical NEXT_PUBLIC_ADSENSE_SLOT_ID). Non-numeric values are
   // rejected so no invalid <ins data-ad-slot> ever ships.
   const slot = resolveAdSlot('result');
-  // AdProvider handles the null-when-unset case for each provider internally.
+  // No unit to reserve for: an empty min-height box is a blank band (W7).
+  if (cfg.adProvider === 'none' || (cfg.adProvider === 'adsense' && !slot)) return null;
   return (
     <div className="min-h-[100px] md:min-h-[280px]">
       <AdProvider slot={slot} />
