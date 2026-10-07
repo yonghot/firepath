@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { isCanonicalProductionHost } from '@/lib/site';
 import { adsEnabled } from '@/lib/ads-env';
+import { isInternalTraffic } from '@/lib/analytics';
 import {
   CONSENT_KEY,
   REOPEN_CONSENT_EVENT,
@@ -113,6 +114,7 @@ function initGA(): void {
   window.gtag('config', measurementId, {
     anonymize_ip: true,
     page_location: window.location.href.split('#')[0],
+    ...(isInternalTraffic() ? { traffic_type: 'internal' } : {}),
     ...(!canonical && debugPreview ? { debug_mode: true } : {}),
   });
 }

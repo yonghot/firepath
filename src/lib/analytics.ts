@@ -71,9 +71,12 @@ function isGaDebug(): boolean {
   return process.env.NEXT_PUBLIC_GA_DEBUG === '1';
 }
 
-/** Reads the internal-traffic marker set by initTrafficMarker() below. */
-function isInternalTraffic(): boolean {
+// ?crew=1/0 wins over the stored marker: the banner sends the page_view config before initTrafficMarker() stores it.
+export function isInternalTraffic(): boolean {
   if (typeof window === 'undefined') return false;
+  const crew = new URLSearchParams(window.location?.search ?? '').get('crew');
+  if (crew === '1') return true;
+  if (crew === '0') return false;
   try {
     return window.localStorage.getItem(TRAFFIC_TYPE_KEY) === 'internal';
   } catch {
