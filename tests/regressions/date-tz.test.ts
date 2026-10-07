@@ -3,7 +3,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
-import { createElement } from "react";
+import { createElement, type ComponentType } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AnswerBlock } from "@/components/common/answer-block";
 import { AuthorByline } from "@/components/common/author-byline";
@@ -14,7 +14,7 @@ import type { GeoAnswerEntity } from "@/lib/seo/geo";
 
 const ISO_DATES = ["2026-01-01", "2026-06-29", "2026-12-31"];
 const entity = (lastUpdated: string): GeoAnswerEntity => ({ query: "q", answer: "a", lastUpdated, tableHeaders: [], tableRows: [], factors: [], stats: [] });
-const markup = (type: Parameters<typeof createElement>[0], props: (d: string) => object) =>
+const markup = <P extends object>(type: ComponentType<P>, props: (d: string) => P) =>
   ISO_DATES.map((d) => renderToStaticMarkup(createElement(type, props(d)))).join("|");
 
 const CONFIG = {
