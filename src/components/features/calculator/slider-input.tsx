@@ -1,12 +1,18 @@
 'use client';
 
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Info } from 'lucide-react';
-import { formatCurrencyFull, formatPercent } from '@/lib/utils/format';
+import {
+  commitDraft,
+  fieldText,
+  startDraft,
+  type FieldDraft,
+  type FieldUnit,
+} from '@/lib/utils/number-field';
 
 interface SliderInputProps {
   label: string;
@@ -14,27 +20,9 @@ interface SliderInputProps {
   min: number;
   max: number;
   step: number;
-  unit: 'dollar' | 'percent' | 'year';
+  unit: FieldUnit;
   onChange: (value: number) => void;
   tooltip?: string;
-}
-
-function formatDisplay(value: number, unit: 'dollar' | 'percent' | 'year'): string {
-  switch (unit) {
-    case 'dollar':
-      return formatCurrencyFull(value);
-    case 'percent':
-      return formatPercent(value);
-    case 'year':
-      return String(value);
-  }
-}
-
-function parseInput(raw: string, unit: 'dollar' | 'percent' | 'year'): number | null {
-  const cleaned = raw.replace(/[$,%\s]/g, '');
-  const num = Number(cleaned);
-  if (isNaN(num)) return null;
-  return unit === 'percent' ? num / 100 : num;
 }
 
 export function SliderInput({
@@ -48,6 +36,14 @@ export function SliderInput({
   tooltip,
 }: SliderInputProps) {
   const inputId = useId();
+  const [draft, setDraft] = useState<FieldDraft | null>(null);
+
+  const commit = () => {
+    const next = commitDraft(draft, value, unit, min, max);
+    setDraft(null);
+    if (next !== null) onChange(next);
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -67,11 +63,17 @@ export function SliderInput({
         <Input
           id={inputId}
           type="text"
-          value={formatDisplay(value, unit)}
-          onChange={(e) => {
-            const parsed = parseInput(e.target.value, unit);
-            if (parsed !== null && parsed >= min && parsed <= max) {
-              onChange(parsed);
+          inputMode={unit === 'year' ? 'numeric' : 'decimal'}
+          value={fieldText(draft, value, unit)}
+          onFocus={(e) => e.target.select()}
+          onChange={(e) => setDraft(startDraft(e.target.value, value))}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              commit();
+            } else if (e.key === 'Escape') {
+              setDraft(null);
             }
           }}
           className="h-7 w-28 text-right text-sm font-mono"
