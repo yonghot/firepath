@@ -148,13 +148,13 @@ export default function FireStatisticsPage() {
                 <tr key={row.type} className="border-b border-border/60">
                   <td className="py-2 px-4 tabular-nums">{i + 1}</td>
                   <th scope="row" className="text-left font-medium py-2 px-4">
-                    {row.label}
+                    {row.type === "coast" ? `${row.label} (seed needed today)` : row.label}
                   </th>
                   <td className="py-2 px-4 tabular-nums">
                     {row.multiplier === "discounted seed" ? "discounted seed" : `${(row.multiplier * 100).toFixed(0)}%`}
                   </td>
                   <td className="py-2 px-4 tabular-nums font-medium">{formatCurrencyFull(row.targetAmount)}</td>
-                  <td className="py-2 px-4 tabular-nums">{formatCurrencyFull(row.monthlyPassiveIncome)}/mo</td>
+                  <td className="py-2 px-4 tabular-nums">{formatCurrencyFull(row.monthlyPassiveIncome)}/mo{row.type === "coast" ? " at retirement" : ""}</td>
                 </tr>
               ))}
             </tbody>

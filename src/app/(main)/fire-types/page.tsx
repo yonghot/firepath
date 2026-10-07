@@ -56,11 +56,11 @@ const FIRE_TYPES_ANSWER: GeoAnswerEntity = buildAnswerBlock({
   lastUpdated: PAGE_UPDATED,
   tableHeaders: ["FIRE Type", "Multiplier", "Target Amount", "Monthly Income"],
   tableRows: (["lean", "regular", "fat", "coast", "barista"] as const).map((type) => ({
-    label: FIRE_LABELS[type],
+    label: type === "coast" ? `${FIRE_LABELS[type]} (seed needed today)` : FIRE_LABELS[type],
     values: [
       type === "coast" ? "discounted seed" : `${(FIRE_MULTIPLIERS[type] * 100).toFixed(0)}%`,
       formatCurrencyFull(defaultResults[type].targetAmount),
-      `${formatCurrencyFull(defaultResults[type].monthlyPassiveIncome)}/mo`,
+      `${formatCurrencyFull(defaultResults[type].monthlyPassiveIncome)}/mo${type === "coast" ? " at retirement" : ""}`,
     ],
   })),
   factors: [
@@ -228,15 +228,15 @@ function FireTypeCard({
           {/* Key metrics from engine with default inputs */}
           <div className="flex gap-6 text-right">
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Target</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">{type === "coast" ? "Seed needed today" : "Target"}</p>
               <p className="text-xl font-bold tabular-nums">{fmt(targetAmount)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Monthly</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">{type === "coast" ? "Monthly at retirement" : "Monthly"}</p>
               <p className="text-xl font-bold tabular-nums">{fmt(monthlyPassiveIncome)}/mo</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Reach Age</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">{type === "coast" ? "Coast-ready at age" : "Reach Age"}</p>
               <p className="text-xl font-bold tabular-nums">
                 {reachAge !== null ? reachAge : "80+"}
               </p>

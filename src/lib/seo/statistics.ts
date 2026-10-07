@@ -35,6 +35,10 @@ export interface StatisticsFireTypeRow {
   multiplier: number | 'discounted seed';
   targetAmount: number;
   monthlyPassiveIncome: number;
+  /** What targetAmount is: Coast FIRE's is the seed needed today, not a full target. */
+  targetMeaning: string;
+  /** What monthlyPassiveIncome is paid from. */
+  monthlyMeaning: string;
 }
 
 export interface FireStatisticsDataset {
@@ -93,6 +97,11 @@ export function buildFireStatisticsDataset(): FireStatisticsDataset {
     multiplier: type === 'coast' ? ('discounted seed' as const) : FIRE_MULTIPLIERS[type],
     targetAmount: defaultResults[type].targetAmount,
     monthlyPassiveIncome: defaultResults[type].monthlyPassiveIncome,
+    targetMeaning: type === 'coast' ? 'Seed needed today (the Regular FIRE target discounted to today)' : 'Target amount',
+    monthlyMeaning:
+      type === 'coast'
+        ? 'Monthly passive income at retirement, from the full Regular FIRE target'
+        : 'Monthly passive income at the target',
   })).sort((a, b) => b.targetAmount - a.targetAmount);
 
   const scenarios: StatisticsScenarioRow[] = STATISTICS_RETIREMENT_AGE_SCENARIOS.map((retirementAge) => {

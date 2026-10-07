@@ -50,11 +50,11 @@ export const MAIN_CALCULATOR_ANSWER: GeoAnswerEntity = buildAnswerBlock({
   lastUpdated: getPageLastModified('/'),
   tableHeaders: ['FIRE Type', 'Multiplier', 'Target Amount', 'Monthly Income'],
   tableRows: (['lean', 'regular', 'fat', 'coast', 'barista'] as const).map((type) => ({
-    label: type[0].toUpperCase() + type.slice(1),
+    label: type === 'coast' ? 'Coast (seed needed today)' : type[0].toUpperCase() + type.slice(1),
     values: [
       type === 'coast' ? 'discounted seed' : `${{ lean: 60, regular: 100, fat: 150, barista: 50 }[type]}%`,
       formatCurrencyFull(results[type].targetAmount),
-      `${formatCurrencyFull(results[type].monthlyPassiveIncome)}/mo`,
+      `${formatCurrencyFull(results[type].monthlyPassiveIncome)}/mo${type === 'coast' ? ' at retirement' : ''}`,
     ],
   })),
   factors: [
