@@ -4,12 +4,14 @@ import { SliderInput } from './slider-input';
 import { Button } from '@/components/ui/button';
 import { RotateCcw, Share2 } from 'lucide-react';
 import { useCalculatorStore } from '@/stores/calculator.store';
+import { useTermsConsent } from '@/hooks/use-terms-consent';
 import { SLIDER_CONFIGS } from '@/constants/fire-defaults';
 import { encodeState } from '@/lib/engine/url-state';
 import { toast } from 'sonner';
 
 export function CalculatorPanel() {
   const { input, updateInput, resetToDefaults } = useCalculatorStore();
+  const accepted = useTermsConsent();
 
   const handleShare = async () => {
     const hash = encodeState(input);
@@ -31,10 +33,12 @@ export function CalculatorPanel() {
             <RotateCcw className="h-4 w-4 mr-1" />
             Reset
           </Button>
-          <Button variant="outline" size="sm" onClick={handleShare}>
-            <Share2 className="h-4 w-4 mr-1" />
-            Share
-          </Button>
+          {accepted === true && (
+            <Button variant="outline" size="sm" onClick={handleShare}>
+              <Share2 className="h-4 w-4 mr-1" />
+              Share
+            </Button>
+          )}
         </div>
       </div>
 

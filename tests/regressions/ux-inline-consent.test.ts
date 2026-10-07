@@ -133,6 +133,14 @@ describe('UX P0-2 / D1: share and save stay behind agreement', () => {
     expect(panelHtml(true, DEFAULT_INPUT, false)).not.toContain('Copy link');
   });
 
+  it('the parameters panel has no Share button before agreement but keeps Reset', () => {
+    expect(home).not.toMatch(/lucide-share-2/);
+    expect(textOf(home)).toMatch(/\bReset\b/);
+    expect(stripComments(read('src/components/features/calculator/calculator-panel.tsx'))).toMatch(
+      /accepted === true && \(\s*<Button[^>]*onClick=\{handleShare\}/,
+    );
+  });
+
   it('/result no longer shows the header share button before agreement', () => {
     expect(resultPage).not.toContain('Copy link');
   });
