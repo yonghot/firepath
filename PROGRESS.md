@@ -1922,3 +1922,8 @@ postbuild (simulated prod) — [indexnow] submitted 18 urls — verified end-to-
 - **조치**: 프리셋 1(`young-saver`)을 "Try: 25, $60k income, 40% savings"(나이 25, 연소득 60,000, 저축률 40%, 나머지 필드는 기본값)로 바꿨다. 통계·평균이 아니라 사용자가 직접 넣을 수 있는 입력 시나리오이며 값은 모두 슬라이더 범위 안이고 엔진(`calculateFIRE`) 출력은 그대로다(Lean 41, Regular 49, Fat 56, Coast 34, Barista 39; 기본값은 46·54·61·42·44). 라벨의 숫자는 입력과 일치한다.
 - **테스트 기대값 정정(삭제·skip 없음)**: `calculator-presets.test.ts` 가 "young-saver 는 DEFAULT_INPUT 그 자체" 를 고정하고 있었으므로 새 값·"나머지 필드는 기본값" 단정으로 바꿨고, `ux-example-consent-model.test.ts` 의 "기본값과 같은 프리셋은 기본 예시로 읽힌다" 는 "기본값의 복사본은 기본 예시로 읽힌다" 로 바꿨다(프리셋이 더 이상 기본값과 같지 않으므로 같은 규칙을 기본값 자체로 단정). 프리셋의 "Example · …" 라벨은 이제 세 프리셋 모두 프리셋 이름으로 나온다.
 - **회귀 테스트**: `tests/regressions/ux-presets-distinct.test.ts`(수정 전 3건 실패: 모든 프리셋이 기본값과 한 필드 이상 다르고, Regular FIRE 목표·도달 나이가 기본 예시와 달라지며, `resolveScenario` 가 `preset` 으로 읽는지, 라벨이 인용하는 나이·소득·저축률이 실제 값과 일치). 프리셋을 더 추가해도 같은 불변식이 적용된다.
+
+### [2026-10-07] `/healthcare-bridge` 의 "Estimate Bridge Cost" 버튼이 동의 전까지 비활성 (UX D1, 적대 검증 WARNING)
+- **증상**: 메인 계산기는 D1("주 버튼은 항상 활성 모양, 동의 없이 누르면 `role="alert"` 인라인 안내와 체크박스 포커스")대로 바꿨지만 `/healthcare-bridge` 계산기는 `disabled={!termsAccepted}` 로 버튼이 회색이 된 채 이유를 알려 주지 않았다. 배치 1 이 "별도 항목" 으로 남긴 것.
+- **조치**: 버튼의 `disabled` 를 없앴다. 동의 없이 제출하면 메인 계산기와 같은 `evaluateAgreeAttempt()` 가 안내 문구(`Tick the box to agree to the Terms of Use and see your numbers.`)를 `role="alert"` 줄(`#hb-terms-alert`, 체크박스와 버튼 사이, `min-h-5` 로 높이 예약)에 쓰고 체크박스로 포커스를 옮기며 계산하지 않는다. 체크하면 안내가 지워진다. 체크박스는 사전 체크 없음, 약관 문구 불변, 동의 기록 키·시점 불변(체크할 때만 저장, localStorage 선주입 없음). 동의 행은 원래 서버 렌더되는 폼 안에 있다.
+- **회귀 테스트**: `tests/regressions/ux-healthcare-agree.test.ts`(수정 전 3건 실패: 버튼 disabled, 알림 줄 없음, 제출 핸들러가 공유 판정을 쓰지 않음). 클릭 동작 자체는 DOM 라이브러리가 없어 렌더 마크업·소스·공유 판정 함수 단위로 단정했다.

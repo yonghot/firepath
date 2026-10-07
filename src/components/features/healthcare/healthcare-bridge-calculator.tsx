@@ -21,6 +21,7 @@ import { calculateHealthcareBridge, MEDICARE_ELIGIBILITY_AGE } from '@/lib/engin
 import { formatCurrencyFull } from '@/lib/utils/format';
 import { trackEvent, IS_SENSITIVE_SITE } from '@/lib/analytics';
 import { decodeAges } from '@/lib/engine/url-state';
+import { evaluateAgreeAttempt } from '@/lib/terms-consent';
 
 /** Stable calc_type slug for this calculator (부속I T03). */
 const CALC_TYPE = 'healthcare_bridge';
@@ -95,6 +96,8 @@ export function HealthcareBridgeCalculator() {
   const [form, setForm] = useState<FormState>(DEFAULT_FORM);
   const [result, setResult] = useState<ReturnType<typeof calculateHealthcareBridge> | null>(null);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [agreeAlert, setAgreeAlert] = useState<string | null>(null);
+  const checkboxRef = useRef<HTMLInputElement>(null);
 
   // 부속I T03 — hasUserInteracted guard: calc_input_start fires once on the
   // first real field edit; calculator_complete fires only when a result
@@ -122,7 +125,10 @@ export function HealthcareBridgeCalculator() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!termsAccepted) return;
+    const attempt = evaluateAgreeAttempt(termsAccepted);
+    setAgreeAlert(attempt.alert);
+    if (attempt.focusCheckbox) checkboxRef.current?.focus();
+    if (!attempt.accepted) return;
     const parsed = {
       currentAge: Number(form.currentAge),
       retirementAge: Number(form.retirementAge),
@@ -268,14 +274,20 @@ export function HealthcareBridgeCalculator() {
 
         <div className="flex items-start gap-3">
           <input
+            ref={checkboxRef}
             id="hb-terms-checkbox"
             type="checkbox"
             checked={termsAccepted}
             onChange={(e) => {
               const next = e.target.checked;
               setTermsAccepted(next);
-              if (next) writeStoredConsent();
+              if (next) {
+                writeStoredConsent();
+                setAgreeAlert(null);
+              }
             }}
+            aria-invalid={agreeAlert !== null}
+            aria-describedby="hb-terms-alert"
             className="mt-0.5 h-4 w-4 shrink-0 rounded border-input accent-[var(--brand-primary)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           />
           <label htmlFor="hb-terms-checkbox" className="text-xs text-muted-foreground leading-snug">
@@ -292,7 +304,11 @@ export function HealthcareBridgeCalculator() {
           </label>
         </div>
 
-        <Button type="submit" className="w-full sm:w-auto" disabled={!termsAccepted}>
+        <p id="hb-terms-alert" role="alert" className="min-h-5 text-sm text-destructive">
+          {agreeAlert}
+        </p>
+
+        <Button type="submit" className="w-full sm:w-auto">
           Estimate Bridge Cost
         </Button>
       </form>
