@@ -4,6 +4,9 @@ import { useEffect, useRef } from 'react';
 import { useCalculatorStore } from '@/stores/calculator.store';
 import { encodeState, decodeState, reconcileHash } from '@/lib/engine/url-state';
 
+// Keep the query: utm_*, gclid and ?crew must still be on the URL when GA reads page_location.
+const urlWithState = (hash: string) => `${window.location.pathname}${window.location.search}${hash ? `#${hash}` : ''}`;
+
 export function useUrlState() {
   const { input, setInput } = useCalculatorStore();
   const initialized = useRef(false);
@@ -26,8 +29,7 @@ export function useUrlState() {
   useEffect(() => {
     if (!initialized.current) return;
     const hash = encodeState(input);
-    const newUrl = hash ? `#${hash}` : window.location.pathname;
-    window.history.replaceState(null, '', newUrl);
+    window.history.replaceState(null, '', urlWithState(hash));
   }, [input]);
 
   // An in-page anchor jump (e.g. "Read the full disclaimer") replaces the hash; put the share state back.
@@ -35,7 +37,7 @@ export function useUrlState() {
     const onHashChange = () => {
       const restored = reconcileHash(window.location.hash, useCalculatorStore.getState().input);
       if (restored === null) return;
-      window.history.replaceState(null, '', restored ? `#${restored}` : window.location.pathname);
+      window.history.replaceState(null, '', urlWithState(restored));
     };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
