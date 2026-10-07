@@ -1,35 +1,65 @@
 #!/usr/bin/env node
 /**
- * scripts/indexnow.mjs — postbuild IndexNow submission (부속I T14).
+ * scripts/indexnow.mjs — postbuild IndexNow submission (부속I T14, K19, K22).
  *
- * Submits every URL from the quality-gated sitemap (the SAME source of truth
- * as src/app/sitemap.ts — this script reads the prerendered
- * .next/server/app/sitemap.xml.body output written by `next build`, so the
- * URL list can never drift from what sitemap.ts actually emits) to
- * https://api.indexnow.org/indexnow. Bing/Yandex/Naver consume this; Google
- * has NOT adopted IndexNow (do not report this as Google progress).
+ * Reads the prerendered sitemap written by `next build`
+ * (.next/server/app/sitemap.xml.body, the same output src/app/sitemap.ts
+ * emits), compares it with the sitemap that is live right now (the previous
+ * deployment, still served while this build runs) and submits only the URLs
+ * that are new, have a different lastmod, or were listed before and are now
+ * absent (removed or newly noindexed). Bing/Yandex/Naver consume IndexNow;
+ * Google has NOT adopted it (do not report this as Google progress).
  *
- * Runs ONLY when:
- *   - process.env.VERCEL_ENV === 'production' (skip preview/dev builds), AND
- *   - process.env.INDEXNOW_KEY is set (nothing to authenticate with otherwise)
- * Non-zero exit / network errors are ALWAYS swallowed — this must never fail
- * the deploy. Chunks at 10,000 URLs per IndexNow's documented limit (moot at
- * this site's current scale, kept for correctness/future growth).
+ * Runs ONLY when VERCEL_ENV === 'production' and INDEXNOW_KEY is set. Never
+ * fails the deploy. If the previous sitemap cannot be read the run is skipped
+ * and logged; INDEXNOW_FORCE_ALL=1 submits every current URL (manual use).
+ *
+ * Overrides (tests point all three at 127.0.0.1): INDEXNOW_ENDPOINT,
+ * INDEXNOW_PREV_SITEMAP_URL, INDEXNOW_SITEMAP_OVERRIDE (path of the built sitemap).
  */
 
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const CHUNK_SIZE = 10_000;
-const SITEMAP_BODY_PATH = path.resolve(process.cwd(), '.next/server/app/sitemap.xml.body');
-const INDEXNOW_ENDPOINT = 'https://api.indexnow.org/indexnow';
+const FETCH_TIMEOUT_MS = 10_000;
+const SITEMAP_BODY_PATH = process.env.INDEXNOW_SITEMAP_OVERRIDE || path.resolve(process.cwd(), '.next/server/app/sitemap.xml.body');
+const INDEXNOW_ENDPOINT = process.env.INDEXNOW_ENDPOINT || 'https://api.indexnow.org/indexnow';
+
+function parseSitemap(xml) {
+  const entries = new Map();
+  for (const block of xml.matchAll(/<url>([\s\S]*?)<\/url>/g)) {
+    const loc = block[1].match(/<loc>([^<]+)<\/loc>/)?.[1]?.trim();
+    if (!loc) continue;
+    entries.set(loc, block[1].match(/<lastmod>([^<]+)<\/lastmod>/)?.[1]?.trim() ?? '');
+  }
+  return entries;
+}
+
+async function fetchPreviousSitemap(url) {
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+    if (!res.ok) return { error: `HTTP ${res.status}` };
+    return { entries: parseSitemap(await res.text()) };
+  } catch (err) {
+    return { error: err?.message ?? String(err) };
+  }
+}
+
+function sameHost(url, host) {
+  try {
+    return new URL(url).hostname === host;
+  } catch {
+    return false;
+  }
+}
 
 async function main() {
   const vercelEnv = process.env.VERCEL_ENV;
   const key = process.env.INDEXNOW_KEY?.trim();
 
   if (vercelEnv !== 'production') {
-    console.log(`[indexnow] skipping: VERCEL_ENV=${vercelEnv ?? '(unset)'} (production only)`);
+    console.log(`[indexnow] skipping: VERCEL_ENV=${vercelEnv || '(unset)'} (production only)`);
     return;
   }
   if (!key) {
@@ -48,13 +78,39 @@ async function main() {
     return;
   }
 
-  const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-  if (urls.length === 0) {
+  const current = parseSitemap(xml);
+  if (current.size === 0) {
     console.log('[indexnow] skipping: sitemap contained zero URLs');
     return;
   }
 
+  let urls;
+  let summary;
+  if (process.env.INDEXNOW_FORCE_ALL === '1') {
+    urls = [...current.keys()];
+    summary = `forced full submit of ${urls.length} urls`;
+  } else {
+    const previousUrl = process.env.INDEXNOW_PREV_SITEMAP_URL || `${appUrl.replace(/\/$/, '')}/sitemap.xml`;
+    const previous = await fetchPreviousSitemap(previousUrl);
+    if (!previous.entries) {
+      console.log(`[indexnow] skipping: previous sitemap unavailable (${previous.error}); set INDEXNOW_FORCE_ALL=1 for a full submit`);
+      return;
+    }
+    const added = [...current.keys()].filter((url) => !previous.entries.has(url));
+    const changed = [...current.keys()].filter((url) => previous.entries.has(url) && previous.entries.get(url) !== current.get(url));
+    const removed = [...previous.entries.keys()].filter((url) => !current.has(url));
+    urls = [...added, ...changed, ...removed];
+    summary = `${added.length} new, ${changed.length} changed, ${removed.length} removed`;
+  }
+
+  urls = urls.filter((url) => sameHost(url, host));
+  if (urls.length === 0) {
+    console.log('[indexnow] no new, changed or removed URLs; nothing to submit');
+    return;
+  }
+
   const keyLocation = `${appUrl.replace(/\/$/, '')}/${key}.txt`;
+  const endpointHost = new URL(INDEXNOW_ENDPOINT).hostname;
   let submitted = 0;
 
   for (let i = 0; i < urls.length; i += CHUNK_SIZE) {
@@ -64,8 +120,9 @@ async function main() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
         body: JSON.stringify({ host, key, keyLocation, urlList: chunk }),
-        signal: AbortSignal.timeout(10_000),
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       });
+      console.log(`[indexnow] POST ${endpointHost} -> ${res.status} (${chunk.length} urls)`);
       if (res.ok) {
         submitted += chunk.length;
       } else {
@@ -77,7 +134,7 @@ async function main() {
     }
   }
 
-  console.log(`[indexnow] submitted ${submitted} urls`);
+  console.log(`[indexnow] submitted ${submitted} of ${urls.length} urls (${summary})`);
 }
 
 main().catch((err) => {
