@@ -26,8 +26,11 @@ result-adjacent action control on an ad-bearing page:
 
 | Selector | What it covers | Page(s) |
 |---|---|---|
-| `aside:has(> div > [role="slider"])` | Desktop sticky sidebar containing all 9 FIRE input sliders (`CalculatorPanel`) | `/` |
+| `aside:has(input[aria-label$=" value"])` | Desktop sticky sidebar containing all 9 FIRE input sliders (`CalculatorPanel`) | `/` |
 | `[data-slot="sheet-content"]` | Mobile bottom-sheet parameter panel (same `CalculatorPanel` content, sheet-rendered) | `/` |
+| `[data-slot="sheet-trigger"]` | Mobile "Adjust Parameters" button that opens that sheet | `/` |
+| `[data-testid="calculator-presets"]` | One-click "Try:" scenario buttons directly above the inputs | `/` |
+| `form[aria-label="Healthcare bridge cost estimator"]` | Healthcare bridge estimator form (inputs and submit button); the page carries the Auto ads loader | `/healthcare-bridge` |
 | `.space-y-2:has(input[aria-label$=" value"])` | Individual slider+number-input row (`SliderInput`) — belt-and-suspenders per-control coverage | `/` |
 | `[aria-label="Financial advisor phone contact"]` | Primary-intent CTA (call variant) — a clickable action control, not itself an ad, but adjacent to the display slot | `/`, `/result`, guide pages |
 | `[aria-label="Financial advisor referral"]` | Primary-intent CTA (CPL variant) | `/`, `/result`, guide pages |
@@ -62,19 +65,20 @@ Verified by reading the DOM source order of every page that mounts an ad
   directly below `ResultDisclaimer`); the section carries `mb-28` and
   `ResultMonetization` starts with `mt-8`, so at least 150px separate that
   button from the display slot.
-- **`/result`** — No calculator inputs render on this page at all (it is a
-  read-only shared-result view; "Edit"/share buttons sit at the top of the
-  page, far from the ad at the bottom). Source order: result chart → result
-  cards → `ResultDisclaimer` → `ResultRelated` (`[data-next-step]`) →
-  `ResultMonetization` (ad).
+- **`/result`** — Noindex, and in the `(utility)` route group: no ad loader and
+  no display unit (`ResultMonetization` is mounted with `displayAd={false}`), so
+  nothing is placed there and there is no proximity surface. No calculator
+  inputs render on this page at all (it is a read-only shared-result view).
 - **`/guide` and `/guide/[slug]`** — No calculator inputs or "Calculate"
   buttons render on these pages at all (guide pages are articles with a single
   "Open Calculator" `<Link>` that navigates to `/`). The ad
   (`<AdSlot slot={NEXT_PUBLIC_ADSENSE_SLOT_GUIDE} />`) renders after the full
   article body and the CTA block, at the end of the `<article>`.
-- **`/fire-types` and `/healthcare-bridge`** — Neither page mounts an ad at
-  all (no `AdSlot`/`AdProvider`/`ResultMonetization` import), so there is no
-  proximity surface to audit on them.
+- **`/fire-types` and `/healthcare-bridge`** — Neither page mounts an ad unit of
+  its own (no `AdSlot`/`AdProvider`/`ResultMonetization` import), but both sit
+  under the `(main)` layout, which carries the Auto ads loader, so Auto ads may
+  still place units on them. `/healthcare-bridge` has an input form, hence the
+  `form[aria-label="Healthcare bridge cost estimator"]` exclusion above.
 
 This DOM-order/component-composition contract is enforced by
 `src/components/common/__tests__/ad-slot.test.ts` and
