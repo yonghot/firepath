@@ -6,11 +6,13 @@ import { ClearMyDataLink } from '@/components/common/clear-my-data-link';
 import { FeedbackWidget } from '@/components/common/feedback-widget';
 import { PUBLISHER } from '@/lib/site';
 
+const LINK = 'flex min-h-11 items-center text-sm text-muted-foreground hover:text-foreground transition-colors duration-200';
+
 export function Footer({ premiumAvailable = false }: { premiumAvailable?: boolean }) {
   return (
     <footer className="border-t bg-muted/30">
       <div className="mx-auto max-w-7xl px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between gap-8">
+        <div className="flex flex-col lg:flex-row justify-between gap-8">
           <div className="space-y-2">
             <div className="flex items-center gap-2 font-bold">
               <Flame className="h-5 w-5 text-[var(--fire-coast)]" />
@@ -21,41 +23,41 @@ export function Footer({ premiumAvailable = false }: { premiumAvailable?: boolea
             </p>
           </div>
 
-          <div className="flex gap-12">
-            <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8 md:grid-cols-4 md:gap-x-8 lg:flex lg:gap-12">
+            <div className="min-w-0 space-y-2">
               <h4 className="text-sm font-semibold">Product</h4>
-              <nav className="flex flex-col gap-1">
-                <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Calculator</Link>
+              <nav className="flex flex-col">
+                <Link href="/" className={LINK}>Calculator</Link>
                 {premiumAvailable && (
-                  <Link href="/premium" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Premium</Link>
+                  <Link href="/premium" className={LINK}>Premium</Link>
                 )}
-                <Link href="/embed-this" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Embed the Calculator</Link>
+                <Link href="/embed-this" className={LINK}>Embed the Calculator</Link>
               </nav>
             </div>
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
               <h4 className="text-sm font-semibold">Guides</h4>
-              <nav className="flex flex-col gap-1">
-                <Link href="/fire-guide" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">The Complete FIRE Guide</Link>
-                <Link href="/guide" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">All Guides</Link>
-                <Link href="/methodology" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">How We Calculate</Link>
-                <Link href="/fire-types#coast" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">CoastFIRE</Link>
-                <Link href="/fire-types#lean" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">LeanFIRE</Link>
-                <Link href="/fire-types#fat" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">FatFIRE</Link>
+              <nav className="flex flex-col">
+                <Link href="/fire-guide" className={LINK}>The Complete FIRE Guide</Link>
+                <Link href="/guide" className={LINK}>All Guides</Link>
+                <Link href="/methodology" className={LINK}>How We Calculate</Link>
+                <Link href="/fire-types#coast" className={LINK}>CoastFIRE</Link>
+                <Link href="/fire-types#lean" className={LINK}>LeanFIRE</Link>
+                <Link href="/fire-types#fat" className={LINK}>FatFIRE</Link>
               </nav>
             </div>
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
               <h4 className="text-sm font-semibold">Company</h4>
-              <nav className="flex flex-col gap-1">
-                <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">About</Link>
-                <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Contact</Link>
+              <nav className="flex flex-col">
+                <Link href="/about" className={LINK}>About</Link>
+                <Link href="/contact" className={LINK}>Contact</Link>
                 <FeedbackWidget />
               </nav>
             </div>
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
               <h4 className="text-sm font-semibold">Legal</h4>
-              <nav className="flex flex-col gap-1">
-                <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Privacy Policy</Link>
-                <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-200">Terms of Service</Link>
+              <nav className="flex flex-col">
+                <Link href="/privacy" className={LINK}>Privacy Policy</Link>
+                <Link href="/terms" className={LINK}>Terms of Service</Link>
                 <ManageConsentLink />
                 <ClearMyDataLink />
               </nav>

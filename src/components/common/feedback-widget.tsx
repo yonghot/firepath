@@ -196,7 +196,7 @@ export function FeedbackWidget() {
         aria-haspopup="dialog"
         onClick={() => setOpen((v) => !v)}
         className={[
-          'text-left text-sm text-muted-foreground hover:text-foreground',
+          'flex min-h-11 items-center text-left text-sm text-muted-foreground hover:text-foreground',
           'transition-colors duration-200 motion-reduce:transition-none',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]',
         ].join(' ')}

@@ -31,7 +31,7 @@ export function ClearMyDataLink({ className }: { className?: string }) {
       disabled={cleared}
       className={
         className ??
-        'text-left text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 disabled:opacity-60'
+        'flex min-h-11 items-center text-left text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 disabled:opacity-60'
       }
     >
       {cleared ? 'Data cleared' : 'Clear my saved calculator data'}

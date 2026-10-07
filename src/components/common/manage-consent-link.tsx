@@ -21,7 +21,7 @@ export function ManageConsentLink({ className }: { className?: string }) {
       onClick={handleClick}
       className={
         className ??
-        'text-left text-sm text-muted-foreground hover:text-foreground transition-colors duration-200'
+        'flex min-h-11 items-center text-left text-sm text-muted-foreground hover:text-foreground transition-colors duration-200'
       }
     >
       Do Not Sell or Share My Personal Information / Manage Consent
