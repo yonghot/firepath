@@ -8,7 +8,6 @@ import { ResultMonetization } from '@/components/monetization/ResultMonetization
 import { parseFeaturedPartners } from '@/lib/monetization';
 import { EmailMyResultsGate } from '@/components/features/calculator/email-my-results-gate';
 import { HowItWorksFire } from '@/components/common/how-it-works-fire';
-import { UpdatedBadge } from '@/components/common/updated-badge';
 import { SeasonBadge } from '@/components/common/season-badge';
 import { RecentCalculations } from '@/components/common/recent-calculations';
 import { EmbedSnippet } from '@/components/common/embed-snippet';
@@ -18,6 +17,7 @@ import { getPremiumStatus } from '@/lib/subscription/premium';
 import { isPremiumPurchasable } from '@/lib/premium-availability';
 import { getPageLastModified } from '@/lib/content-pages';
 import { buildMeta } from '@/lib/seo';
+import { formatIsoDate } from '@/lib/utils/format';
 
 // Absolute title bypasses the "%s | FIREPath" template; it is the same text as the H1 so search engines have nothing to rewrite.
 const HOME_TITLE = 'FIRE Calculator: How Much Do You Need to Retire Early?';
@@ -57,15 +57,14 @@ export default async function CalculatorPage() {
         }}
       />
       <div className="mx-auto max-w-7xl px-4 py-6">
-        {/* Hero section — server-rendered for LCP; the answer sits directly under the H1 so it is in the first 100 words. */}
         <div className="mb-6">
           <div className="mb-2 flex items-start gap-2">
             <Flame className="mt-1 h-7 w-7 shrink-0 text-[var(--fire-coast)]" aria-hidden="true" />
             <h1 className="text-3xl font-bold sm:text-4xl">{HOME_TITLE}</h1>
           </div>
           <p data-answer-lead="true" className="max-w-2xl text-base leading-relaxed">
-            With the default inputs ({HOME_ANSWER_LEAD.conditions}), you need {HOME_ANSWER_LEAD.regular} for Regular
-            FIRE, {HOME_ANSWER_LEAD.lean} for Lean FIRE and {HOME_ANSWER_LEAD.fat} for Fat FIRE. Source for the 4% rate:{' '}
+            With the default inputs ({HOME_ANSWER_LEAD.conditions}), Regular FIRE needs {HOME_ANSWER_LEAD.regular}, Lean
+            FIRE {HOME_ANSWER_LEAD.lean} and Fat FIRE {HOME_ANSWER_LEAD.fat}. Source for the 4% rate:{' '}
             <a
               href={HOME_ANSWER_LEAD.sourceUrl}
               target="_blank"
@@ -74,14 +73,15 @@ export default async function CalculatorPage() {
             >
               {HOME_ANSWER_LEAD.sourceLabel}
             </a>
+            . Updated <time dateTime={pageUpdated}>{formatIsoDate(pageUpdated)}</time>.
+          </p>
+          <p data-disclaimer-summary="true" className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Estimates for general information only, not financial advice.{' '}
+            <a href="#results-disclaimer" className="underline underline-offset-2 hover:text-foreground">
+              Read the full disclaimer
+            </a>
             .
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <UpdatedBadge lastUpdated={pageUpdated} className="ml-0" />
-            {/* 부속U U-04 — season/re-visit hook, real IRS COLA announcement
-                cadence (see season-badge.tsx for the cited source). */}
-            <SeasonBadge />
-          </div>
           <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
             New to FIRE? See how each type works in{' '}
             <Link href="/fire-types" className="underline underline-offset-2 hover:text-primary">
@@ -91,7 +91,7 @@ export default async function CalculatorPage() {
             <Link href="/fire-guide" className="underline underline-offset-2 hover:text-primary">
               The Complete FIRE Guide
             </Link>
-            . Change any input below to use your own numbers.
+            . Change any input to try your own numbers; you agree to the terms before they are shown.
           </p>
         </div>
 
@@ -121,6 +121,7 @@ export default async function CalculatorPage() {
           after the calculator/monetization block (before the longer-form
           HowItWorksFire prose) so it stays a high, extractable passage. */}
       <div className="mx-auto max-w-7xl px-4">
+        <SeasonBadge className="mb-6" />
         <AnswerBlock entity={MAIN_CALCULATOR_ANSWER} idPrefix="home-geo" className="mb-8" />
       </div>
 

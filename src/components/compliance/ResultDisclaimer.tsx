@@ -35,9 +35,10 @@ export function ResultDisclaimer({ className, lastUpdated, embedded }: ResultDis
 
   return (
     <div
+      id="results-disclaimer"
       role="note"
       aria-label="Results disclaimer"
-      className={`rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200 ${className ?? ''}`}
+      className={`scroll-mt-20 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200 ${className ?? ''}`}
     >
       <div className="flex gap-2">
         <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" aria-hidden="true" />
