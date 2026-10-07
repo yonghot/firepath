@@ -1927,3 +1927,9 @@ postbuild (simulated prod) — [indexnow] submitted 18 urls — verified end-to-
 - **증상**: 메인 계산기는 D1("주 버튼은 항상 활성 모양, 동의 없이 누르면 `role="alert"` 인라인 안내와 체크박스 포커스")대로 바꿨지만 `/healthcare-bridge` 계산기는 `disabled={!termsAccepted}` 로 버튼이 회색이 된 채 이유를 알려 주지 않았다. 배치 1 이 "별도 항목" 으로 남긴 것.
 - **조치**: 버튼의 `disabled` 를 없앴다. 동의 없이 제출하면 메인 계산기와 같은 `evaluateAgreeAttempt()` 가 안내 문구(`Tick the box to agree to the Terms of Use and see your numbers.`)를 `role="alert"` 줄(`#hb-terms-alert`, 체크박스와 버튼 사이, `min-h-5` 로 높이 예약)에 쓰고 체크박스로 포커스를 옮기며 계산하지 않는다. 체크하면 안내가 지워진다. 체크박스는 사전 체크 없음, 약관 문구 불변, 동의 기록 키·시점 불변(체크할 때만 저장, localStorage 선주입 없음). 동의 행은 원래 서버 렌더되는 폼 안에 있다.
 - **회귀 테스트**: `tests/regressions/ux-healthcare-agree.test.ts`(수정 전 3건 실패: 버튼 disabled, 알림 줄 없음, 제출 핸들러가 공유 판정을 쓰지 않음). 클릭 동작 자체는 DOM 라이브러리가 없어 렌더 마크업·소스·공유 판정 함수 단위로 단정했다.
+
+### [2026-10-07] UX D3 보류 기록: 보이는 입력 ≤4 + Advanced 는 이번 시리즈에서 하지 않음
+- **상태**: 구현하지 않았다. 배치 1 이 "9개 슬라이더 패널 재구성이라 하지 않음" 으로만 적었던 것을 적대 검증 지적에 따라 날짜와 함께 명시 보류로 남긴다. **리더 서면 확인이 필요한 항목**이며 확인 전까지 UX P0 완료 정의(계약 §7)에서 D3 만 미충족이다.
+- **이유**: (1) 항상 보일 4개가 정해지지 않았다. 후보 5개(`currentAge`, `currentNetWorth`, `annualIncome`, `savingsRate`, `annualExpenses`)와 접을 4개(`retirementAge`, `expectedReturn`, `inflation`, `safeWithdrawalRate`)는 제품 판단이다. 7% 수익률·4% 인출률은 홈 답 문장의 가정이라 접으면 가정이 덜 보이는 trade-off 도 있다. (2) `CalculatorPanel` 은 데스크톱 사이드바·모바일 하단 시트·`/embed` 가 함께 쓰므로 시트 높이·스크롤·접근성 변경은 375x812/1280 실측이 필요한데 이 단계는 브라우저 금지다. (3) 제품 문서(CLAUDE.md P0 "9개 파라미터", docs/prd-analysis.md)가 슬라이더 9개를 전제로 한다.
+- **구현 경로(확정되면)**: `SLIDER_CONFIGS` 에 보임/접힘 표식, `CalculatorPanel` 이 접힘 입력을 `<details>`(서버 렌더, 높이 예약, 광고 간격 유지)로 렌더하고 접힌 입력도 URL 해시·프리셋·결과에 그대로 반영, 테스트, K28 사진.
+- **같은 검증에서 닫은 두 항목**: 프리셋 1(UX P0-1)과 `/healthcare-bridge` 의 D1 은 위 항목들에서 고쳤다.
