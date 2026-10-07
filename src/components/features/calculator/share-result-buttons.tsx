@@ -10,7 +10,7 @@
  * mechanism as-is; this component only adds the buttons + the result_share
  * event on top of it. No new serialization, no URL rewrite on every
  * keystroke (the hash already updates live; this just copies/share()s
- * whatever window.location.href currently is at click time).
+ * window.location.href at click time, minus the ?crew marker).
  *
  * Canonical stays the clean path (buildMeta() alternates.canonical never
  * includes the hash) — search engines never see the parameterized URL as
@@ -38,6 +38,7 @@ function useWebShareAvailable(): boolean {
 // ?crew=1 marks the sharer's own visits as internal traffic; recipients must not inherit it.
 export function shareableUrl(href: string): string {
   const url = new URL(href);
+  if (!url.searchParams.has('crew')) return href;
   url.searchParams.delete('crew');
   return url.toString();
 }

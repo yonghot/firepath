@@ -1,5 +1,6 @@
 import { AdLoader } from '@/components/ads/ad-loader';
 import { SiteChrome } from '@/components/layouts/site-chrome';
+import { adsEnabled } from '@/lib/ads-env';
 
 export default function MainLayout({
   children,
@@ -9,7 +10,7 @@ export default function MainLayout({
   return (
     <>
       <AdLoader />
-      <SiteChrome cmpAvailable>{children}</SiteChrome>
+      <SiteChrome cmpAvailable={adsEnabled()}>{children}</SiteChrome>
     </>
   );
 }

@@ -58,6 +58,23 @@ describe('K5/K16: the privacy page describes the consent, collection and cookie 
     expect(privacy).toMatch(/when your country cannot be determined, use the footer link to reopen the consent message/);
   });
 
+  it('with ads off, no sentence promises Google\'s consent message; unknown-country visitors are sent to this page', async () => {
+    configure({ ads: false, endpoint: true });
+    const privacy = text(await renderPage('/privacy'));
+    expect(privacy).not.toMatch(/Google's consent message/);
+    expect(privacy).not.toMatch(/reopen the consent message/);
+    const promises = privacy.match(/[^.]*(?:notice with a Decline button|Decline in the notice opened from the footer link|choose [“"]Decline[”"])[^.]*\./g) ?? [];
+    expect(promises.length).toBeGreaterThanOrEqual(3);
+    for (const sentence of promises) expect(sentence).toMatch(/cannot determine your country, the link brings you to this page/);
+  });
+
+  it('the main layout tells the footer the consent runtime exists only when the ad loader renders it', () => {
+    const layout = readFileSync(join(ROOT, 'src', 'app', '(main)', 'layout.tsx'), 'utf8');
+    expect(layout).toMatch(/<SiteChrome cmpAvailable=\{adsEnabled\(\)\}>/);
+    const loader = readFileSync(join(ROOT, 'src', 'components', 'ads', 'ad-loader.tsx'), 'utf8');
+    expect(loader).toMatch(/const clientId = resolveAdsenseClientId\(\);\s*if \(!clientId\) return null;/);
+  });
+
   it('the banner "Learn more" anchor resolves to a heading id on the page', async () => {
     configure({ ads: true, endpoint: true });
     const banner = readFileSync(join(ROOT, 'src', 'components', 'common', 'cookie-consent-banner.tsx'), 'utf8');

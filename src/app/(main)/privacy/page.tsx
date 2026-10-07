@@ -27,6 +27,14 @@ export default function PrivacyPage() {
   // with no ad client id, no advertising cookies are ever set, no ads are shown,
   // and the policy must not claim otherwise.
   const ADS_ENABLED = adsEnabled();
+  const UNKNOWN_COUNTRY = ADS_ENABLED ? (
+    <>
+      if we cannot determine your country, the link opens Google&apos;s consent message where
+      Google offers one, and on pages without ads it brings you to this page
+    </>
+  ) : (
+    <>if we cannot determine your country, the link brings you to this page</>
+  );
   // Accounts and billing exist only where Supabase / a purchasable plan are configured.
   const ACCOUNTS = isSupabaseConfigured();
   const PAYMENTS = isPremiumPurchasable();
@@ -50,7 +58,7 @@ export default function PrivacyPage() {
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Privacy Policy</h1>
         <p className="text-sm text-muted-foreground">
-          Effective date: June 28, 2026 &mdash; Last updated: October 7, 2026
+          Effective date: June 28, 2026 &mdash; Last updated: October 8, 2026
         </p>
       </div>
 
@@ -152,8 +160,7 @@ export default function PrivacyPage() {
             Elsewhere (e.g. the United States), analytics loads on your first visit under a
             notice-and-opt-out model. Use the &ldquo;Do Not Sell or Share My Personal
             Information / Manage Consent&rdquo; link in the site footer to open a notice with a
-            Decline button (if we cannot determine your country, the link opens Google&apos;s
-            consent message instead, or this page on pages without ads). Decline tells Google to deny analytics and advertising storage
+            Decline button ({UNKNOWN_COUNTRY}). Decline tells Google to deny analytics and advertising storage
             straight away. Your choice is saved in your browser (local storage key{' '}
             <code>firepath_cookie_consent</code>), is not sent to our servers, and is applied
             again on every later visit.
@@ -232,8 +239,8 @@ export default function PrivacyPage() {
             {ADS_ENABLED ? <> in Google&apos;s certified consent message</> : null}{' '}
             (opt-in required). For visitors elsewhere (e.g. the United States), analytics
             loads on your first visit under a notice-and-opt-out model; you may opt out at
-            any time by choosing Decline in the notice opened from the footer link (or in
-            Google&apos;s consent message, if we cannot determine your country), clearing
+            any time by choosing Decline in the notice opened from the footer link
+            ({UNKNOWN_COUNTRY}), clearing
             your browser cookies, or using the{' '}
             <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener noreferrer">
               Google Analytics Opt-out Browser Add-on
@@ -270,8 +277,7 @@ export default function PrivacyPage() {
                   Advertising and analytics cookies load on your first visit, consistent with
                   applicable US and CCPA standards. The &ldquo;Do Not Sell or Share My Personal
                   Information / Manage Consent&rdquo; link in the site footer opens a notice with
-                  a Decline button (if we cannot determine your country, it opens Google&apos;s
-                  consent message instead); Decline tells Google to deny advertising and analytics
+                  a Decline button ({UNKNOWN_COUNTRY}); Decline tells Google to deny advertising and analytics
                   storage straight away, and the choice is saved in your browser and applied
                   again on each later visit. You can also opt out through the options listed
                   below.
@@ -403,10 +409,19 @@ export default function PrivacyPage() {
 
           <h3>{ADS_ENABLED ? '4e' : '4d'}. How to Manage Cookies</h3>
           <p>
-            You can control cookies through your browser settings. In the EEA, UK, and
-            Switzerland, or when your country cannot be determined, use the footer link to reopen
-            the consent message; elsewhere, use the footer link to open our notice and choose
-            &ldquo;Decline&rdquo;.
+            You can control cookies through your browser settings.{' '}
+            {ADS_ENABLED ? (
+              <>
+                In the EEA, UK, and Switzerland, or when your country cannot be determined, use
+                the footer link to reopen the consent message; elsewhere, use the footer link to
+                open our notice and choose &ldquo;Decline&rdquo;.
+              </>
+            ) : (
+              <>
+                In the EEA, UK, and Switzerland, analytics storage stays denied; elsewhere, use
+                the footer link to open our notice and choose &ldquo;Decline&rdquo; ({UNKNOWN_COUNTRY}).
+              </>
+            )}
             {ACCOUNTS && <> Note that disabling strictly necessary cookies will prevent you from signing in.</>}{' '}
             For Google Analytics specifically, you may also use the{' '}
             <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener noreferrer">
