@@ -119,6 +119,12 @@ describe('UX P0-4 / K26-2: a server-rendered next-step block follows the home re
     expect(Number(marginBottom!.slice(3)) * 4 + Number(slotTop![1]) * 4).toBeGreaterThanOrEqual(150);
   });
 
+  it('the embed, which never carries an ad, does not reserve the ad gap', () => {
+    const embedded = resultBlockFor(DEFAULT_INPUT, null, true);
+    expect(embedded).not.toMatch(/class="[^"]*\bmb-32\b/);
+    expect(resultBlockFor(DEFAULT_INPUT, null, false)).toMatch(/class="[^"]*\bmb-32\b/);
+  });
+
   it('draws no ad-style chrome: no dashed border, no Advertisement or Sponsored label, no arrow glyphs', () => {
     const block = blocks(home)[0];
     expect(block).not.toMatch(/border-dashed/);
