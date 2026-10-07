@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mail } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
+import { shareableUrl } from '@/lib/engine/url-state';
 
 const ENDPOINT = '/api/email-results';
 const CALC_TYPE = 'fire_timeline';
@@ -47,13 +48,7 @@ export function EmailMyResultsForm({ postalAddress }: EmailMyResultsFormProps) {
     setStatus('submitting');
 
     try {
-      // Strip the hash — the FIRE-scenario-encoding hash (see url-state.ts)
-      // is exactly what the "results" refers to, so it's the intended
-      // permalink content, not something to strip here (unlike the general
-      // EmailResultCapture, whose report email doesn't reference a specific
-      // result). Query strings are stripped defensively (share links may add
-      // UTM params later) — the hash carries the actual scenario state.
-      const shareUrl = window.location.href.split('?')[0];
+      const shareUrl = shareableUrl(window.location.href);
 
       const res = await fetch(ENDPOINT, {
         method: 'POST',

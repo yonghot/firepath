@@ -23,6 +23,13 @@ const REVERSE_KEY_MAP = Object.fromEntries(
   Object.entries(KEY_MAP).map(([k, v]) => [v, k])
 ) as Record<string, keyof FIREInput>;
 
+// The scenario lives in the hash; the query only carries the sharer's own attribution (utm_*, gclid, ?crew), which recipients must not inherit.
+export function shareableUrl(href: string): string {
+  const url = new URL(href);
+  url.search = '';
+  return url.toString();
+}
+
 export function encodeState(input: FIREInput): string {
   const params = new URLSearchParams();
   for (const [key, shortKey] of Object.entries(KEY_MAP)) {

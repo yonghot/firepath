@@ -10,7 +10,7 @@
  * mechanism as-is; this component only adds the buttons + the result_share
  * event on top of it. No new serialization, no URL rewrite on every
  * keystroke (the hash already updates live; this just copies/share()s
- * window.location.href at click time, minus the ?crew marker).
+ * window.location.href at click time, minus the query).
  *
  * Canonical stays the clean path (buildMeta() alternates.canonical never
  * includes the hash) — search engines never see the parameterized URL as
@@ -21,6 +21,7 @@ import { useState, useSyncExternalStore } from 'react';
 import { Copy, Check, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { trackEvent } from '@/lib/analytics';
+import { shareableUrl } from '@/lib/engine/url-state';
 import { toast } from 'sonner';
 
 /** Stable calc_type slug — mirrors CALC_TYPE in calculator-client.tsx / result-client.tsx. */
@@ -33,14 +34,6 @@ function useWebShareAvailable(): boolean {
     () => typeof navigator !== 'undefined' && typeof navigator.share === 'function',
     () => false,
   );
-}
-
-// ?crew=1 marks the sharer's own visits as internal traffic; recipients must not inherit it.
-export function shareableUrl(href: string): string {
-  const url = new URL(href);
-  if (!url.searchParams.has('crew')) return href;
-  url.searchParams.delete('crew');
-  return url.toString();
 }
 
 export function ShareResultButtons({ className }: { className?: string }) {
