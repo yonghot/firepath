@@ -33,6 +33,7 @@ result-adjacent action control on an ad-bearing page:
 | `[aria-label="Financial advisor referral"]` | Primary-intent CTA (CPL variant) | `/`, `/result`, guide pages |
 | `[aria-label="Featured robo-advisor"]` | Primary-intent CTA (affiliate variant) | `/`, `/result`, guide pages |
 | `button:has(svg.lucide-share-2)` (Share button) | Share/Reset action row above the result cards | `/`, `/result` |
+| `[data-next-step]` | Next-step link cards (internal links to the healthcare tool, FIRE types, guides) under the result and at the end of content pages; real content links, not ads | `/`, `/result`, `/healthcare-bridge`, `/fire-types`, `/fire-guide`, `/guide`, `/embed` |
 | `#terms-consent` | Inline terms agreement (checkbox + "Agree and view results" button) shown below the result disclaimer until the visitor agrees | `/`, `/result`, `/embed` |
 
 The `AdSlot`/`AdProvider` unit itself is always rendered inside an
@@ -51,7 +52,7 @@ Verified by reading the DOM source order of every page that mounts an ad
   desktop sidebar **column**, never in the same vertical flow as the ad. In
   the main content column, the ad (`ResultMonetization` → `DisplaySlot`) is
   separated from the result cards by, in DOM order: `ResultDisclaimer` →
-  `ResultRelated` (bordered card, `mt-6` + `p-4 md:p-6`) → `MonteCarloPanel` →
+  `ResultRelated` (the `[data-next-step]` block: three bordered link cards, always server-rendered, `mt-6` + `mb-32`) → `MonteCarloPanel` →
   `PortfolioPanel` — each a full card section, not a spacer div. There is no
   "Calculate" submit button on this page (the calculator recalculates live on
   slider drag); the nearest action controls to inputs are "Reset"/"Share" in
@@ -64,7 +65,7 @@ Verified by reading the DOM source order of every page that mounts an ad
 - **`/result`** — No calculator inputs render on this page at all (it is a
   read-only shared-result view; "Edit"/share buttons sit at the top of the
   page, far from the ad at the bottom). Source order: result chart → result
-  cards → `ResultDisclaimer` → `ResultRelated` (bordered card) →
+  cards → `ResultDisclaimer` → `ResultRelated` (`[data-next-step]`) →
   `ResultMonetization` (ad).
 - **`/guide` and `/guide/[slug]`** — No calculator inputs or "Calculate"
   buttons render on these pages at all (guide pages are articles with a single

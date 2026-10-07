@@ -8,6 +8,7 @@ import { Header } from '@/components/layouts/header';
 import { Footer } from '@/components/layouts/footer';
 import { PAGE_LOADERS, preloadPages, renderPage, renderWithProviders } from './helpers/render-pages';
 import { resolvesToRoute } from './helpers/app-routes';
+import { decodeAges } from '@/lib/engine/url-state';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
@@ -60,6 +61,11 @@ function check(href: string, fromPage: string | null): string | null {
   const [withoutFragment, fragment] = href.split('#');
   const pathname = withoutFragment.split('?')[0] || '/';
   if (!resolvesToRoute(pathname)) return `${href}: no route for ${pathname}`;
+  if (fragment?.includes('=')) {
+    return pathname === '/healthcare-bridge' && decodeAges(fragment) !== null
+      ? null
+      : `${href}: state hash on ${pathname}, which does not read it`;
+  }
   if (fragment) {
     const target = rendered[pathname === '' ? '/' : pathname];
     if (!target) return `${href}: cannot verify #${fragment}, ${pathname} is not rendered by this test`;
@@ -113,6 +119,13 @@ describe('K10: every internal link resolves to a route, and every fragment to an
     }
     expect(check('/fire-types#lean', null)).toBeNull();
     expect(check('/#lean', null)).not.toBeNull();
+  });
+
+  it('a state hash is valid only where a page reads it, and only when it decodes (the home next-step link carries one)', () => {
+    expect(check('/healthcare-bridge#a=30&ra=54', null)).toBeNull();
+    expect(check('/healthcare-bridge#a=5&ra=999', null)).not.toBeNull();
+    expect(check('/fire-types#a=30&ra=54', null)).not.toBeNull();
+    expect(hrefsIn(rendered['/']).some((href) => href.startsWith('/healthcare-bridge#a='))).toBe(true);
   });
 
   it('FIRE type cards no longer link to preset hashes the calculator does not read', () => {

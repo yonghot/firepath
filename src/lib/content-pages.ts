@@ -44,7 +44,7 @@
  * without adding data, never generate new thin spokes to fill a hub.
  */
 
-export type LinkModule = 'result_related' | 'inline' | 'breadcrumb' | 'hub' | 'compare_chain' | 'footer_crosslink';
+export type LinkModule = 'next_step' | 'inline' | 'breadcrumb' | 'hub' | 'compare_chain' | 'footer_crosslink';
 
 /** Minimum count of entity-specific, sibling-differing facts a spoke page must carry to be indexable (부속P CODE-06). */
 export const MIN_DIFFERENTIATING_FACTS = 4;

@@ -190,14 +190,7 @@ export function CalculatorClient({
                 />
               </TermsGate>
 
-              {/* 부속I T06 — internal sibling-link module, directly below the
-                  result block, above any below-result ad slot (ResultMonetization,
-                  rendered by the parent page after this component). Gated on the
-                  same hasUserInteracted signal as calc_input_start/calculator_complete
-                  (interactionCount > 0) so it never renders on the default SSR
-                  render. mt-6 + its own card border gives >=24px visual separation
-                  and a distinct treatment from AdSlot's dashed placeholder. */}
-              <ResultRelated hasResult={interactionCount > 0} output={gated.output} input={gated.input} embedded={embedded} />
+              <ResultRelated output={gated.output} input={gated.input} embedded={embedded} />
 
               {premiumAvailable && (
                 <>

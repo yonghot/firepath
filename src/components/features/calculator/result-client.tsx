@@ -47,11 +47,7 @@ export function ResultClient() {
         <ResultsPanel gated={gated} accepted={accepted} showActions={false} />
       </TermsGate>
 
-      {/* 부속I T06 — /result always shows a real (shared or freshly-computed)
-          result, so the module renders unconditionally here, directly below
-          the result block and above ResultMonetization (rendered by the
-          parent page after this component). */}
-      <ResultRelated hasResult output={gated.output} input={gated.input} />
+      <ResultRelated output={gated.output} input={gated.input} />
     </>
   );
 }

@@ -5,9 +5,9 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { calculateFIRE } from '@/lib/engine/fire-calculator';
 import { calculateHealthcareBridge } from '@/lib/engine/healthcare-bridge';
-import { decodeAges, scenarioHref } from '@/lib/engine/url-state';
+import { decodeAges, healthcareBridgeHref } from '@/lib/engine/url-state';
+import { resultNextSteps } from '@/lib/next-steps';
 import { DEFAULT_INPUT } from '@/constants/fire-defaults';
-import { ALL_CONTENT_PAGES } from '@/lib/content-pages';
 import { ResultRelated } from '@/components/features/calculator/result-related';
 import { initialFormFromHash } from '@/components/features/healthcare/healthcare-bridge-calculator';
 
@@ -30,36 +30,39 @@ function hrefsIn(html: string): string[] {
 }
 
 describe('FIRE-36 (K26-2): next-step links carry the scenario to the page that reads it', () => {
+  const output = calculateFIRE(SCENARIO);
+  const reach = output.results.regular.reachAge;
+
   it('the healthcare link carries the two ages and nothing else from the scenario', () => {
-    const href = scenarioHref('/healthcare-bridge', SCENARIO);
+    const href = healthcareBridgeHref(41, 52);
     expect(href).toBe('/healthcare-bridge#a=41&ra=52');
     expect(href).not.toMatch(/123456|777777/);
   });
 
-  it('even a default-age scenario carries its ages, so a changed scenario is never replaced by the page defaults', () => {
-    expect(scenarioHref('/healthcare-bridge', DEFAULT_INPUT)).toBe('/healthcare-bridge#a=30&ra=65');
+  it('an age that leaves no bridge, predates the current age or is outside the decoder range opens the tool on its own defaults', () => {
+    for (const age of [65, 70, 40, 24, 81, null]) expect(healthcareBridgeHref(41, age), String(age)).toBe('/healthcare-bridge');
   });
 
-  it('every other related page keeps its exact path, including in-page anchors', () => {
-    const others = ALL_CONTENT_PAGES.map((page) => page.path).filter((p) => p !== '/healthcare-bridge');
-    expect(others).toContain('/fire-types#lean');
-    for (const p of others) expect(scenarioHref(p, SCENARIO), p).toBe(p);
+  it('every other next step keeps its exact path, including in-page anchors', () => {
+    const others = resultNextSteps(SCENARIO, output).filter((item) => item.slot !== 'healthcare');
+    expect(others.map((item) => item.href)).toContain('/fire-types#regular');
+    for (const item of others) expect(item.href, item.slot).toBe(item.path);
   });
 
-  it('the result module links the healthcare tool with the scenario ages and no other link carries a hash it cannot read', () => {
-    const html = renderToStaticMarkup(
-      createElement(ResultRelated, { hasResult: true, output: calculateFIRE(SCENARIO), input: SCENARIO }),
-    );
+  it('the result module links the healthcare tool with the age Regular FIRE is reached and no other link carries a hash it cannot read', () => {
+    expect(reach).not.toBeNull();
+    const html = renderToStaticMarkup(createElement(ResultRelated, { output, input: SCENARIO }));
     const hrefs = hrefsIn(html);
-    expect(hrefs).toContain('/healthcare-bridge#a=41&ra=52');
-    expect(hrefs.filter((href) => /#a=/.test(href))).toEqual(['/healthcare-bridge#a=41&ra=52']);
+    const expected = `/healthcare-bridge#a=41&ra=${reach}`;
+    expect(hrefs).toContain(expected);
+    expect(hrefs.filter((href) => /#a=/.test(href))).toEqual([expected]);
     expect(hrefs).toContain('/fire-guide');
-    expect(html.match(/Starts from your ages/g)?.length).toBe(1);
+    expect(html).toContain(`Reaching Regular FIRE at ${reach} leaves ${65 - (reach as number)} years before Medicare at 65`);
   });
 
   it('analytics clicks never include the hash or any input value', () => {
-    const source = readFileSync(path.join(ROOT, 'src/components/features/calculator/result-related.tsx'), 'utf8');
-    expect(source).toMatch(/trackEvent\('related_click',\s*\{\s*link_module:\s*'result_related',\s*link_url:\s*page\.path\s*\}\)/);
+    const source = readFileSync(path.join(ROOT, 'src/components/common/next-step-link.tsx'), 'utf8');
+    expect(source).toMatch(/trackEvent\('related_click',\s*\{\s*link_module:\s*'next_step',\s*link_context:\s*item\.slot,\s*link_url:\s*item\.path\s*\}\)/);
   });
 });
 
@@ -69,7 +72,7 @@ describe('FIRE-36: the healthcare calculator starts from the carried ages', () =
   });
 
   it('a link built by the result module round-trips into the form', () => {
-    const hash = scenarioHref('/healthcare-bridge', SCENARIO).split('#')[1];
+    const hash = healthcareBridgeHref(41, 52).split('#')[1];
     const form = initialFormFromHash(hash);
     expect([form.currentAge, form.retirementAge]).toEqual(['41', '52']);
     const computed = calculateHealthcareBridge({

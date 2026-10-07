@@ -1,10 +1,8 @@
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import { createGuideService, GuideService } from '@/lib/services/guide.service';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { GuideCardLink } from './guide-card-link';
-import { BookOpen, Calculator } from 'lucide-react';
-import Link from 'next/link';
+import { BookOpen } from 'lucide-react';
 import type { Metadata } from 'next';
 import { resolveAdSlot } from '@/lib/ad-slots';
 import { AdSlot } from '@/components/common/ad-slot';
@@ -12,6 +10,8 @@ import { getPremiumStatus } from '@/lib/subscription/premium';
 import { safeJsonLd } from '@/lib/utils/json-ld';
 import { buildMeta } from '@/lib/seo';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
+import { NextStep } from '@/components/common/next-step';
+import { guideHubNextSteps } from '@/lib/next-steps';
 import { AnswerBlock } from '@/components/common/answer-block';
 import { buildAnswerBlock, type GeoAnswerEntity } from '@/lib/seo/geo';
 import { calculateFIRE } from '@/lib/engine/fire-calculator';
@@ -144,19 +144,7 @@ export default async function GuidesIndexPage() {
       {/* Ad (free tier only) */}
       {!isPremium && <AdSlot slot={resolveAdSlot('guide')} />}
 
-      {/* CTA */}
-      <div className="mt-10 p-6 rounded-xl bg-primary/5 border border-primary/20 text-center">
-        <h2 className="text-3xl font-bold mb-2">Ready to Plan Your FIRE Path?</h2>
-        <p className="text-sm text-muted-foreground mb-4">
-          Use our interactive calculator to compare all 5 FIRE types instantly.
-        </p>
-        <Link href="/">
-          <Button>
-            <Calculator className="h-4 w-4 mr-2" />
-            Try the Calculator
-          </Button>
-        </Link>
-      </div>
+      <NextStep items={guideHubNextSteps()} className="mt-24" />
     </div>
   );
 }

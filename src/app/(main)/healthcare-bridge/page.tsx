@@ -12,6 +12,8 @@ import { publisherJsonLd } from "@/components/common/json-ld";
 import { safeJsonLd } from "@/lib/utils/json-ld";
 import { buildMeta } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/common/breadcrumbs";
+import { NextStep } from "@/components/common/next-step";
+import { healthcareNextSteps } from "@/lib/next-steps";
 import { calculateHealthcareBridge, MEDICARE_ELIGIBILITY_AGE } from "@/lib/engine/healthcare-bridge";
 import { formatCurrencyFull } from "@/lib/utils/format";
 import { AnswerBlock } from "@/components/common/answer-block";
@@ -217,6 +219,8 @@ export default function HealthcareBridgePage() {
         </h2>
         <HealthcareBridgeCalculator />
       </section>
+
+      <NextStep items={healthcareNextSteps()} />
 
       <section
         aria-labelledby="how-it-works-heading"

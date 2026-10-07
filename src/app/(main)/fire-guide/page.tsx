@@ -8,6 +8,8 @@ import { AdvisorCta } from '@/components/common/advisor-cta';
 import { SourcesReferences, type SourceItem } from '@/components/common/sources-references';
 import { UpdatedBadge } from '@/components/common/updated-badge';
 import { Breadcrumbs } from '@/components/common/breadcrumbs';
+import { NextStep } from '@/components/common/next-step';
+import { fireGuideNextSteps } from '@/lib/next-steps';
 import { buildMeta } from '@/lib/seo';
 // safeJsonLd escapes </>/& before this developer-authored (never user-supplied)
 // structured-data object is injected — the same pattern already used by
@@ -260,6 +262,8 @@ export default function FireGuidePage() {
             </section>
           ))}
         </div>
+
+        <NextStep items={fireGuideNextSteps()} className="mt-10" />
 
         <DisclaimerBanner />
 

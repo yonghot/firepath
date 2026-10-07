@@ -15,6 +15,8 @@ import { FIRE_COLORS, FIRE_LABELS } from "@/constants/fire-colors";
 import { formatCurrencyFull, formatPercent } from "@/lib/utils/format";
 import { buildMeta } from "@/lib/seo";
 import { Breadcrumbs } from "@/components/common/breadcrumbs";
+import { NextStep } from "@/components/common/next-step";
+import { fireTypesNextSteps } from "@/lib/next-steps";
 import { AnswerBlock } from "@/components/common/answer-block";
 import { buildAnswerBlock, type GeoAnswerEntity } from "@/lib/seo/geo";
 import { EXPECTED_RETURN_STAT } from "@/lib/figures";
@@ -526,6 +528,8 @@ export default function FireTypesPage() {
         </Link>
         .
       </p>
+
+      <NextStep items={fireTypesNextSteps()} />
 
       {/* 부속M K01 — entity-level FAQ, one question per FIRE type citing that
           type's own computed target (see FIRE_TYPES_FAQ above). */}

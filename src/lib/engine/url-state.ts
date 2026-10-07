@@ -1,5 +1,6 @@
 import type { FIREInput } from '@/types/fire.types';
 import { DEFAULT_INPUT, SLIDER_CONFIGS } from '@/constants/fire-defaults';
+import { MEDICARE_ELIGIBILITY_AGE } from '@/lib/engine/healthcare-bridge';
 
 /** Build a quick lookup from FIREInput key → SliderConfig for bounds clamping */
 const SLIDER_BOUNDS = Object.fromEntries(
@@ -43,14 +44,21 @@ export function reconcileHash(currentHash: string, input: FIREInput): string | n
 
 const HEALTHCARE_BRIDGE_PATH = '/healthcare-bridge';
 
-/** Only the healthcare tool reads the carried hash, and only the two ages: other links keep their exact path (including in-page anchors) and no income or net worth leaves the calculator. */
-export function scenarioHref(path: string, input: FIREInput): string {
-  if (path !== HEALTHCARE_BRIDGE_PATH) return path;
+/** An age the healthcare tool can open with: a real bridge before Medicare, inside the range the hash decoder accepts. */
+export function canCarryBridgeAge(currentAge: number, age: number | null): age is number {
+  if (age === null || age < currentAge || age >= MEDICARE_ELIGIBILITY_AGE) return false;
+  const { min, max } = SLIDER_BOUNDS.retirementAge;
+  return age >= min && age <= max;
+}
+
+/** The healthcare tool reads only the two ages from the hash, so nothing else leaves the calculator; without a usable age it opens on its own defaults. */
+export function healthcareBridgeHref(currentAge: number, retireAge: number | null): string {
+  if (!canCarryBridgeAge(currentAge, retireAge)) return HEALTHCARE_BRIDGE_PATH;
   const params = new URLSearchParams({
-    [KEY_MAP.currentAge]: String(input.currentAge),
-    [KEY_MAP.retirementAge]: String(input.retirementAge),
+    [KEY_MAP.currentAge]: String(currentAge),
+    [KEY_MAP.retirementAge]: String(retireAge),
   });
-  return `${path}#${params.toString()}`;
+  return `${HEALTHCARE_BRIDGE_PATH}#${params.toString()}`;
 }
 
 export function decodeAges(hash: string): { currentAge: number; retirementAge: number } | null {
