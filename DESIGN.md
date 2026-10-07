@@ -138,3 +138,4 @@
 | 2026-04-05 | Inter font kept | Best tabular-nums support for financial data display |
 | 2026-04-05 | 5 FIRE colors locked | Must be visually distinct on chart, accessible contrast |
 | 2026-04-05 | Sidebar 320px (was 380px) | Give more chart space on 1440px viewports |
+| 2026-10-08 | Parameters panel shows 4 inputs (age, income, savings rate, expenses); net worth, retirement age, return, inflation and withdrawal rate sit under a server-rendered Advanced disclosure | Leader decision D3: at most four visible inputs. The four are the inputs whose full slider range moves the five FIRE ages most (engine-computed); the five others stay mounted, share-linked and one tap away |
