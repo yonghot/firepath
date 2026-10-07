@@ -304,6 +304,11 @@ export default function MethodologyPage() {
           estimates, not guarantees. (See the <Link href="/">calculator</Link> and
           its FAQ for plain-language explanations.)
         </p>
+
+        <p className="text-sm text-muted-foreground">
+          Found a number that looks wrong? <Link href="/about">About FIREPath</Link> says who
+          publishes this site and how to request a correction.
+        </p>
       </div>
 
       <SourcesReferences sources={sources} />

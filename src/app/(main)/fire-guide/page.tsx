@@ -24,8 +24,7 @@ import { SITE_URL } from '@/lib/site';
 const PAGE_PATH = '/fire-guide';
 const PAGE_UPDATED = getPageLastModified(PAGE_PATH);
 const TITLE = 'The Complete FIRE Guide (2026): 4% Rule, 5 FIRE Types';
-const DESCRIPTION =
-  "The 4% rule's real 1994 origin, updated 2024-2026 safe-withdrawal-rate research, all 5 FIRE types, sequence-of-returns risk, 2026 IRS and Social Security limits, and the healthcare bridge before Medicare — 14 official sources cited.";
+const DESCRIPTION = `What FIRE is, where the 4% rule comes from (Bengen, 1994), all 5 FIRE types, newer safe-withdrawal-rate research, sequence-of-returns risk, 2026 IRS and Social Security limits, and the healthcare bridge before Medicare, with ${GUIDE_SOURCES.length} cited sources.`;
 
 export const metadata: Metadata = buildMeta({
   title: TITLE,
@@ -198,10 +197,12 @@ export default function FireGuidePage() {
           </h1>
           <UpdatedBadge lastUpdated={PAGE_UPDATED} className="mt-3" />
           <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
-            Where the 4% rule actually comes from, all 5 FIRE types, what newer
-            withdrawal-rate research says, sequence-of-returns risk, and the 2026
-            regulatory numbers — IRS limits, Social Security, healthcare — that
-            change every FIRE plan&apos;s math.
+            FIRE (financial independence, retire early) means saving and investing until your
+            portfolio can pay your living costs. A common target is 25 times your yearly
+            spending, the 4% rule from William Bengen&apos;s 1994 study. This guide covers where
+            that rule comes from, all 5 FIRE types, newer withdrawal-rate research,
+            sequence-of-returns risk, and the 2026 IRS, Social Security and healthcare numbers
+            that change every FIRE plan&apos;s math.
           </p>
           <AuthorByline lastUpdated={PAGE_UPDATED} className="mt-3" />
         </div>

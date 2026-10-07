@@ -18,7 +18,10 @@ import { buildMeta, validateTitle, titleLeadPhrase } from '@/lib/seo';
 
 /** path -> [title, h1Text] for every hardcoded static route in this repo. */
 const ROUTE_MATRIX: Record<string, { title: string; h1: string }> = {
-  '/': { title: 'FIREPath: All 5 FIRE Types on One Live Timeline (2026)', h1: 'FIREPath' },
+  '/': {
+    title: 'FIRE Calculator: How Much Do You Need to Retire Early?',
+    h1: 'FIRE Calculator: How Much Do You Need to Retire Early?',
+  },
   '/result': {
     title: "This Scenario's FIRE Results: Full Timeline Breakdown",
     h1: "This Scenario's FIRE Results",
@@ -69,8 +72,8 @@ describe('seo.ts — T10 title contract build-time assertion', () => {
         expect(lengthOk, `"${title}" is ${length} chars, expected 50-60`).toBe(true);
       });
 
-      it("title's leading phrase textually matches the page H1", () => {
-        expect(titleLeadPhrase(title)).toBe(h1);
+      it("title's leading phrase, or the whole title, textually matches the page H1", () => {
+        expect([titleLeadPhrase(title), title]).toContain(h1);
       });
 
       it('primary keyword phrase appears within the first 30 characters', () => {

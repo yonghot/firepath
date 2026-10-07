@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { Flame } from 'lucide-react';
 import { CalculatorClient } from '@/components/features/calculator/calculator-client';
 import { FAQSection } from '@/components/common/faq-section';
@@ -11,26 +12,25 @@ import { SeasonBadge } from '@/components/common/season-badge';
 import { RecentCalculations } from '@/components/common/recent-calculations';
 import { EmbedSnippet } from '@/components/common/embed-snippet';
 import { AnswerBlock } from '@/components/common/answer-block';
-import { MAIN_CALCULATOR_ANSWER } from '@/lib/seo/geo-entities';
+import { HOME_ANSWER_LEAD, MAIN_CALCULATOR_ANSWER } from '@/lib/seo/geo-entities';
 import { getPremiumStatus } from '@/lib/subscription/premium';
 import { isPremiumPurchasable } from '@/lib/premium-availability';
 import { getPageLastModified } from '@/lib/content-pages';
 import { buildMeta } from '@/lib/seo';
 
-// Use absolute to bypass the "%s | FIREPath" template from root layout —
-// avoids redundant "FIREPath — ... | FIREPath" on the home page. buildMeta's
-// title still satisfies the 50-60 char / keyword-first-30 / H1-lead-match
-// contract; `title.absolute` just disables the template suffix on top of it.
+// Absolute title bypasses the "%s | FIREPath" template; it is the same text as the H1 so search engines have nothing to rewrite.
+const HOME_TITLE = 'FIRE Calculator: How Much Do You Need to Retire Early?';
+
 const homeMeta = buildMeta({
-  title: 'FIREPath: All 5 FIRE Types on One Live Timeline (2026)',
+  title: HOME_TITLE,
   description:
-    'Compare LeanFIRE, RegularFIRE, FatFIRE, CoastFIRE, and BaristaFIRE on one interactive timeline. Adjust sliders and see your path to financial independence in real time.',
+    'Free FIRE calculator: enter your age, expenses and savings to see how much you need to retire early under Lean, Regular, Fat, Coast and Barista FIRE.',
   path: '/',
 });
 
 export const metadata: Metadata = {
   ...homeMeta,
-  title: { absolute: 'FIREPath: All 5 FIRE Types on One Live Timeline (2026)' },
+  title: { absolute: HOME_TITLE },
 };
 
 export default async function CalculatorPage() {
@@ -56,21 +56,42 @@ export default async function CalculatorPage() {
         }}
       />
       <div className="mx-auto max-w-7xl px-4 py-6">
-        {/* Hero section — server-rendered for LCP */}
-        <div className="mb-8 text-center lg:text-left">
-          <div className="flex items-center justify-center lg:justify-start gap-2 mb-2 flex-wrap">
-            <Flame className="h-7 w-7 text-[var(--fire-coast)]" />
-            <h1 className="text-4xl font-bold">FIREPath</h1>
-            <UpdatedBadge lastUpdated={pageUpdated} className="ml-0 lg:ml-2" />
+        {/* Hero section — server-rendered for LCP; the answer sits directly under the H1 so it is in the first 100 words. */}
+        <div className="mb-6">
+          <div className="mb-2 flex items-start gap-2">
+            <Flame className="mt-1 h-7 w-7 shrink-0 text-[var(--fire-coast)]" aria-hidden="true" />
+            <h1 className="text-3xl font-bold sm:text-4xl">{HOME_TITLE}</h1>
           </div>
-          <p className="text-muted-foreground max-w-xl mx-auto lg:mx-0">
-            Compare 5 FIRE types — Lean, Regular, Fat, Coast &amp; Barista — on one interactive timeline. Adjust the sliders and see your path to financial independence in real time.
+          <p data-answer-lead="true" className="max-w-2xl text-base leading-relaxed">
+            With the default inputs ({HOME_ANSWER_LEAD.conditions}), you need {HOME_ANSWER_LEAD.regular} for Regular
+            FIRE, {HOME_ANSWER_LEAD.lean} for Lean FIRE and {HOME_ANSWER_LEAD.fat} for Fat FIRE. Source for the 4% rate:{' '}
+            <a
+              href={HOME_ANSWER_LEAD.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-primary"
+            >
+              {HOME_ANSWER_LEAD.sourceLabel}
+            </a>
+            .
           </p>
-          {/* 부속U U-04 — season/re-visit hook, real IRS COLA announcement
-              cadence (see season-badge.tsx for the cited source). */}
-          <div className="mt-3 flex justify-center lg:justify-start">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <UpdatedBadge lastUpdated={pageUpdated} className="ml-0" />
+            {/* 부속U U-04 — season/re-visit hook, real IRS COLA announcement
+                cadence (see season-badge.tsx for the cited source). */}
             <SeasonBadge />
           </div>
+          <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
+            New to FIRE? See how each type works in{' '}
+            <Link href="/fire-types" className="underline underline-offset-2 hover:text-primary">
+              FIRE Types Explained
+            </Link>{' '}
+            or read{' '}
+            <Link href="/fire-guide" className="underline underline-offset-2 hover:text-primary">
+              The Complete FIRE Guide
+            </Link>
+            . Change any input below to use your own numbers.
+          </p>
         </div>
 
         {/* 부속I T16 — renders nothing until localStorage has entries (client-only, no hydration mismatch). */}

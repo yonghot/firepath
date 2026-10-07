@@ -25,6 +25,20 @@ function fmtShort(n: number): string {
   return n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(2)}M` : `$${Math.round(n / 1000)}K`;
 }
 
+const TRINITY_SOURCE = {
+  sourceLabel: 'Trinity Study (1998)',
+  sourceUrl: 'https://en.wikipedia.org/wiki/Trinity_study',
+} as const;
+
+/** One-line answer shown above the calculator on the home page (same engine output and default inputs as the answer block below). */
+export const HOME_ANSWER_LEAD = {
+  conditions: `age ${currentAge}, $${annualExpenses.toLocaleString()} a year in expenses, ${Number((safeWithdrawalRate * 100).toFixed(2))}% safe withdrawal rate`,
+  regular: fmtShort(results.regular.targetAmount),
+  lean: fmtShort(results.lean.targetAmount),
+  fat: fmtShort(results.fat.targetAmount),
+  ...TRINITY_SOURCE,
+};
+
 /** Shared answer block for the main FIRE calculator (home page + embed). */
 export const MAIN_CALCULATOR_ANSWER: GeoAnswerEntity = buildAnswerBlock({
   query: 'How much do you need to retire early (FIRE)?',
@@ -55,8 +69,7 @@ export const MAIN_CALCULATOR_ANSWER: GeoAnswerEntity = buildAnswerBlock({
   stats: [
     {
       text: `${formatPercent(safeWithdrawalRate)} default Safe Withdrawal Rate`,
-      sourceLabel: 'Trinity Study (1998)',
-      sourceUrl: 'https://en.wikipedia.org/wiki/Trinity_study',
+      ...TRINITY_SOURCE,
     },
     EXPECTED_RETURN_STAT,
   ],

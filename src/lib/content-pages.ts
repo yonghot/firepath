@@ -402,7 +402,7 @@ export const CORE_PAGES: ContentPage[] = [
     path: '/fire-guide',
     canonicalPath: '/fire-guide',
     title: 'The Complete FIRE Guide (2026)',
-    description: '5 FIRE types, the real 1994 origin of the 4% rule, and 2026 IRS/Social Security/healthcare figures — with 14 official sources.',
+    description: '5 FIRE types, the 1994 origin of the 4% rule, and 2026 IRS, Social Security and healthcare figures, with cited sources.',
     fireType: null,
     hasUniqueData: true,
     kind: 'spoke',

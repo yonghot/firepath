@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { getIndexablePages } from '@/lib/content-pages';
+import { getListedContentPages, pageUrl } from '@/lib/indexable-pages';
 import { isNoindexed } from '@/lib/noindex-paths';
 import { SITE_URL } from '@/lib/site';
 
@@ -26,18 +26,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     spoke: 0.7,
   };
 
-  const seenPaths = new Set<string>();
-  const contentPages: MetadataRoute.Sitemap = [];
-  for (const page of getIndexablePages()) {
-    if (seenPaths.has(page.canonicalPath) || isNoindexed(page.canonicalPath)) continue;
-    seenPaths.add(page.canonicalPath);
-    contentPages.push({
-      url: page.canonicalPath === '/' ? SITE_URL : `${SITE_URL}${page.canonicalPath}`,
-      ...(page.lastModified ? { lastModified: page.lastModified } : {}),
-      changeFrequency: page.canonicalPath === '/' ? 'weekly' : 'monthly',
-      priority: page.canonicalPath === '/' ? 1.0 : priorityByKind[page.kind],
-    });
-  }
+  const contentPages: MetadataRoute.Sitemap = getListedContentPages().map((page) => ({
+    url: pageUrl(page.canonicalPath),
+    ...(page.lastModified ? { lastModified: page.lastModified } : {}),
+    changeFrequency: page.canonicalPath === '/' ? ('weekly' as const) : ('monthly' as const),
+    priority: page.canonicalPath === '/' ? 1.0 : priorityByKind[page.kind],
+  }));
 
   // Utility/commercial pages outside the content-pages registry — real,
   // hand-authored, non-templated pages that aren't part of the

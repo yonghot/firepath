@@ -61,7 +61,7 @@ export function FAQSection({
   return (
     <section className={className ?? 'mx-auto max-w-3xl px-4 py-12'}>
       <h2 className="text-3xl font-bold text-center mb-6">{title}</h2>
-      <Accordion className="w-full">
+      <Accordion keepMounted className="w-full">
         {items.map((item, i) => (
           <AccordionItem key={i} value={`${idPrefix}-${i}`}>
             <AccordionTrigger className="text-left text-base font-medium">

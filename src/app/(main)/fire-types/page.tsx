@@ -519,6 +519,10 @@ export default function FireTypesPage() {
         <Link href="/methodology" className="underline underline-offset-2">
           the methodology page
         </Link>
+        . Plain-language explainers for each type are collected in the{" "}
+        <Link href="/guide" className="underline underline-offset-2">
+          FIRE guides
+        </Link>
         .
       </p>
 
