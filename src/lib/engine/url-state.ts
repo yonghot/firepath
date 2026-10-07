@@ -34,6 +34,13 @@ export function encodeState(input: FIREInput): string {
   return params.toString();
 }
 
+/** After an in-page anchor jump replaced the hash, the encoded inputs that must go back into the URL (empty at the defaults); null when the hash is empty or already carries a state. */
+export function reconcileHash(currentHash: string, input: FIREInput): string | null {
+  const bare = currentHash.replace(/^#/, '');
+  if (!bare || decodeState(bare)) return null;
+  return encodeState(input);
+}
+
 const HEALTHCARE_BRIDGE_PATH = '/healthcare-bridge';
 
 /** Only the healthcare tool reads the carried hash, and only the two ages: other links keep their exact path (including in-page anchors) and no income or net worth leaves the calculator. */
