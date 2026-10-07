@@ -98,7 +98,7 @@ describe('K23/K26-1: the home page answers the query before the calculator', () 
   });
 
   it('the home first paragraph links to the guide and the FIRE types page', () => {
-    const beforeCalculator = home.slice(0, home.search(/<(input|button|select)/));
+    const beforeCalculator = home.slice(0, home.search(/<(input|button|select)\b/));
     const hrefs = hrefsIn(beforeCalculator);
     expect(hrefs).toContain('/fire-guide');
     expect(hrefs).toContain('/fire-types');
