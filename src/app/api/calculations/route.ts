@@ -1,3 +1,4 @@
+import '@/lib/zod-config';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth, handleApiError, createCalculationService } from '@/lib/utils/api-handler';
 import { z } from 'zod/v4';
