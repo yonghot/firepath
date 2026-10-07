@@ -21,7 +21,7 @@ const USER_OPENED_BOTTOM_SURFACES: Record<string, string> = {
   'components/common/feedback-widget.tsx':
     'feedback panel: opens only after the visitor clicks the footer "Send feedback" control',
   'components/ui/sheet.tsx':
-    'generic side sheet: the header menu opens it with side="right"; the bottom variant is unused',
+    'generic side sheet: the header menu opens it with side="right"; the calculator parameters sheet opens it with side="bottom" and pads its content pb-28 to keep the last slider clear of an anchor ad',
 };
 
 function sourceFiles(dir: string, acc: string[] = []): string[] {
@@ -80,6 +80,16 @@ describe('K18: nothing is pinned to the bottom of the viewport on first paint', 
       if (!(rel in USER_OPENED_BOTTOM_SURFACES)) offenders.push(rel);
     }
     expect(offenders).toEqual([]);
+  });
+
+  it('the note on the generic sheet matches how it is really used: the bottom variant opens the calculator parameters (W9)', () => {
+    const note = USER_OPENED_BOTTOM_SURFACES['components/ui/sheet.tsx'];
+    expect(note).not.toMatch(/unused/);
+    const users = sourceFiles(SRC).filter((file) => /side="bottom"/.test(stripComments(readFileSync(file, 'utf8'))));
+    expect(users.map((file) => path.relative(SRC, file).split(path.sep).join('/'))).toEqual([
+      'components/features/calculator/calculator-client.tsx',
+    ]);
+    expect(note).toContain('calculator parameters');
   });
 
   it('the allow-list has no stale entries', () => {

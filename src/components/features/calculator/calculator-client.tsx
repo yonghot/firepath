@@ -164,7 +164,7 @@ export function CalculatorClient({
                 Adjust Parameters
               </SheetTrigger>
               <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
-                <div className="px-4 py-4 space-y-4">
+                <div className="px-4 pt-4 pb-28 space-y-4">
                   <CalculatorPanel />
                   <Separator />
                   <ScenarioManager onCompare={handleCompare} />
