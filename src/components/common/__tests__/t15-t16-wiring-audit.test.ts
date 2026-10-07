@@ -31,8 +31,9 @@ function read(relPath: string): string {
 }
 
 describe('T15 — ShareResultButtons renders in the result area (부속I T15 / 부속U U-04 audit)', () => {
-  it('CalculatorClient (home page, "/") imports and renders <ShareResultButtons /> next to the result cards', () => {
-    const src = read('calculator-client.tsx');
+  it('CalculatorClient (home page, "/") renders the ResultsPanel, whose header renders <ShareResultButtons /> next to the result cards', () => {
+    expect(read('calculator-client.tsx')).toMatch(/<ResultsPanel/);
+    const src = read('results-panel.tsx');
     expect(src).toMatch(/import \{ ShareResultButtons \}/);
     const resultCardsIdx = src.indexOf('<FIREResultCards');
     const shareIdx = src.indexOf('<ShareResultButtons');

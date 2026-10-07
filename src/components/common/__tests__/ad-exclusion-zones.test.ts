@@ -77,7 +77,7 @@ describe('Ad exclusion zones — buffer components sit between results and the a
   );
 
   it('ResultRelated, MonteCarloPanel, and PortfolioPanel all render after the result cards and before the component ends (buffer before any page-level ad mount)', () => {
-    const resultCardsIdx = src.indexOf('<FIREResultCards');
+    const resultCardsIdx = src.indexOf('<ResultsPanel');
     const resultRelatedIdx = src.indexOf('<ResultRelated');
     const monteCarloIdx = src.indexOf('<MonteCarloPanel');
     const portfolioIdx = src.indexOf('<PortfolioPanel');

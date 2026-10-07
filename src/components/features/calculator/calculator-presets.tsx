@@ -15,9 +15,9 @@
  *     `calc_input_start` once and `calculator_complete` (debounced) with
  *     ONLY `{ calc_type, result_bucket }` — no `preset` param is ever added,
  *     because this component never calls trackEvent() itself.
- *   - Results still render behind <TermsGate> — presets fill inputs, they do
- *     NOT touch TermsGate's localStorage consent flag, so the clickwrap is
- *     never bypassed (compliance wins per 부속U §7).
+ *   - A preset is an example scenario: its results show without agreement,
+ *     labelled "Example". Presets never touch the terms consent record, so
+ *     the clickwrap is never bypassed (compliance wins per 부속U §7).
  *
  * Visually: solid bg-card + border (rounded-xl, design/required.md token
  * scale), NEVER the dashed `border-dashed` placeholder style AdSlot uses —

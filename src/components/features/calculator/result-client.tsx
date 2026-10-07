@@ -3,18 +3,18 @@
 import { useEffect } from 'react';
 import { useCalculatorStore } from '@/stores/calculator.store';
 import { decodeState } from '@/lib/engine/url-state';
-import { FIRETimelineChart } from '@/components/features/calculator/fire-timeline-chart';
-import { FIREResultCards } from '@/components/features/calculator/fire-result-cards';
+import { ResultsPanel } from '@/components/features/calculator/results-panel';
 import { ResultRelated } from '@/components/features/calculator/result-related';
 import { ShareResultButtons } from '@/components/features/calculator/share-result-buttons';
-import { ResultDisclaimer } from '@/components/compliance/ResultDisclaimer';
 import { TermsGate } from '@/components/compliance/TermsGate';
+import { useGatedResult } from '@/hooks/use-gated-result';
 import { Button } from '@/components/ui/button';
 import { Calculator } from 'lucide-react';
 import Link from 'next/link';
 
 export function ResultClient() {
-  const { input, output, setInput } = useCalculatorStore();
+  const setInput = useCalculatorStore((s) => s.setInput);
+  const { gated, accepted } = useGatedResult();
 
   // Hydrating from a shared hash uses setInput() (never updateInput()), so
   // interactionCount stays 0 and calculator_complete does NOT fire here —
@@ -33,7 +33,7 @@ export function ResultClient() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-4xl font-bold">This Scenario&apos;s FIRE Results</h1>
         <div className="flex gap-2">
-          <ShareResultButtons />
+          {accepted === true && <ShareResultButtons />}
           <Link href="/">
             <Button size="sm">
               <Calculator className="h-4 w-4 mr-1" />
@@ -44,19 +44,14 @@ export function ResultClient() {
       </div>
 
       <TermsGate className="space-y-6">
-        <div className="rounded-xl border bg-card p-4 md:p-6">
-          <FIRETimelineChart timeline={output.timeline} results={output.results} />
-        </div>
-
-        <FIREResultCards results={output.results} />
-        <ResultDisclaimer />
+        <ResultsPanel gated={gated} accepted={accepted} showActions={false} />
       </TermsGate>
 
       {/* 부속I T06 — /result always shows a real (shared or freshly-computed)
           result, so the module renders unconditionally here, directly below
           the result block and above ResultMonetization (rendered by the
           parent page after this component). */}
-      <ResultRelated hasResult output={output} input={input} />
+      <ResultRelated hasResult output={gated.output} input={gated.input} />
     </>
   );
 }

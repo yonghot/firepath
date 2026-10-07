@@ -6,17 +6,13 @@ import { useScenarioStore } from '@/stores/scenario.store';
 import { useUrlState } from '@/hooks/use-url-state';
 import { CalculatorPanel } from '@/components/features/calculator/calculator-panel';
 import { CalculatorPresets } from '@/components/features/calculator/calculator-presets';
-import { FIRETimelineChart } from '@/components/features/calculator/fire-timeline-chart';
-import { FIREResultCards } from '@/components/features/calculator/fire-result-cards';
+import { ResultsPanel } from '@/components/features/calculator/results-panel';
 import { ScenarioManager } from '@/components/features/scenario/scenario-manager';
 import { ScenarioComparison } from '@/components/features/scenario/scenario-comparison';
 import { MonteCarloPanel } from '@/components/features/monte-carlo/monte-carlo-panel';
 import { PortfolioPanel } from '@/components/features/portfolio/portfolio-panel';
-import { SaveCalculationButton } from '@/components/features/calculator/save-calculation-button';
-import { ShareResultButtons } from '@/components/features/calculator/share-result-buttons';
 import { ResultRelated } from '@/components/features/calculator/result-related';
-import { ResultDisclaimer } from '@/components/compliance/ResultDisclaimer';
-import { TermsGate } from '@/components/compliance/TermsGate';
+import { TermsGate, focusTermsConsent } from '@/components/compliance/TermsGate';
 import { ContinueBanner } from '@/components/common/continue-banner';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
@@ -24,6 +20,8 @@ import { SlidersHorizontal } from 'lucide-react';
 import type { FIREType, FIREInput, Scenario } from '@/types/fire.types';
 import { trackEvent, IS_SENSITIVE_SITE } from '@/lib/analytics';
 import { useCalculatorPersistence } from '@/hooks/use-calculator-persistence';
+import { useGatedResult } from '@/hooks/use-gated-result';
+import { toast } from 'sonner';
 
 type ViewMode = 'calculator' | 'compare';
 
@@ -58,6 +56,16 @@ export function CalculatorClient({
   const [viewMode, setViewMode] = useState<ViewMode>('calculator');
 
   useUrlState();
+  const { gated, accepted } = useGatedResult();
+
+  const handleCompare = () => {
+    if (accepted === true) {
+      setViewMode('compare');
+      return;
+    }
+    toast('Agree to the terms below to compare scenarios.');
+    focusTermsConsent();
+  };
 
   // 부속I T16 — localStorage persistence. save() is called from the same
   // interaction effect below (only on a REAL user-driven change, never on
@@ -139,7 +147,7 @@ export function CalculatorClient({
           <div className="sticky top-20 overflow-y-auto max-h-[calc(100vh-6rem)] pr-2 space-y-4">
             <CalculatorPanel />
             <Separator />
-            <ScenarioManager onCompare={() => setViewMode('compare')} />
+            <ScenarioManager onCompare={handleCompare} />
           </div>
         </aside>
 
@@ -156,7 +164,7 @@ export function CalculatorClient({
                 <div className="py-4 space-y-4">
                   <CalculatorPanel />
                   <Separator />
-                  <ScenarioManager onCompare={() => setViewMode('compare')} />
+                  <ScenarioManager onCompare={handleCompare} />
                 </div>
               </SheetContent>
             </Sheet>
@@ -169,39 +177,14 @@ export function CalculatorClient({
             />
           ) : (
             <>
-              {/* TermsGate: FIREPath recalculates live as sliders move, so there is
-                  no single "calculate" action to gate. Instead we gate the RESULTS
-                  surface (chart + result cards) itself with a non-dismissable
-                  overlay until the user affirmatively agrees. Sliders/inputs in
-                  the sidebar above remain fully usable while this is showing. */}
               <TermsGate className="space-y-6">
-                {/* Chart */}
-                <div className="rounded-xl border bg-card p-4 md:p-6">
-                  <h2 className="text-3xl font-bold mb-4">FIRE Timeline</h2>
-                  <FIRETimelineChart
-                    timeline={output.timeline}
-                    results={output.results}
-                    highlightedType={highlightedType}
-                  />
-                </div>
-
-                {/* Result cards */}
-                <div>
-                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                    <h2 className="text-3xl font-bold">This Scenario&apos;s FIRE Numbers</h2>
-                    <div className="flex items-center gap-2">
-                      <ShareResultButtons />
-                      <SaveCalculationButton />
-                    </div>
-                  </div>
-                  <FIREResultCards
-                    results={output.results}
-                    onHighlight={setHighlightedType}
-                  />
-                </div>
-
-                {/* Disclaimer — placed directly adjacent to the result output it describes. */}
-                <ResultDisclaimer embedded={embedded} />
+                <ResultsPanel
+                  gated={gated}
+                  accepted={accepted}
+                  embedded={embedded}
+                  highlightedType={highlightedType}
+                  onHighlight={setHighlightedType}
+                />
               </TermsGate>
 
               {/* 부속I T06 — internal sibling-link module, directly below the
@@ -211,19 +194,19 @@ export function CalculatorClient({
                   (interactionCount > 0) so it never renders on the default SSR
                   render. mt-6 + its own card border gives >=24px visual separation
                   and a distinct treatment from AdSlot's dashed placeholder. */}
-              <ResultRelated hasResult={interactionCount > 0} output={output} input={input} embedded={embedded} />
+              <ResultRelated hasResult={interactionCount > 0} output={gated.output} input={gated.input} embedded={embedded} />
 
               {premiumAvailable && (
                 <>
                   <MonteCarloPanel
-                    input={input}
-                    results={output.results}
+                    input={gated.input}
+                    results={gated.output.results}
                     isPremium={false}
                     embedded={embedded}
                   />
                   <PortfolioPanel
-                    input={input}
-                    results={output.results}
+                    input={gated.input}
+                    results={gated.output.results}
                     isPremium={false}
                     embedded={embedded}
                   />

@@ -33,6 +33,7 @@ result-adjacent action control on an ad-bearing page:
 | `[aria-label="Financial advisor referral"]` | Primary-intent CTA (CPL variant) | `/`, `/result`, guide pages |
 | `[aria-label="Featured robo-advisor"]` | Primary-intent CTA (affiliate variant) | `/`, `/result`, guide pages |
 | `button:has(svg.lucide-share-2)` (Share button) | Share/Reset action row above the result cards | `/`, `/result` |
+| `#terms-consent` | Inline terms agreement (checkbox + "Agree and view results" button) shown below the result disclaimer until the visitor agrees | `/`, `/result`, `/embed` |
 
 The `AdSlot`/`AdProvider` unit itself is always rendered inside an
 `<aside aria-label="Advertisement">` (or `"Advertisement placeholder"` when
@@ -55,7 +56,11 @@ Verified by reading the DOM source order of every page that mounts an ad
   "Calculate" submit button on this page (the calculator recalculates live on
   slider drag); the nearest action controls to inputs are "Reset"/"Share" in
   `CalculatorPanel`'s own header, which never sits in the same column as the
-  ad.
+  ad. The one submit-style control in the result column is the "Agree and view
+  results" button of `#terms-consent` (shown only until the visitor agrees,
+  directly below `ResultDisclaimer`); the section carries `mb-28` and
+  `ResultMonetization` starts with `mt-8`, so at least 150px separate that
+  button from the display slot.
 - **`/result`** — No calculator inputs render on this page at all (it is a
   read-only shared-result view; "Edit"/share buttons sit at the top of the
   page, far from the ad at the bottom). Source order: result chart → result
