@@ -34,6 +34,23 @@ export function encodeState(input: FIREInput): string {
   return params.toString();
 }
 
+const HEALTHCARE_BRIDGE_PATH = '/healthcare-bridge';
+
+/** Only the healthcare tool reads the carried hash, and only the two ages: other links keep their exact path (including in-page anchors) and no income or net worth leaves the calculator. */
+export function scenarioHref(path: string, input: FIREInput): string {
+  if (path !== HEALTHCARE_BRIDGE_PATH) return path;
+  const params = new URLSearchParams({
+    [KEY_MAP.currentAge]: String(input.currentAge),
+    [KEY_MAP.retirementAge]: String(input.retirementAge),
+  });
+  return `${path}#${params.toString()}`;
+}
+
+export function decodeAges(hash: string): { currentAge: number; retirementAge: number } | null {
+  const decoded = decodeState(hash);
+  return decoded ? { currentAge: decoded.currentAge, retirementAge: decoded.retirementAge } : null;
+}
+
 export function decodeState(hash: string): FIREInput | null {
   if (!hash) return null;
 

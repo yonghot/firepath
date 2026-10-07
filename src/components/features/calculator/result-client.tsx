@@ -14,7 +14,7 @@ import { Calculator } from 'lucide-react';
 import Link from 'next/link';
 
 export function ResultClient() {
-  const { output, setInput } = useCalculatorStore();
+  const { input, output, setInput } = useCalculatorStore();
 
   // Hydrating from a shared hash uses setInput() (never updateInput()), so
   // interactionCount stays 0 and calculator_complete does NOT fire here —
@@ -56,7 +56,7 @@ export function ResultClient() {
           result, so the module renders unconditionally here, directly below
           the result block and above ResultMonetization (rendered by the
           parent page after this component). */}
-      <ResultRelated hasResult output={output} />
+      <ResultRelated hasResult output={output} input={input} />
     </>
   );
 }

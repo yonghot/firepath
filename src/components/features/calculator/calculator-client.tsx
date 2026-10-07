@@ -211,7 +211,7 @@ export function CalculatorClient({
                   (interactionCount > 0) so it never renders on the default SSR
                   render. mt-6 + its own card border gives >=24px visual separation
                   and a distinct treatment from AdSlot's dashed placeholder. */}
-              <ResultRelated hasResult={interactionCount > 0} output={output} embedded={embedded} />
+              <ResultRelated hasResult={interactionCount > 0} output={output} input={input} embedded={embedded} />
 
               {premiumAvailable && (
                 <>

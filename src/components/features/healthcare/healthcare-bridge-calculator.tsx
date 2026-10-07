@@ -20,6 +20,7 @@ import { Label } from '@/components/ui/label';
 import { calculateHealthcareBridge, MEDICARE_ELIGIBILITY_AGE } from '@/lib/engine/healthcare-bridge';
 import { formatCurrencyFull } from '@/lib/utils/format';
 import { trackEvent, IS_SENSITIVE_SITE } from '@/lib/analytics';
+import { decodeAges } from '@/lib/engine/url-state';
 
 /** Stable calc_type slug for this calculator (부속I T03). */
 const CALC_TYPE = 'healthcare_bridge';
@@ -48,6 +49,13 @@ const DEFAULT_FORM: FormState = {
   annualPremium: '7200',
   annualGrowthRate: '5',
 };
+
+/** Ages carried in the URL hash by the result module's healthcare link (the scenario's current and retirement age); anything else starts from the page defaults. */
+export function initialFormFromHash(hash: string): FormState {
+  const ages = decodeAges(hash);
+  if (!ages) return DEFAULT_FORM;
+  return { ...DEFAULT_FORM, currentAge: String(ages.currentAge), retirementAge: String(ages.retirementAge) };
+}
 
 // Clickwrap consent gate for THIS calculator's "Estimate Bridge Cost" button.
 // Separate key from the main calculator's TermsGate (which gates the live
@@ -97,7 +105,11 @@ export function HealthcareBridgeCalculator() {
   useEffect(() => {
     // Defer the setState call out of the synchronous effect body (avoids
     // cascading-render lint warning; same pattern as CookieConsentBanner).
-    queueMicrotask(() => setTermsAccepted(readStoredConsent()));
+    queueMicrotask(() => {
+      setTermsAccepted(readStoredConsent());
+      const carried = initialFormFromHash(window.location.hash);
+      if (carried !== DEFAULT_FORM) setForm(carried);
+    });
   }, []);
 
   const handleChange = (field: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement>) => {

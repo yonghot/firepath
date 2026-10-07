@@ -103,7 +103,7 @@ describe('FIRE-25: links inside the embed open outside the frame', () => {
   it('the result module that appears after the first interaction follows the same rule', () => {
     const output = calculateFIRE(DEFAULT_INPUT);
     const embedded = internalAnchors(
-      renderToStaticMarkup(createElement(ResultRelated, { hasResult: true, output, embedded: true })),
+      renderToStaticMarkup(createElement(ResultRelated, { hasResult: true, output, input: DEFAULT_INPUT, embedded: true })),
     );
     expect(embedded.length).toBeGreaterThanOrEqual(3);
     for (const tag of embedded) {
@@ -127,7 +127,7 @@ describe('FIRE-25: links inside the embed open outside the frame', () => {
     const output = calculateFIRE(DEFAULT_INPUT);
     const html = [
       renderToStaticMarkup(createElement(ResultDisclaimer)),
-      renderToStaticMarkup(createElement(ResultRelated, { hasResult: true, output })),
+      renderToStaticMarkup(createElement(ResultRelated, { hasResult: true, output, input: DEFAULT_INPUT })),
     ].join('');
     const anchors = internalAnchors(html);
     expect(anchors.length).toBeGreaterThan(3);

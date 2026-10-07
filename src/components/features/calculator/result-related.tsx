@@ -26,13 +26,16 @@ import { Compass } from 'lucide-react';
 import { trackEvent } from '@/lib/analytics';
 import { getRelatedContentPages } from '@/lib/content-pages';
 import { embedLinkProps } from '@/lib/embed-links';
-import type { FIREOutput } from '@/types/fire.types';
+import { scenarioHref } from '@/lib/engine/url-state';
+import type { FIREInput, FIREOutput } from '@/types/fire.types';
 
 interface ResultRelatedProps {
   /** Only render once a real result exists (T03's hasUserInteracted signal). */
   hasResult: boolean;
   /** Current scenario output — used to find the earliest-reachable FIRE type for relevance ranking. */
   output: FIREOutput;
+  /** The inputs behind `output`; the healthcare link opens with this scenario's ages. */
+  input: FIREInput;
   className?: string;
   embedded?: boolean;
 }
@@ -46,7 +49,7 @@ function earliestReachableType(output: FIREOutput): FIREOutput['results'][keyof 
   return reachable[0].type;
 }
 
-export function ResultRelated({ hasResult, output, className, embedded }: ResultRelatedProps) {
+export function ResultRelated({ hasResult, output, input, className, embedded }: ResultRelatedProps) {
   if (!hasResult) return null;
 
   const fireType = earliestReachableType(output);
@@ -66,20 +69,24 @@ export function ResultRelated({ hasResult, output, className, embedded }: Result
         Go deeper on this scenario with related FIREPath guides and tools.
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
-        {links.map((page) => (
-          <Link
-            key={page.path}
-            href={page.path}
-            {...embedLinkProps(embedded)}
-            onClick={() =>
-              trackEvent('related_click', { link_module: 'result_related', link_url: page.path })
-            }
-            className="block rounded-xl border bg-background p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
-          >
-            <p className="text-sm font-medium">{page.title}</p>
-            <p className="text-xs text-muted-foreground mt-1">{page.description}</p>
-          </Link>
-        ))}
+        {links.map((page) => {
+          const href = scenarioHref(page.path, input);
+          return (
+            <Link
+              key={page.path}
+              href={href}
+              {...embedLinkProps(embedded)}
+              onClick={() =>
+                trackEvent('related_click', { link_module: 'result_related', link_url: page.path })
+              }
+              className="block rounded-xl border bg-background p-4 shadow-sm hover:shadow-md transition-shadow duration-200"
+            >
+              <p className="text-sm font-medium">{page.title}</p>
+              <p className="text-xs text-muted-foreground mt-1">{page.description}</p>
+              {href !== page.path && <p className="text-xs text-muted-foreground mt-1">Starts from your ages</p>}
+            </Link>
+          );
+        })}
       </div>
     </section>
   );
