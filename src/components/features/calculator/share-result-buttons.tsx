@@ -35,13 +35,20 @@ function useWebShareAvailable(): boolean {
   );
 }
 
+// ?crew=1 marks the sharer's own visits as internal traffic; recipients must not inherit it.
+export function shareableUrl(href: string): string {
+  const url = new URL(href);
+  url.searchParams.delete('crew');
+  return url.toString();
+}
+
 export function ShareResultButtons({ className }: { className?: string }) {
   const [copied, setCopied] = useState(false);
   const canWebShare = useWebShareAvailable();
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(shareableUrl(window.location.href));
       setCopied(true);
       toast.success('Link copied to clipboard!');
       trackEvent('result_share', { calc_type: CALC_TYPE, method: 'copy_link' });
@@ -56,7 +63,7 @@ export function ShareResultButtons({ className }: { className?: string }) {
       await navigator.share({
         title: 'My FIRE timeline — FIREPath',
         text: 'See my FIRE (Financial Independence, Retire Early) timeline on FIREPath.',
-        url: window.location.href,
+        url: shareableUrl(window.location.href),
       });
       trackEvent('result_share', { calc_type: CALC_TYPE, method: 'web_share' });
     } catch {

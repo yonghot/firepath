@@ -315,7 +315,7 @@ export function ResultMonetization({
   return (
     <section
       aria-label="Related offers and resources"
-      className="mt-8 space-y-6"
+      className="mt-8 space-y-6 empty:hidden"
     >
       {/* (a) Primary intent CTA */}
       <PrimaryIntentCTA partners={featuredPartners} />

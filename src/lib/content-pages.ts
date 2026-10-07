@@ -325,7 +325,7 @@ export const CORE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'core',
-    lastModified: '2026-10-07',
+    lastModified: '2026-10-08',
   },
   {
     path: '/guide',

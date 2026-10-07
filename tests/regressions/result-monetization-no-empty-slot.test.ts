@@ -30,6 +30,11 @@ afterEach(() => {
 });
 
 describe('W7: the result stack never renders an empty reserved-height block', () => {
+  it('with nothing configured the offers section is empty and hidden, leaving no margin or empty landmark', async () => {
+    const html = await render();
+    expect(html).toMatch(/^<section aria-label="Related offers and resources" class="[^"]*\bempty:hidden\b[^"]*"><\/section>$/);
+  });
+
   it('no slot id configured: no 100/280px wrapper in the markup', async () => {
     expect(await render()).not.toContain('min-h-[100px]');
   });
