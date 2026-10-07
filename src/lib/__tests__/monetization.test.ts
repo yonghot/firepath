@@ -295,9 +295,9 @@ describe('buildMonetizationConfig — all env unset', () => {
     expect(cfg.cplLabel).toBeNull();
   });
 
-  it('featuredPartners is [] when unset', () => {
+  it('carries no featured partners: that server-only env is parsed by the server parent, not by this client-reachable config', () => {
     const cfg = buildMonetizationConfig();
-    expect(cfg.featuredPartners).toEqual([]);
+    expect(cfg).not.toHaveProperty('featuredPartners');
   });
 
   it('sponsorHtml is null when unset', () => {
@@ -380,19 +380,21 @@ describe('buildMonetizationConfig — with env vars set', () => {
     });
   });
 
-  it('parses featured partners from env', () => {
+  it('ignores MON_FEATURED_PARTNERS; the parser used by the server parent reads that value', () => {
     const partners = [{ label: 'X', figure: '1%', href: 'https://x.com' }];
     withEnv({ MON_FEATURED_PARTNERS: JSON.stringify(partners) }, () => {
       const cfg = buildMonetizationConfig();
-      expect(cfg.featuredPartners).toHaveLength(1);
-      expect(cfg.featuredPartners[0].label).toBe('X');
+      expect(cfg).not.toHaveProperty('featuredPartners');
+      const parsed = parseFeaturedPartners(process.env.MON_FEATURED_PARTNERS);
+      expect(parsed).toHaveLength(1);
+      expect(parsed[0].label).toBe('X');
     });
   });
 
-  it('featuredPartners is [] on invalid JSON env', () => {
+  it('invalid JSON in MON_FEATURED_PARTNERS neither throws in the config nor yields partners from the parser', () => {
     withEnv({ MON_FEATURED_PARTNERS: 'not json at all' }, () => {
-      const cfg = buildMonetizationConfig();
-      expect(cfg.featuredPartners).toEqual([]);
+      expect(() => buildMonetizationConfig()).not.toThrow();
+      expect(parseFeaturedPartners(process.env.MON_FEATURED_PARTNERS)).toEqual([]);
     });
   });
 

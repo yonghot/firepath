@@ -47,8 +47,6 @@ export interface MonetizationConfig {
   ppcLabel: string | null;
   cplUrl: string | null;
   cplLabel: string | null;
-  // Featured partners table
-  featuredPartners: FeaturedPartner[];
   // Sponsor slot
   sponsorHtml: string | null;
   sponsorBackfillUrl: string | null;
@@ -152,8 +150,6 @@ export function buildMonetizationConfig(): MonetizationConfig {
   const cplUrl = process.env.NEXT_PUBLIC_CPL_URL?.trim() || null;
   const cplLabel = process.env.NEXT_PUBLIC_CPL_LABEL?.trim() || null;
 
-  const featuredPartners = parseFeaturedPartners(process.env.MON_FEATURED_PARTNERS);
-
   const sponsorHtml = process.env.NEXT_PUBLIC_SPONSOR_HTML?.trim() || null;
   const sponsorBackfillUrl = process.env.NEXT_PUBLIC_SPONSOR_BACKFILL_URL?.trim() || null;
 
@@ -178,7 +174,6 @@ export function buildMonetizationConfig(): MonetizationConfig {
     ppcLabel,
     cplUrl,
     cplLabel,
-    featuredPartners,
     sponsorHtml,
     sponsorBackfillUrl,
     emailCaptureEnabled,

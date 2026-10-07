@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { ResultClient } from '@/components/features/calculator/result-client';
 import { ResultMonetization } from '@/components/monetization/ResultMonetization';
+import { parseFeaturedPartners } from '@/lib/monetization';
 import { EmailMyResultsGate } from '@/components/features/calculator/email-my-results-gate';
 import { getPremiumStatus } from '@/lib/subscription/premium';
 import { buildMeta } from '@/lib/seo';
@@ -30,7 +31,10 @@ export default async function ResultPage() {
       {/* Unified monetization stack — below result output, env-gated.
           Includes CTA, programmatic ad, featured partners, sponsor, email capture.
           Premium users see no programmatic ads (isPremium gates the display slot). */}
-      <ResultMonetization isPremium={isPremium} />
+      <ResultMonetization
+        isPremium={isPremium}
+        featuredPartners={parseFeaturedPartners(process.env.MON_FEATURED_PARTNERS)}
+      />
 
       {/* 부속I T17 — env-gated "Email my results" (transactional-only). */}
       <EmailMyResultsGate />

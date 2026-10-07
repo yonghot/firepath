@@ -5,6 +5,7 @@ import { CalculatorClient } from '@/components/features/calculator/calculator-cl
 import { FAQSection } from '@/components/common/faq-section';
 import { calculatorAppJsonLd, breadcrumbJsonLd } from '@/components/common/json-ld';
 import { ResultMonetization } from '@/components/monetization/ResultMonetization';
+import { parseFeaturedPartners } from '@/lib/monetization';
 import { EmailMyResultsGate } from '@/components/features/calculator/email-my-results-gate';
 import { HowItWorksFire } from '@/components/common/how-it-works-fire';
 import { UpdatedBadge } from '@/components/common/updated-badge';
@@ -102,7 +103,10 @@ export default async function CalculatorPage() {
         {/* Unified monetization stack — below calculator result output, env-gated.
             Includes CTA, programmatic ad, featured partners, sponsor, email capture.
             Premium users see no programmatic ads. */}
-        <ResultMonetization isPremium={isPremium} />
+        <ResultMonetization
+          isPremium={isPremium}
+          featuredPartners={parseFeaturedPartners(process.env.MON_FEATURED_PARTNERS)}
+        />
 
         {/* 부속I T17 — env-gated "Email my results" (transactional-only,
             distinct from ResultMonetization's general newsletter capture).

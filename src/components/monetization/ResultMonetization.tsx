@@ -28,11 +28,7 @@ import { resolveAdSlot } from '@/lib/ad-slots';
 import { AdProvider } from '@/components/monetization/AdProvider';
 import { EmailResultCapture } from '@/components/common/email-result-capture';
 import { AffiliateDisclosure } from '@/components/compliance/AffiliateDisclosure';
-import {
-  buildMonetizationConfig,
-  parseFeaturedPartners,
-  type FeaturedPartner,
-} from '@/lib/monetization';
+import { buildMonetizationConfig, type FeaturedPartner } from '@/lib/monetization';
 
 // ─── Config (resolved at module scope, never per-render) ──────────────────────
 // In a 'use client' component process.env.NEXT_PUBLIC_* vars are inlined by
@@ -41,7 +37,7 @@ const cfg = buildMonetizationConfig();
 
 // ─── (a) PrimaryIntentCTA ─────────────────────────────────────────────────────
 
-function PrimaryIntentCTA() {
+function PrimaryIntentCTA({ partners }: { partners: FeaturedPartner[] }) {
   const type = cfg.primaryCtaType;
 
   if (type === 'none') return null;
@@ -63,6 +59,7 @@ function PrimaryIntentCTA() {
           review your full picture — taxes, asset allocation, and
           sequence-of-returns risk.
         </p>
+        <AffiliateDisclosure className="mb-2" />
         <a
           href={`tel:${cfg.ppcNumber}`}
           aria-label={`${label} — ${cfg.ppcNumber}`}
@@ -117,7 +114,6 @@ function PrimaryIntentCTA() {
 
   // affiliate — featured affiliate button (uses first featured partner if present)
   if (type === 'affiliate') {
-    const partners = cfg.featuredPartners;
     if (!partners.length) return null;
     const first = partners[0];
     return (
@@ -303,17 +299,22 @@ function EmailCapture() {
  * EmailResultCapture) require client-side state/effects.
  *
  * @param isPremium - when true, suppresses the programmatic ad slot (free only).
+ * @param featuredPartners - parsed by the server parent from MON_FEATURED_PARTNERS (server-only env, undefined in the browser bundle).
  */
-export function ResultMonetization({ isPremium = false }: { isPremium?: boolean }) {
-  const partners = parseFeaturedPartners(process.env.MON_FEATURED_PARTNERS);
-
+export function ResultMonetization({
+  isPremium = false,
+  featuredPartners = [],
+}: {
+  isPremium?: boolean;
+  featuredPartners?: FeaturedPartner[];
+}) {
   return (
     <section
       aria-label="Related offers and resources"
       className="mt-8 space-y-6"
     >
       {/* (a) Primary intent CTA */}
-      <PrimaryIntentCTA />
+      <PrimaryIntentCTA partners={featuredPartners} />
 
       {/* (b) Display slot — free tier only, ≥150px below result output */}
       {!isPremium && (
@@ -321,7 +322,7 @@ export function ResultMonetization({ isPremium = false }: { isPremium?: boolean 
       )}
 
       {/* (c) FTC disclosure + featured partner table */}
-      <FeaturedPartnerTable partners={partners} />
+      <FeaturedPartnerTable partners={featuredPartners} />
 
       {/* (d) Sponsor slot */}
       <SponsorSlot />
