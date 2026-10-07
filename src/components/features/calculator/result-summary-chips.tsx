@@ -21,7 +21,7 @@ export function ResultSummaryChips({ gated }: { gated: GatedResult }) {
             >
               <span
                 aria-hidden="true"
-                className="h-2.5 w-2.5 shrink-0 rounded-full"
+                className="h-3 w-3 shrink-0 rounded-full"
                 style={{ backgroundColor: FIRE_COLORS[type] }}
               />
               <span>
