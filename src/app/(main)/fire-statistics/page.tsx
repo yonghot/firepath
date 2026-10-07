@@ -169,9 +169,7 @@ export default function FireStatisticsPage() {
         </h2>
         <p className="text-sm text-muted-foreground">
           Cross-scenario comparison across {STATISTICS_RETIREMENT_AGE_SCENARIOS.length} retirement
-          ages, holding all other inputs at their defaults. Regular and Fat FIRE targets don&apos;t
-          depend on retirement age; Coast FIRE&apos;s discounted seed amount shrinks the later you
-          retire, since the portfolio has fewer years left to compound.
+          ages, holding all other inputs at their defaults. {dataset.retirementAgeNote}
         </p>
         <div className="overflow-x-auto rounded-xl border bg-card">
           <table className="w-full text-sm border-collapse">

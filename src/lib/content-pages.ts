@@ -390,7 +390,7 @@ export const CORE_PAGES: ContentPage[] = [
     fireType: null,
     hasUniqueData: true,
     kind: 'spoke',
-    lastModified: '2026-10-07',
+    lastModified: '2026-10-08',
     differentiatingFacts: [
       'Ranked table of all 5 FIRE-type targets at default inputs — distinct aggregation not shown on any single-type page',
       'Cross-scenario table of FIRE targets across 5 retirement ages (40/45/50/55/60)',

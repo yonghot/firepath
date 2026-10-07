@@ -51,7 +51,32 @@ export interface FireStatisticsDataset {
   scenarios: StatisticsScenarioRow[];
   /** 3-5 one-line, pull-quote-ready findings computed from the dataset above. */
   findings: string[];
+  /** Sentence under the retirement-age table: which targets ignore retirement age and which way the Coast seed moves. */
+  retirementAgeNote: string;
   sources: { label: string; url: string }[];
+}
+
+const PER_EXPENSE_INCREMENT = 1000;
+
+const shortName = (type: FIREType): string => FIRE_LABELS[type].replace(/ FIRE$/, '');
+
+function joinNames(names: string[]): string {
+  if (names.length < 2) return names.join('');
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}
+
+/** Lowest and highest target among the types whose target is an expense multiple (Coast is a discounted seed and is not comparable). */
+export function expenseMultipleExtremes(rows: StatisticsFireTypeRow[]): {
+  count: number;
+  lowest: StatisticsFireTypeRow;
+  highest: StatisticsFireTypeRow;
+} {
+  const multiple = rows.filter((r) => r.multiplier !== 'discounted seed');
+  return {
+    count: multiple.length,
+    lowest: multiple.reduce((a, b) => (b.targetAmount < a.targetAmount ? b : a)),
+    highest: multiple.reduce((a, b) => (b.targetAmount > a.targetAmount ? b : a)),
+  };
 }
 
 function fmtShort(n: number): string {
@@ -90,25 +115,49 @@ export function buildFireStatisticsDataset(): FireStatisticsDataset {
   const oldest = scenarios[scenarios.length - 1];
   const coastYoungest = youngest.targets.coast;
   const coastOldest = oldest.targets.coast;
-  const coastReductionPct = ((1 - coastOldest / coastYoungest) * 100).toFixed(0);
+  const coastShrinks = coastOldest < coastYoungest;
+  const coastChangePct = (Math.abs(1 - coastOldest / coastYoungest) * 100).toFixed(0);
+  const coastRow = rankedFireTypes.find((r) => r.type === 'coast')!;
+
+  const independentOfAge = FIRE_TYPES.filter((type) =>
+    scenarios.every((s) => s.targets[type] === youngest.targets[type])
+  );
+  const independentNames = joinNames(independentOfAge.map(shortName));
+
+  const { results: bumpedResults } = calculateFIRE({
+    ...DEFAULT_INPUT,
+    annualExpenses: DEFAULT_INPUT.annualExpenses + PER_EXPENSE_INCREMENT,
+  });
+  const incrementClauses = rankedFireTypes.map((row) => {
+    const increment = formatCurrencyFull(bumpedResults[row.type].targetAmount - row.targetAmount);
+    return `${increment} to ${row.type === 'coast' ? 'the Coast FIRE seed' : row.label}`;
+  });
+
+  const swrPct = (CORE_FIGURES.safeWithdrawalRate.value * 100).toFixed(0);
+  const expenses = DEFAULT_INPUT.annualExpenses.toLocaleString('en-US');
+  const { count: multipleCount, lowest, highest } = expenseMultipleExtremes(rankedFireTypes);
+  const spreadPct = ((highest.targetAmount / lowest.targetAmount - 1) * 100).toFixed(0);
 
   const findings: string[] = [
-    `Fat FIRE requires ${fatVsLeanPct}% more than Lean FIRE at the same $${DEFAULT_INPUT.annualExpenses.toLocaleString('en-US')}/yr expense base (${formatCurrencyFull(fatRow.targetAmount)} vs. ${formatCurrencyFull(leanRow.targetAmount)}).`,
+    `Fat FIRE requires ${fatVsLeanPct}% more than Lean FIRE at the same $${expenses}/yr expense base (${formatCurrencyFull(fatRow.targetAmount)} vs. ${formatCurrencyFull(leanRow.targetAmount)}).`,
     `Regular FIRE's target is ${regularVsBaristaPct}% higher than Barista FIRE's (${formatCurrencyFull(regularRow.targetAmount)} vs. ${formatCurrencyFull(baristaRow.targetAmount)}), the exact gap made up by part-time income in the Barista strategy.`,
-    `Retiring at ${oldest.retirementAge} instead of ${youngest.retirementAge} cuts the Coast FIRE seed amount needed today by ${coastReductionPct}% (${formatCurrencyFull(coastYoungest)} to ${formatCurrencyFull(coastOldest)}), because the portfolio has more years to compound.`,
-    `Across all 5 retirement-age scenarios (${youngest.retirementAge}-${oldest.retirementAge}), the Regular FIRE target stays flat at ${formatCurrencyFull(regularRow.targetAmount)} — the "25x expenses" target does not depend on retirement age, only on annual expenses and SWR.`,
-    `The default ${(CORE_FIGURES.safeWithdrawalRate.value * 100).toFixed(0)}% Safe Withdrawal Rate means every $1,000/yr of expenses adds ${formatCurrencyFull(1000 / CORE_FIGURES.safeWithdrawalRate.value)} to every FIRE type's target.`,
+    `Retiring at ${oldest.retirementAge} instead of ${youngest.retirementAge} ${coastShrinks ? 'cuts' : 'raises'} the Coast FIRE seed amount needed today by ${coastChangePct}% (${formatCurrencyFull(coastYoungest)} to ${formatCurrencyFull(coastOldest)})${coastShrinks ? ', because the portfolio has more years to compound' : ''}.`,
+    `Across the ${scenarios.length} retirement-age scenarios (${youngest.retirementAge}-${oldest.retirementAge}), the ${independentNames} targets stay flat — Regular FIRE's, for example, is ${formatCurrencyFull(regularRow.targetAmount)} at every age — because they depend only on annual expenses and the safe withdrawal rate, not on retirement age.`,
+    `At the default ${swrPct}% Safe Withdrawal Rate, every extra ${formatCurrencyFull(PER_EXPENSE_INCREMENT)}/yr of expenses adds ${joinNames(incrementClauses)}.`,
   ];
+
+  const retirementAgeNote = `${independentNames} targets do not depend on retirement age; Coast FIRE's discounted seed amount ${coastShrinks ? 'shrinks' : 'grows'} the later you retire${coastShrinks ? ', since the portfolio has more years to compound' : ''}.`;
 
   return {
     lastUpdated: getPageLastModified('/fire-statistics'),
     headline: {
-      text: `At the default ${(CORE_FIGURES.safeWithdrawalRate.value * 100).toFixed(0)}% Safe Withdrawal Rate and $${DEFAULT_INPUT.annualExpenses.toLocaleString('en-US')}/yr expenses, FIRE targets range from ${formatCurrencyFull(leanRow.targetAmount)} (Lean) to ${formatCurrencyFull(fatRow.targetAmount)} (Fat) — a ${fatVsLeanPct}% spread across the 5 FIRE types.`,
-      value: `${formatCurrencyFull(leanRow.targetAmount)} – ${formatCurrencyFull(fatRow.targetAmount)}`,
+      text: `At the default ${swrPct}% Safe Withdrawal Rate and $${expenses}/yr expenses, targets across the ${multipleCount} expense-multiple FIRE types range from ${formatCurrencyFull(lowest.targetAmount)} (${shortName(lowest.type)}) to ${formatCurrencyFull(highest.targetAmount)} (${shortName(highest.type)}) — a ${spreadPct}% spread. Coast FIRE is not an expense multiple: it is a ${formatCurrencyFull(coastRow.targetAmount)} seed needed today.`,
+      value: `${formatCurrencyFull(lowest.targetAmount)} – ${formatCurrencyFull(highest.targetAmount)}`,
     },
     rankedFireTypes,
     scenarios,
     findings,
+    retirementAgeNote,
     sources: [
       { label: 'Trinity Study (1998) — Safe Withdrawal Rate', url: CORE_FIGURES.safeWithdrawalRate.source! },
       { label: 'NYU Stern historical U.S. equity return data', url: CORE_FIGURES.expectedReturn.source! },
