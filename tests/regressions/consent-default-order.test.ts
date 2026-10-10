@@ -41,8 +41,8 @@ function runDefaultScript(script: string, storage: Storage): unknown[][] {
 beforeEach(() => stub());
 afterEach(() => vi.unstubAllEnvs());
 
-describe('K14: the consent default is first in the HTML, region-scoped, and honours a stored decline', () => {
-  it('renders the default script ahead of the loader, which still has a literal async adsbygoogle tag', async () => {
+describe('K14: the consent default is inline in <head>, region-scoped, and honours a stored decline', () => {
+  it('renders the default script inline in <head> and the loader hoisted into <head> as a literal async adsbygoogle tag', async () => {
     const { ConsentDefault } = await import('@/components/ads/consent-default');
     const { AdLoader } = await import('@/components/ads/ad-loader');
     const html = renderToString(
@@ -53,14 +53,18 @@ describe('K14: the consent default is first in the HTML, region-scoped, and hono
         createElement('body', null, createElement(AdLoader)),
       ),
     );
+    const headEnd = html.indexOf('</head>');
     const defaultAt = html.indexOf("gtag('consent','default'");
     const loaderAt = html.indexOf('adsbygoogle.js');
     expect(defaultAt).toBeGreaterThan(-1);
+    expect(defaultAt).toBeLessThan(headEnd);
     expect(loaderAt).toBeGreaterThan(-1);
-    expect(defaultAt, 'consent default must precede the loader in the served HTML').toBeLessThan(loaderAt);
+    expect(loaderAt, 'AdSense site review needs the snippet inside <head>').toBeLessThan(headEnd);
+    expect(html.match(/adsbygoogle\.js/g)).toHaveLength(1);
     expect(html).toMatch(
-      /<script id="adsense-loader" async="" crossorigin="anonymous" src="https:\/\/pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js\?client=ca-pub-1234567890"/,
+      /<script id="adsense-loader" async="" crossorigin="anonymous" src="https:\/\/pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js\?client=ca-pub-1234567890"><\/script>/,
     );
+    expect(html).not.toMatch(/itemprop=/i);
   });
 
   it('the root layout renders ConsentDefault inside <head> and no longer inlines its own default', () => {
