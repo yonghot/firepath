@@ -1,5 +1,31 @@
 # FIREPath — Development Progress Log
 
+### [2026-10-10] K28 배포 후 브라우저 검증 — dpl_H7MnQSdpeiJK8uwJ7YVu4PwAX5QF (burst 22:35:47~22:37:01 KST)
+- **burst**: `https://gofirepath.com/?crew=1` 첫 방문 1회 + 같은 컨텍스트 재방문 1회(각 약 15초 대기, 스크롤·광고 클릭 없음). 양성 대조 로드 1회(catchupcalc dpl_C7gq 배포 URL) + 이전 firepath HTML 정적 파싱 1회(브라우저 로드 아님). 헤드리스 Chromium(KR IP, `visitor_country=KR`), `heavy.lock` 1회 획득·해제. 스크립트·원자료 `scratchpad\fire\k28\{k28.cjs,result.json}`.
+- **차단(K27/K28-2)**: `googleads.g.doubleclick.net/pagead/ads` 2건(방문당 1)과 GA collect 7건(`google-analytics.com/g/collect` 2 + `www.google.com/g/collect` 5)을 URL만 기록하고 abort. `gen_204`·`ama_stats` 0건. `pagead2.googlesyndication.com` 은 통과.
+- **양성 대조(K28-3, 먼저 실행)**
+
+| 대조 | 대상 | 불량 검출 | 근거 |
+|---|---|---|---|
+| 로더 위치 | 이전 firepath 프로덕션 HTML(dpl_2cTV6VDP, 15:46 KST 캡처) | y | `adsbygoogle.js` 가 `</head>` 뒤(7847 > 6292), 파서 판정 head 0 / body 1 |
+| CSP 위반 | catchupcalc dpl_C7gq(`supercatchup-planner-pab7w2rvf-…`) | y | `securitypolicyviolation` 2건: script-src-elem 이 `ep2.adtrafficquality.google/sodar/sodar2.js` 차단 1 + script-src `eval` 1. sodar2.js ×1 이고 계약 문구의 ×2 와는 개수가 다르다(첫 로드 기준 — 결함 종류는 재현됨) |
+
+- **결과(양성 대조 통과 후)**
+
+| 항목 | 기대 | 실측 | 판정 |
+|---|---|---|---|
+| GA `tid` | G-P3M4FHMCCG | 첫 방문 hit 2건, 재방문 창 hit 5건 전부 G-P3M4FHMCCG | OK |
+| `gcs` | 첫·재방문 hit 에 존재 | 7건 전부 `G111`(`gcd=13t3t3t3t5l1`) — 재방문에서도 유지 | OK |
+| 내부 트래픽 | 첫 hit 에 `tt=internal` 또는 `ep.traffic_type=internal` | 첫 hit(`en=page_view`)에 `tt=internal`, 이후 hit 도 동일. `dl` 에 `?crew=1` 유지 | OK |
+| sodar2.js | 로드 y/n | y — `ep2.adtrafficquality.google/sodar/sodar2.js`·`runner.html` 두 방문 모두(방문당 sodar 요청 5) | y |
+| CSP 위반 | 0 | 0 (두 방문). 응답에 `Content-Security-Policy`·`-Report-Only` 헤더 없음(K13-R 면제) | OK |
+| React #418 | 없음 | 없음. 콘솔 error 는 방문당 `Failed to load resource: net::ERR_FAILED` 2건(프로브가 끊은 요청)뿐, pageerror 0 | OK |
+| 로더 위치(라이브 DOM·소스) | `<head>` 안 정확히 1개 | 원문 HTML 로더 2850 < 인라인 consent default 5809 < `</head>` 6462, 파서 head 1 / body 0, 라이브 DOM `script[src*=adsbygoogle.js]` 부모 `HEAD`, 두 방문 동일 | OK |
+
+- **hit 구성**: 첫 방문 창 `page_view` 2(`google-analytics.com` + `www.google.com`). 재방문 창 `user_engagement` 1 + `web_vitals` 2(첫 페이지 이탈 시 flush) + `page_view` 2.
+- **K14-c(같은 burst, 재방문 페이지에서 hit 측정 뒤)**: 한 동기 작업 안에서 `document.cookie='visitor_country=ZZ'` 후 하단 "Manage Consent" 버튼 클릭(클릭 시점 쿠키 읽기값 ZZ). 클릭 후 0.5초: 공지 없음, `googlefc.showRevocationMessage` undefined, 콜백 큐 1. 2.7초: `[role=dialog][aria-label="Cookie consent"]` 가시, `data-consent-mode="decline-only"`, 버튼은 "Decline non-essential cookies" 하나뿐(Accept 0). KR IP 라 `fundingchoicesmessages.google.com` 요청 0건(클릭 뒤 포함), 클릭 뒤 추가 collect 0건. **통과**.
+- **한계**: 이전 firepath 배포 URL(`firepath-k22ehbwqc-…`)은 Vercel SSO 보호(302 → `vercel.com/sso-api`)라 직접 로드할 수 없어 로더 대조는 같은 배포가 프로덕션이던 15:46 KST 캡처 HTML 로 했다. 비KR 위치의 Funding Choices 열림은 이 IP 에서 볼 수 없다(계약 K13-R(8) 리더 수동 확인). K14 순서(로더 2850 < 기본값 5809)는 21:40 리더 결정대로 후속 웨이브 REQUIRED 로 남는다.
+
 ### [2026-10-10] 프로덕션 배포 기록 — dpl_H7MnQSdpeiJK8uwJ7YVu4PwAX5QF (HEAD ceb816b)
 - **배포**: `vercel --prod --yes` → https://firepath-5spgx1nbp-actigence.vercel.app, 2026-10-10 22:00 KST Ready, gofirepath.com·www·firepath-ten.vercel.app 에 alias. 작업트리 clean·HEAD ceb816bc6e2e24c258818a90e70298b0e98e0955 확인 후 배포. 포함 변경: AdSense 로더 `<head>` 이동(860bf82), K14-c 거부 전용 공지(79c375e, b975794), 빌드 HTML 게이트·4e 문구·갱신일(27d38eb, c9089af).
 - **롤백 대상**: dpl_2cTV6VDPYo8PiykUmC56Zc5E1eXK (https://firepath-k22ehbwqc-sk1597530-3914s-projects.vercel.app, 2026-10-08 07:02 KST) — 배포 직전 gofirepath.com 이 가리키던 프로덕션.
