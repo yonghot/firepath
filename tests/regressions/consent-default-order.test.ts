@@ -42,7 +42,7 @@ beforeEach(() => stub());
 afterEach(() => vi.unstubAllEnvs());
 
 describe('K14: the consent default is inline in <head>, region-scoped, and honours a stored decline', () => {
-  it('renders the default script inline in <head> and the loader hoisted into <head> as a literal async adsbygoogle tag', async () => {
+  it('renders the default script inline in <head> and the loader hoisted into <head> ahead of it as a literal async adsbygoogle tag, with no ad code before the default', async () => {
     const { ConsentDefault } = await import('@/components/ads/consent-default');
     const { AdLoader } = await import('@/components/ads/ad-loader');
     const html = renderToString(
@@ -61,6 +61,8 @@ describe('K14: the consent default is inline in <head>, region-scoped, and honou
     expect(loaderAt).toBeGreaterThan(-1);
     expect(loaderAt, 'AdSense site review needs the snippet inside <head>').toBeLessThan(headEnd);
     expect(html.match(/adsbygoogle\.js/g)).toHaveLength(1);
+    const beforeDefault = html.slice(0, defaultAt).replace(/<script\b[^>]*\bsrc="[^"]*adsbygoogle\.js[^"]*"[^>]*>/g, '');
+    expect(beforeDefault, 'React hoists the async loader ahead of the inline default; no other ad code may run before the default').not.toContain('adsbygoogle');
     expect(html).toMatch(
       /<script id="adsense-loader" async="" crossorigin="anonymous" src="https:\/\/pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js\?client=ca-pub-1234567890"><\/script>/,
     );
