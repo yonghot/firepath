@@ -59,7 +59,7 @@ export default function PrivacyPage() {
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-2">Privacy Policy</h1>
         <p className="text-sm text-muted-foreground">
-          Effective date: June 28, 2026 &mdash; Last updated: October 8, 2026
+          Effective date: June 28, 2026 &mdash; Last updated: October 10, 2026
         </p>
       </div>
 
@@ -413,9 +413,9 @@ export default function PrivacyPage() {
             You can control cookies through your browser settings.{' '}
             {ADS_ENABLED ? (
               <>
-                In the EEA, UK, and Switzerland, or when your country cannot be determined, use
-                the footer link to reopen the consent message; elsewhere, use the footer link to
-                open our notice and choose &ldquo;Decline&rdquo;.
+                In the EEA, UK, and Switzerland, use the footer link to reopen the consent
+                message; elsewhere, use the footer link to open our notice and choose
+                &ldquo;Decline&rdquo; ({UNKNOWN_COUNTRY}).
               </>
             ) : (
               <>

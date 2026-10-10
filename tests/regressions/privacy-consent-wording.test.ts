@@ -55,7 +55,14 @@ describe('K5/K16: the privacy page describes the consent, collection and cookie 
     const promises = privacy.match(/[^.]*(?:notice with a Decline button|Decline in the notice opened from the footer link)[^.]*\./g) ?? [];
     expect(promises.length).toBeGreaterThanOrEqual(3);
     for (const sentence of promises) expect(sentence).toMatch(/cannot determine your country/);
-    expect(privacy).toMatch(/when your country cannot be determined, use the footer link to reopen the consent message/);
+    expect(privacy).not.toMatch(/when your country cannot be determined, use the footer link to reopen the consent message/);
+    expect(privacy).toMatch(/In the EEA, UK, and Switzerland, use the footer link to reopen the consent message; elsewhere, use the footer link to open our notice and choose [“"]Decline[”"] \(\s*if we cannot determine your country, the link opens Google's consent message where Google offers one and otherwise a notice with a Decline button/);
+  });
+
+  it('the last-updated date is the date of the last wording change, 2026-10-10 (K14-c)', async () => {
+    configure({ ads: true, endpoint: true });
+    const privacy = text(await renderPage('/privacy'));
+    expect(privacy).toMatch(/Last updated: October 10, 2026/);
   });
 
   it('with ads off, no sentence promises Google\'s consent message; unknown-country visitors are sent to this page', async () => {
