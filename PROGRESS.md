@@ -1,5 +1,11 @@
 # FIREPath — Development Progress Log
 
+### [2026-10-10] AdSense 로더를 `<head>` 로 이동, K14-c 거부 전용 공지 (860bf82, 79c375e, b975794)
+- **원인**: 라이브 홈에서 `adsbygoogle.js` 가 `</head>` 뒤(body, 7847 > 6292)에 있었다. 로더에 `itemProp` 이 붙어 있어 React 19 의 `<script async src>` head 호이스팅을 막고 있었고, 나머지 9개 사이트는 head 에 있다. AdSense 사이트 심사는 snippet 이 head 에 있어야 한다. 별개로, 국가 미확인 방문자가 비EEA 위치에서 하단 "Manage consent" 를 누르면 Funding Choices 가 로드되지 않아 아무 반응이 없었다(K14-c).
+- **조치**: (1) `ad-loader.tsx` 에서 `itemProp` 을 제거 — 로더 속성(id·async·crossorigin·src)은 그대로, nonce 없음, `(main)` 레이아웃만 마운트(K7 범위 불변). 호이스팅 때문에 로더가 인라인 동의 기본값 스크립트보다 HTML 상 앞에 오지만(다른 9개 사이트와 동일) 둘 다 head 이고 로더는 async 라 광고 요청 전에 기본값이 적용된다; `consent-default-order.test.ts` 의 "기본값이 로더보다 앞" 단언을 "둘 다 head, 로더 1회" 로 바꿨다. (2) `consent.ts` `openConsentChoices` 는 국가 미확인일 때만 `CMP_WAIT_MS`(2초) 타이머를 걸고, 그 안에 큐에 넣은 호출이 실행되지 않고 `googlefc.showRevocationMessage` 도 없으면 `DECLINE_ONLY_EVENT` 를 낸다. 배너는 `fallback` 이벤트로 거부 전용 모드(Decline 버튼 1개 + /privacy 쿠키 절 링크, Accept 없음)를 연다. 국가 미확인의 `decline` 은 denied update 와 저장, `accept`·`reopen` 은 계속 무동작. EEA/UK/CH(K14-b)와 알려진 비EEA(K14-a)는 변경 없음. 개인정보 문구에 해당 공지를 한 구절 추가.
+- **회귀 테스트**: `tests/regressions/built-html-ad-loader.test.ts` — `next build` 뒤 `.next/server/app/*.html` 에서 콘텐츠 라우트는 head 안 로더 정확히 1개·body 0개, 유틸리티 라우트는 0개를 단정(Flight 페이로드 복사본은 제외). 빌드가 없거나 광고 env 없이 만든 빌드면 크게 건너뛰고, `REQUIRE_BUILT_HTML=1` 이면 실패한다 — 게이트는 `NEXT_PUBLIC_ADSENSE_CLIENT_ID=ca-pub-1378312299412437 next build`(VERCEL_ENV=production 은 postbuild IndexNow 를 켜므로 쓰지 않는다) 뒤 이 플래그로 실행한다. `tests/regressions/k14c-consent-fallback.test.ts` 15개 — googlefc 부재 시 거부 전용 공지 렌더·Accept 0·Decline 이 denied update 하나만 보내고 저장, googlefc 준비 시 우리 공지 미렌더, 2초 안에 늦게 준비돼도 이중 UI 없음, EEA/알려진 국가는 타이머 없음(happy-dom 으로 실제 링크·배너 마운트). 수정 전 소스에서 7개 실패 확인, 로더 단언은 수정 전 소스에서 실패 확인.
+- **재발 방지**: `ad-loader.tsx` 의 주석대로 `itemProp`·`onLoad`·`onError` 를 붙이면 호이스팅이 꺼져 로더가 body 로 돌아간다. 빌드된 HTML 테스트가 이를 잡는다.
+
 ## Phase-1 Handoff Note — 2026-06-29
 
 ### What was done
