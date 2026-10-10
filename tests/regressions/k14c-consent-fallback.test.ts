@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { act, createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
@@ -11,6 +11,12 @@ const KEYS = ['ad_storage', 'ad_user_data', 'ad_personalization', 'analytics_sto
 const DENIED = Object.fromEntries(KEYS.map((key) => [key, 'denied']));
 const GRANTED = Object.fromEntries(KEYS.map((key) => [key, 'granted']));
 const UNKNOWN = [null, undefined, '', 'ZZ', 'XX', 'T1'] as const;
+
+beforeAll(async () => {
+  await import('@/components/common/cookie-consent-banner');
+  await import('@/components/common/manage-consent-link');
+  await import('react-dom/client');
+}, 60_000);
 
 type Fc = { callbackQueue?: Array<() => void>; showRevocationMessage?: () => void };
 
