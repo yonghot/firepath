@@ -21,9 +21,12 @@ export function buildConsentDefaultScript(): string {
 
 export const COUNTRY_COOKIE = 'visitor_country';
 export const REOPEN_CONSENT_EVENT = 'firepath:reopen-consent';
+export const DECLINE_ONLY_EVENT = 'firepath:decline-only-consent';
+export const CMP_WAIT_MS = 2000;
 
 export type ConsentChoice = 'accepted' | 'declined';
-export type ConsentEvent = 'mount' | 'accept' | 'decline' | 'reopen';
+export type ConsentEvent = 'mount' | 'accept' | 'decline' | 'reopen' | 'fallback';
+export type NoticeMode = 'full' | 'decline-only';
 export type ConsentState = Record<(typeof STORAGE_KEYS)[number], 'granted' | 'denied'>;
 
 function consentState(value: 'granted' | 'denied'): ConsentState {
@@ -52,6 +55,7 @@ export function readVisitorCountry(): string | null {
 
 export interface ConsentActions {
   show: boolean | null;
+  mode?: NoticeMode;
   update: ConsentState | null;
   store: ConsentChoice | null;
 }
@@ -64,7 +68,7 @@ export function resolveConsentActions(input: {
   if (isConsentRegion(input.country)) {
     return { show: input.event === 'mount' ? null : false, update: null, store: null };
   }
-  if (input.event !== 'mount' && !isCountryKnown(input.country)) {
+  if ((input.event === 'reopen' || input.event === 'accept') && !isCountryKnown(input.country)) {
     return { show: false, update: null, store: null };
   }
   switch (input.event) {
@@ -76,6 +80,8 @@ export function resolveConsentActions(input: {
       return { show: false, update: consentState('granted'), store: 'accepted' };
     case 'decline':
       return { show: false, update: consentState('denied'), store: 'declined' };
+    case 'fallback':
+      return { show: true, mode: 'decline-only', update: null, store: null };
   }
 }
 
@@ -85,14 +91,14 @@ export interface ConsentIO {
   writeStored: (value: ConsentChoice) => void;
   update: (state: ConsentState) => void;
   initAnalytics: () => void;
-  setVisible: (visible: boolean) => void;
+  setVisible: (visible: boolean, mode?: NoticeMode) => void;
 }
 
 export function runConsentEvent(event: ConsentEvent, io: ConsentIO): void {
   const actions = resolveConsentActions({ country: io.country(), stored: io.readStored(), event });
   if (actions.update) io.update(actions.update);
   if (actions.store) io.writeStored(actions.store);
-  if (actions.show !== null) io.setVisible(actions.show);
+  if (actions.show !== null) io.setVisible(actions.show, actions.mode);
   if (event === 'mount') io.initAnalytics();
 }
 
@@ -107,15 +113,32 @@ export function openConsentChoices(
   win: ConsentWindow,
   country: string | null | undefined,
   cmpAvailable: boolean,
+  schedule: (fn: () => void, ms: number) => unknown = setTimeout,
 ): 'cmp' | 'banner' | 'privacy' {
-  if (isConsentRegion(country) || !isCountryKnown(country)) {
+  const unknown = !isCountryKnown(country);
+  if (isConsentRegion(country) || unknown) {
     if (!cmpAvailable) {
       win.location?.assign(CONSENT_HELP_PATH);
       return 'privacy';
     }
     const fc = (win.googlefc = win.googlefc || {});
     const queue = (fc.callbackQueue = fc.callbackQueue || []);
-    queue.push(() => fc.showRevocationMessage?.());
+    let opened = false;
+    let fellBack = false;
+    queue.push(() => {
+      const current = win.googlefc;
+      if (fellBack || !current || typeof current.showRevocationMessage !== 'function') return;
+      opened = true;
+      current.showRevocationMessage();
+    });
+    if (unknown) {
+      // Outside the EEA Funding Choices never loads; without this the click would do nothing.
+      schedule(() => {
+        if (opened || typeof win.googlefc?.showRevocationMessage === 'function') return;
+        fellBack = true;
+        win.dispatchEvent(new Event(DECLINE_ONLY_EVENT));
+      }, CMP_WAIT_MS);
+    }
     return 'cmp';
   }
   win.dispatchEvent(new Event(REOPEN_CONSENT_EVENT));

@@ -222,13 +222,16 @@ describe('K14/K14-a/K14-b: consent runtime', () => {
       }
     });
 
-    it('a country that is neither known nor in a region never reaches our banner through any event, so no granted update can be sent', () => {
+    it('a country that is neither known nor in a region never reaches our full banner, and the only update any event can send is denied (K14-c)', () => {
       for (const country of [null, 'ZZ', 'XX']) {
         const { io, log } = harness(country, null);
-        for (const event of ['reopen', 'accept', 'decline'] as const) consent.runConsentEvent(event, io);
+        for (const event of ['reopen', 'accept'] as const) consent.runConsentEvent(event, io);
         expect(log.visible.includes(true), String(country)).toBe(false);
         expect(log.updates, String(country)).toEqual([]);
         expect(log.writes, String(country)).toEqual([]);
+        consent.runConsentEvent('decline', io);
+        expect(log.updates, String(country)).toEqual([DENIED]);
+        expect(log.writes, String(country)).toEqual(['declined']);
       }
     });
   });

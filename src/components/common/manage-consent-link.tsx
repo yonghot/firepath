@@ -6,7 +6,8 @@
  * EEA/UK/CH and visitors with no usable country (cookie blocked, ZZ): reopens Google's certified consent message (googlefc revocation) on
  * pages that carry Google's runtime (the ad loader pages); on a page without it the
  * visitor is sent to the privacy section, which sits on a page that has it.
- * Elsewhere: opens our cookie notice. No path clears the stored choice;
+ * With no usable country, if Google's message has not opened within CMP_WAIT_MS our
+ * notice opens decline-only (no Accept). Elsewhere: opens our cookie notice. No path clears the stored choice;
  * it is replaced only when the visitor clicks Accept or Decline.
  */
 

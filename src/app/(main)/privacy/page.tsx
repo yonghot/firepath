@@ -30,7 +30,8 @@ export default function PrivacyPage() {
   const UNKNOWN_COUNTRY = ADS_ENABLED ? (
     <>
       if we cannot determine your country, the link opens Google&apos;s consent message where
-      Google offers one, and on pages without ads it brings you to this page
+      Google offers one and otherwise a notice with a Decline button, and on pages without ads it
+      brings you to this page
     </>
   ) : (
     <>if we cannot determine your country, the link brings you to this page</>

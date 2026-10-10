@@ -6,6 +6,8 @@
  * (src/lib/consent.ts); this component sends updates only for an explicit
  * Accept/Decline and re-applies a stored decline on every mount. EEA/UK/CH
  * visitors get Google's certified CMP instead: no banner, no update here.
+ * When the country is unknown and Google's message did not open within
+ * CMP_WAIT_MS, the notice opens in decline-only mode: no Accept, only denied.
  */
 
 import { useState, useEffect } from 'react';
@@ -16,12 +18,14 @@ import { adsEnabled } from '@/lib/ads-env';
 import { isInternalTraffic } from '@/lib/analytics';
 import {
   CONSENT_KEY,
+  DECLINE_ONLY_EVENT,
   REOPEN_CONSENT_EVENT,
   readVisitorCountry,
   runConsentEvent,
   type ConsentChoice,
   type ConsentIO,
   type ConsentState,
+  type NoticeMode,
 } from '@/lib/consent';
 import { Cookie } from 'lucide-react';
 
@@ -136,7 +140,7 @@ function writeStoredConsent(value: ConsentChoice): void {
   }
 }
 
-function makeConsentIO(setVisible: (visible: boolean) => void): ConsentIO {
+function makeConsentIO(setVisible: ConsentIO['setVisible']): ConsentIO {
   return {
     country: readVisitorCountry,
     readStored: readStoredConsent,
@@ -147,70 +151,113 @@ function makeConsentIO(setVisible: (visible: boolean) => void): ConsentIO {
   };
 }
 
-export function CookieConsentBanner() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const io = makeConsentIO(setVisible);
-    runConsentEvent('mount', io);
-    const onReopen = () => runConsentEvent('reopen', io);
-    window.addEventListener(REOPEN_CONSENT_EVENT, onReopen);
-    return () => window.removeEventListener(REOPEN_CONSENT_EVENT, onReopen);
-  }, []);
-
-  const io = makeConsentIO(setVisible);
-
-  if (!visible) return null;
-
+export function ConsentNotice({
+  mode,
+  onAccept,
+  onDecline,
+}: {
+  mode: NoticeMode;
+  onAccept: () => void;
+  onDecline: () => void;
+}) {
+  const declineOnly = mode === 'decline-only';
   return (
     <div
       role="dialog"
       aria-label="Cookie consent"
       aria-modal="false"
+      data-consent-mode={mode}
       className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90 shadow-md"
     >
       <div className="mx-auto max-w-7xl px-4 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <div className="flex items-start gap-3 flex-1">
           <Cookie className="h-5 w-5 text-[var(--fire-coast)] shrink-0 mt-0.5" aria-hidden="true" />
-          <p className="text-sm text-muted-foreground">
-            We use <strong className="text-foreground">strictly necessary cookies</strong> for
-            authentication and, with your consent, <strong className="text-foreground">analytics
-            cookies</strong> (Google Analytics 4){' '}
-            {ADS_ENABLED ? (
-              <>
-                and <strong className="text-foreground">advertising cookies</strong> (Google
-                AdSense) to keep FIREPath free.
-              </>
-            ) : (
-              <>to improve FIREPath. We do not use advertising cookies.</>
-            )}{' '}
-            <Link
-              href="/privacy#4-cookies-and-tracking-technologies"
-              className="underline hover:text-foreground transition-colors duration-200"
-            >
-              Learn more
-            </Link>
-            .
-          </p>
+          {declineOnly ? (
+            <p className="text-sm text-muted-foreground">
+              Google&apos;s consent message did not open here. You can decline analytics
+              {ADS_ENABLED ? ' and advertising' : ''} cookies with the button below; the{' '}
+              <Link
+                href="/privacy#4-cookies-and-tracking-technologies"
+                className="underline hover:text-foreground transition-colors duration-200"
+              >
+                cookies section of our privacy policy
+              </Link>{' '}
+              explains what they do.
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              We use <strong className="text-foreground">strictly necessary cookies</strong> for
+              authentication and, with your consent, <strong className="text-foreground">analytics
+              cookies</strong> (Google Analytics 4){' '}
+              {ADS_ENABLED ? (
+                <>
+                  and <strong className="text-foreground">advertising cookies</strong> (Google
+                  AdSense) to keep FIREPath free.
+                </>
+              ) : (
+                <>to improve FIREPath. We do not use advertising cookies.</>
+              )}{' '}
+              <Link
+                href="/privacy#4-cookies-and-tracking-technologies"
+                className="underline hover:text-foreground transition-colors duration-200"
+              >
+                Learn more
+              </Link>
+              .
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => runConsentEvent('decline', io)}
+            onClick={onDecline}
             aria-label="Decline non-essential cookies"
           >
             Decline
           </Button>
-          <Button
-            size="sm"
-            onClick={() => runConsentEvent('accept', io)}
-            aria-label="Accept all cookies including analytics"
-          >
-            Accept
-          </Button>
+          {!declineOnly && (
+            <Button
+              size="sm"
+              onClick={onAccept}
+              aria-label="Accept all cookies including analytics"
+            >
+              Accept
+            </Button>
+          )}
         </div>
       </div>
     </div>
+  );
+}
+
+export function CookieConsentBanner() {
+  const [mode, setMode] = useState<NoticeMode | null>(null);
+
+  useEffect(() => {
+    const io = makeConsentIO((visible, next = 'full') => setMode(visible ? next : null));
+    runConsentEvent('mount', io);
+    const onReopen = () => runConsentEvent('reopen', io);
+    const onFallback = () => runConsentEvent('fallback', io);
+    window.addEventListener(REOPEN_CONSENT_EVENT, onReopen);
+    window.addEventListener(DECLINE_ONLY_EVENT, onFallback);
+    return () => {
+      window.removeEventListener(REOPEN_CONSENT_EVENT, onReopen);
+      window.removeEventListener(DECLINE_ONLY_EVENT, onFallback);
+    };
+  }, []);
+
+  const io = makeConsentIO((visible, next = 'full') => setMode(visible ? next : null));
+
+  if (!mode) return null;
+
+  return (
+    <ConsentNotice
+      mode={mode}
+      onDecline={() => runConsentEvent('decline', io)}
+      onAccept={() => {
+        if (mode === 'full') runConsentEvent('accept', io);
+      }}
+    />
   );
 }
