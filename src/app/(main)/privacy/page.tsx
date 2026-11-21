@@ -126,7 +126,7 @@ export default function PrivacyPage() {
               <h3>{sub2('messages')}. Messages You Send Us</h3>
               <p>
                 If you use the contact form, we collect the <strong>name</strong>,{' '}
-                <strong>email address</strong> and <strong>message</strong> you type. If you send
+                <strong>email address</strong> and <strong>message</strong>{" "}you type. If you send
                 feedback with the Feedback button, we collect your message, the type of feedback
                 you choose, an optional email address, the page address you were on (the path and
                 query string, without anything after a #), and your browser&apos;s user agent.
@@ -224,7 +224,7 @@ export default function PrivacyPage() {
           <h3>4a. Strictly Necessary Cookies</h3>
           <p>
             These cookies are required for the site to function. FIREPath sets a first-party
-            cookie named <code>visitor_country</code> that holds a two-letter country code
+            cookie named <code>visitor_country</code>{" "}that holds a two-letter country code
             taken from your request, so the notice that fits your region can be shown; it
             expires after one day. If you make a cookie choice, it is saved in your
             browser&apos;s local storage under <code>firepath_cookie_consent</code> and is not
@@ -264,11 +264,11 @@ export default function PrivacyPage() {
               </p>
               <ul>
                 <li>
-                  <strong>EEA, UK, and Switzerland (opt-in):</strong> Consent is collected by
+                  <strong>EEA, UK, and Switzerland (opt-in):</strong>{" "}Consent is collected by
                   Google&apos;s certified consent message (a Google Funding Choices consent
                   management platform), which is the only consent screen shown there; our own
                   cookie notice is not shown. Personalized-advertising and analytics cookies are
-                  set only <em>after</em> you grant consent in that message. Until you consent,
+                  set only <em>after</em>{" "}you grant consent in that message. Until you consent,
                   ads run in a non-personalized / limited mode. The &ldquo;Do Not Sell or Share
                   My Personal Information / Manage Consent&rdquo; link in the site footer
                   reopens Google&apos;s message so you can change or withdraw your choice.
@@ -380,7 +380,7 @@ export default function PrivacyPage() {
               </li>
             )}
             <li>
-              <strong>Vercel</strong> — hosting and content delivery. Vercel processes request
+              <strong>Vercel</strong>{" "}— hosting and content delivery. Vercel processes request
               metadata (IP address, user agent, referrer) in server logs to deliver the site,
               and provides the country-level signal we use to decide which consent posture
               applies to your visit (Section&nbsp;4b).
@@ -503,26 +503,26 @@ export default function PrivacyPage() {
             )}
             {PAYMENTS && (
               <li>
-                <strong>Stripe:</strong> Our payment processor for premium subscriptions.
+                <strong>Stripe:</strong>{" "}Our payment processor for premium subscriptions.
                 Stripe processes payment data under Stripe&apos;s own privacy policy.
               </li>
             )}
             {MESSAGES && (
               <li>
-                <strong>Message collection service:</strong> The contact-form and feedback
+                <strong>Message collection service:</strong>{" "}The contact-form and feedback
                 messages described in Section&nbsp;{sub2('messages')} are forwarded by our server
                 to a collection service configured by {PUBLISHER.name} so they can be read and
                 answered.
               </li>
             )}
             <li>
-              <strong>Google Analytics:</strong> Anonymous usage statistics. Sent after consent
+              <strong>Google Analytics:</strong>{" "}Anonymous usage statistics. Sent after consent
               for EEA/UK/Switzerland visitors; sent on first visit under notice-and-opt-out for
               visitors elsewhere (see Section&nbsp;4b).
             </li>
             {ADS_ENABLED && (
               <li>
-                <strong>Google AdSense:</strong> Third-party display advertising. Google may set
+                <strong>Google AdSense:</strong>{" "}Third-party display advertising. Google may set
                 advertising cookies and receive page-level data (such as
                 the page URL and a pseudonymous identifier) to serve and measure ads. For EEA,
                 UK, and Swiss visitors this occurs only after consent is granted; for visitors
@@ -582,7 +582,7 @@ export default function PrivacyPage() {
               <strong>Server logs:</strong> Typically retained for 30 days.
             </li>
             <li>
-              <strong>Analytics data:</strong> Subject to Google Analytics&apos; own retention
+              <strong>Analytics data:</strong>{" "}Subject to Google Analytics&apos; own retention
               settings.
             </li>
           </ul>
@@ -633,7 +633,7 @@ export default function PrivacyPage() {
             <li><strong>Right to Correct:</strong> Request correction of inaccurate personal information.</li>
             {ADS_ENABLED ? (
               <li>
-                <strong>Right to Opt-Out of Sale or Sharing:</strong> We do not sell personal
+                <strong>Right to Opt-Out of Sale or Sharing:</strong>{" "}We do not sell personal
                 information for money. Visitors may have data shared with Google AdSense for
                 interest-based advertising under a notice-and-opt-out model, which may
                 constitute &ldquo;sharing&rdquo; for cross-context behavioral advertising under

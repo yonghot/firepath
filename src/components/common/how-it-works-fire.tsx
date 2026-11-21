@@ -73,7 +73,7 @@ export function HowItWorksFire() {
           <Link href="/fire-types#barista">Barista FIRE</Link> uses{' '}
           {FIRE_MULTIPLIERS.barista} (50%, since part-time income is assumed
           to cover the rest).{' '}
-          <Link href="/fire-types#coast">Coast FIRE</Link> is different: it
+          <Link href="/fire-types#coast">Coast FIRE</Link>{" "}is different: it
           takes the Regular FIRE target and discounts it backward using your
           real (inflation-adjusted) return over the years remaining until
           retirement, so today&apos;s nest egg can grow into that target on

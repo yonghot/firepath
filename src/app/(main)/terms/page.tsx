@@ -150,7 +150,7 @@ export default function TermsPage() {
 
             <h3>{num('premium')}b. Pricing and Auto-Renewal</h3>
             <p>
-              The current Premium subscription price is <strong>$4.99 per month</strong>
+              The current Premium subscription price is <strong>$4.99 per month</strong>{" "}
               (or as otherwise displayed at the time of purchase). All prices are in U.S.
               dollars. Your subscription will automatically renew at the end of each billing
               period unless you cancel before the renewal date. By subscribing, you authorize

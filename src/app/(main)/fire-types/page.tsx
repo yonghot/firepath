@@ -363,7 +363,7 @@ export default function FireTypesPage() {
         reachAge={defaultResults.regular.reachAge}
       >
         <p>
-          <strong>Regular FIRE</strong> (also called &quot;Traditional FIRE&quot;) replaces your current
+          <strong>Regular FIRE</strong>{" "}(also called &quot;Traditional FIRE&quot;) replaces your current
           lifestyle exactly — 100% of your annual expenses drawn from your portfolio.
           It is the <em>baseline</em> against which Lean, Fat, Coast, and Barista are all
           defined.
@@ -481,7 +481,7 @@ export default function FireTypesPage() {
         reachAge={defaultResults.barista.reachAge}
       >
         <p>
-          <strong>Barista FIRE</strong> (sometimes called &quot;Semi-FIRE&quot;) is a hybrid: your portfolio
+          <strong>Barista FIRE</strong>{" "}(sometimes called &quot;Semi-FIRE&quot;) is a hybrid: your portfolio
           covers <em>50% of your expenses</em>, and part-time work or a side income covers the
           rest. The name comes from baristas at coffee chains who often receive employer health
           benefits even for part-time work.

@@ -212,7 +212,7 @@ export default function MethodologyPage() {
 
         <h2>3. Inflation-adjusted real return</h2>
         <p>
-          Projections use a <em>real</em> (inflation-adjusted) return so all figures
+          Projections use a <em>real</em>{" "}(inflation-adjusted) return so all figures
           are in today&apos;s dollars. Given your expected nominal return and
           inflation rate, the real return is:
         </p>
