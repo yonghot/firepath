@@ -2089,3 +2089,19 @@ postbuild (simulated prod) — [indexnow] submitted 18 urls — verified end-to-
 - **게이트(20aee5e)**: eslint 0, tsc 0, vitest 117 파일 1440 테스트(`--maxWorkers=4`), next build 0. 적대 검증 3회(ecbdd46..e4b5667, e4b5667..62676dd, 7bb978b+ccce60b) 모두 CRITICAL 0, WARNING 은 전부 반영. AppFarm 2 교차 재확인 OK.
 - **K28 라이브(배포 후)**: HTTP — 콘텐츠 10곳 200·로더 O·index, /contact·/embed-this·/premium·/result 로더 X·noindex, Mediapartners-Google 200, 금지 문자열 0(배포 전 /guide·/premium "coming soon", /privacy·/terms 미전달 이메일), Actigence 표기 O(배포 전 0), 404 정상. CSP 점검 0건(양성 대조 9/9). 브라우저 — gtag 로드·collect `tid=G-P3M4FHMCCG gcs=G111`(배포 전 gtag·collect 0), 375px scrollWidth 375(배포 전 436), React #418 없음, 페이지당 광고 요청 3, CLS ≤ 0.042, `?crew=1` page_view `tt=internal`·`dl` 에 쿼리 유지(배포 2 후). 동의 링크 — 국가 ZZ·DE: 배너 없음·CMP 큐, US: 우리 공지, 로더 없는 /result 의 ZZ: /privacy 해당 절로 이동. KR IP 에서 Funding Choices 요청 0 이라 EEA 대화상자 자체는 헤드리스로 볼 수 없다(계약 K13-R(8): 리더 수동 확인).
 - **프로브 함정(기록)**: 미들웨어가 매 응답(프리페치 포함)에 `visitor_country` 를 다시 쓰므로, 헤드리스에서 국가를 바꿔 시험할 때는 쿠키 설정과 클릭을 한 동기 작업 안에서 해야 한다. Playwright `route.fetch()` 는 응답의 Set-Cookie 를 컨텍스트 쿠키 저장소에 반영하므로 헤더를 지워도 소용없다.
+
+### [2026-11-22] 배포 dpl_7aWLoby97LdRq8ZkQi5WLYi2xHy8 K28 라이브 검증 (burst 1회, ?crew=1, 약 15초 x 2)
+| 항목 | 결과 |
+|---|---|
+| 양성 대조 (dpl_H7MnQSdp, 로더가 동의 기본값보다 앞) | 검출 O: head 인덱스 로더 25 < 동의 59, order ok=false. 같은 DOM 검사 함수 사용 |
+| 신규 배포 head 순서 | 동의 기본값 21 < 로더 22 (첫 방문), 58 < 59 (재방문): 통과 |
+| GA tid | 전부 G-P3M4FHMCCG: 통과 |
+| gcs (첫 방문·재방문) | 전부 G111: 통과 |
+| tt=internal | 첫 hit 포함 전 hit 에 있음: 통과 |
+| CSP 위반 (securitypolicyviolation) | 0 (두 방문): 통과 |
+| sodar2 | 로드됨 (ep2.adtrafficquality.google/sodar/sodar2.js): y |
+| React #418 | 발견: 불합격. Google 도메인 전부 차단한 진단 로드(5초)에서는 0건이라 Google 스크립트가 켜진 조합에서만 발생. 방문별 구분 미기록 |
+| K14-c (visitor_country=ZZ + Manage Consent 클릭을 동기 한 단계, 2.6초 후) | 거부 전용 공지 (data-consent-mode=decline-only), 버튼 Decline 1개, Accept 0: 통과 (googlefc.showRevocationMessage 없음) |
+| abort 한 광고 요청 | 1건 (googleads.g.doubleclick.net/pagead/ads) |
+- 증거: `.claude/work/AppFarm3/fire/k28/result.json`, 하네스 `k28.mjs`, 진단 `diag.mjs`.
+- 이전 배포(dpl_9G7b/2cTV) K28 에서는 #418 없음으로 기록됨 (프로브가 더 많은 요청을 끊은 조건). 이번 배포는 로더를 루트 head 로 옮긴 0a44d19 이후이므로 원인 후보. 미확정, 후속 조사 필요.
