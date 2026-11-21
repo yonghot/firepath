@@ -1,5 +1,14 @@
 # FIREPath — Development Progress Log
 
+### [2026-11-22] 프로덕션 배포 기록 — dpl_7aWLoby97LdRq8ZkQi5WLYi2xHy8 (HEAD a83a038)
+- **배포**: `vercel --prod --yes` -> https://firepath-hxu4oyg1h-actigence.vercel.app (Ready, 별칭 gofirepath.com·www). 2026-11-22 02:29 KST.
+- **롤백 대상**: https://firepath-5spgx1nbp-actigence.vercel.app (직전 프로덕션, 42일 전, Ready).
+- **게이트/검토**: §4.6 게이트 exit 0, §4.6a 감사 통과, 신규 적대적 검토 CRITICAL 0 (배포 전 완료분).
+- **라이브 검증(curl)**: 홈+콘텐츠 7개 200, 로더 `<head>` 안 정확히 1회(/·guide·fire-types·healthcare-bridge·fire-statistics·fire-guide·privacy·about), 유틸리티 6개(contact·premium·saved·result·embed-this·embed) 로더 0. `/` 인덱스 consent default 5532 < 로더 6189 < `</head>` 6355. 글루 정규식 8개 페이지 0건, `FIREis`·`afteryou` 없음. ads.txt 200(pub-1378312299412437), sitemap 200, robots Sitemap 줄, Mediapartners-Google UA 200 + `vercel logs` 에서 `adsense-crawl {"p":"/","d":"dpl_7aWL...","ua":"mp"}` 확인(K35).
+- **스크립트**: csp-live-check --strict exit 0(Findings 0, 양성 대조 9/9). portfolio-audit post-deploy --strict exit 0(error 0, warn 3 = /about·/privacy·/terms loader-on-utility 조언, K7 위반 아님; 도구 설명상 거짓양성 성격).
+- **보류**: 콘텐츠 본문 확충(12/1 별도 실행). AdSense 재검토는 이미 대기열(10/10 요청, ~12/13-16).
+
+
 ### [2026-11-22] 빠른 수정: JSX 글루 · K14 순서 · K35 크롤 로그 · IndexNow 템플릿 (db1cdb2 이후)
 - **글루 원인**: Next 빌드(SWC)가 `{식}`/인라인 요소 뒤에서 시작하는 다행 텍스트에 HTML 엔티티(&apos; &ldquo; 등)가 있으면 선행 공백을 삭제 -> "Coast FIREis different", "only afteryou grant". vitest 는 못 잡는다.
 - **글루 조치**: 해당 15곳(how-it-works-fire, privacy, fire-types, methodology)에 명시적 `{" "}` 추가, terms 의 `</strong>(or` 1곳 추가. 문구 변경 없음.
