@@ -1,5 +1,15 @@
 # FIREPath — Development Progress Log
 
+### [2026-11-22] 빠른 수정: JSX 글루 · K14 순서 · K35 크롤 로그 · IndexNow 템플릿 (db1cdb2 이후)
+- **글루 원인**: Next 빌드(SWC)가 `{식}`/인라인 요소 뒤에서 시작하는 다행 텍스트에 HTML 엔티티(&apos; &ldquo; 등)가 있으면 선행 공백을 삭제 -> "Coast FIREis different", "only afteryou grant". vitest 는 못 잡는다.
+- **글루 조치**: 해당 15곳(how-it-works-fire, privacy, fire-types, methodology)에 명시적 `{" "}` 추가, terms 의 `</strong>(or` 1곳 추가. 문구 변경 없음.
+- **K14 원인**: React 19 가 `<script async src>` 를 head 앞쪽으로 끌어올려 로더가 인라인 consent default 보다 앞에 출력됨(실측 default 4199 > loader 1680).
+- **K14 조치**: 로더를 (main) 레이아웃에서 루트 `<head>` 의 `<ConsentDefault />` 바로 뒤로 이동. 클라이언트 컴포넌트가 `usePathname()` 과 양성 허용목록(`src/lib/ad-eligibility.ts`: 정적 10개 + GUIDE_PAGES)으로 콘텐츠 라우트에만 렌더하고, `onLoad` 핸들러로 호이스팅을 막는다. 마크업·id·preconnect 는 동일.
+- **K35**: `middleware.ts` 가 UA 가 Mediapartners-Google/AdsBot-Google 이면 `adsense-crawl {"p","d","ua"}` 한 줄만 로그(쿼리·쿠키·IP 없음, 응답 불변).
+- **IndexNow**: `scripts/indexnow.mjs` 는 이미 공유 템플릿(scripts/templates/indexnow-delta.mjs)과 바이트 동일(ca6b6b0) — 변경 없음.
+- **회귀 테스트**: `tests/regressions/jsx-whitespace-glue.test.ts`(소스 AST 스캔, 0건 단정), `k35-adsense-crawl-log.test.ts`(3), `ad-loader-routes.test.ts`·`consent-default-order.test.ts`(default < loader < </head>, 허용목록·404 슬러그 제외), `built-html-ad-loader.test.ts` 에 문서 순서 단정 추가. 옛 .next 빌드에서는 새 단정이 실패함을 확인(양성 대조).
+- **보류**: 실제 빌드 기반 증명(glue-scan distinct=0, head-order-scan, §4.6a)은 게이트 몫. 콘텐츠 본문 작업은 별도 실행.
+
 ### [2026-10-10] K28 배포 후 브라우저 검증 — dpl_H7MnQSdpeiJK8uwJ7YVu4PwAX5QF (burst 22:35:47~22:37:01 KST)
 - **burst**: `https://gofirepath.com/?crew=1` 첫 방문 1회 + 같은 컨텍스트 재방문 1회(각 약 15초 대기, 스크롤·광고 클릭 없음). 양성 대조 로드 1회(catchupcalc dpl_C7gq 배포 URL) + 이전 firepath HTML 정적 파싱 1회(브라우저 로드 아님). 헤드리스 Chromium(KR IP, `visitor_country=KR`), `heavy.lock` 1회 획득·해제. 스크립트·원자료 `scratchpad\fire\k28\{k28.cjs,result.json}`.
 - **차단(K27/K28-2)**: `googleads.g.doubleclick.net/pagead/ads` 2건(방문당 1)과 GA collect 7건(`google-analytics.com/g/collect` 2 + `www.google.com/g/collect` 5)을 URL만 기록하고 abort. `gen_204`·`ama_stats` 0건. `pagead2.googlesyndication.com` 은 통과.
