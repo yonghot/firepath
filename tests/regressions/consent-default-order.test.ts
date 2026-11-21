@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('next/navigation', () => ({ usePathname: () => '/about' }));
 import { createElement } from 'react';
 import { renderToString } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
@@ -45,12 +47,18 @@ describe('K14: the consent default is inline in <head>, region-scoped, and honou
   it('renders the default script inline in <head> and the loader hoisted into <head> ahead of it as a literal async adsbygoogle tag, with no ad code before the default', async () => {
     const { ConsentDefault } = await import('@/components/ads/consent-default');
     const { AdLoader } = await import('@/components/ads/ad-loader');
+    const { buildAdEligibilityRules } = await import('@/lib/ad-eligibility');
     const html = renderToString(
       createElement(
         'html',
         null,
-        createElement('head', null, createElement(ConsentDefault)),
-        createElement('body', null, createElement(AdLoader)),
+        createElement(
+          'head',
+          null,
+          createElement(ConsentDefault),
+          createElement(AdLoader, { clientId: 'ca-pub-1234567890', rules: buildAdEligibilityRules() }),
+        ),
+        createElement('body', null),
       ),
     );
     const headEnd = html.indexOf('</head>');
@@ -60,9 +68,10 @@ describe('K14: the consent default is inline in <head>, region-scoped, and honou
     expect(defaultAt).toBeLessThan(headEnd);
     expect(loaderAt).toBeGreaterThan(-1);
     expect(loaderAt, 'AdSense site review needs the snippet inside <head>').toBeLessThan(headEnd);
+    expect(defaultAt, 'consent default must precede the loader in document order').toBeLessThan(loaderAt);
     expect(html.match(/adsbygoogle\.js/g)).toHaveLength(1);
-    const beforeDefault = html.slice(0, defaultAt).replace(/<script\b[^>]*\bsrc="[^"]*adsbygoogle\.js[^"]*"[^>]*>/g, '');
-    expect(beforeDefault, 'React hoists the async loader ahead of the inline default; no other ad code may run before the default').not.toContain('adsbygoogle');
+    const beforeDefault = html.slice(0, defaultAt);
+    expect(beforeDefault, 'no ad code, including the loader, appears before the default').not.toContain('adsbygoogle');
     expect(html).toMatch(
       /<script id="adsense-loader" async="" crossorigin="anonymous" src="https:\/\/pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js\?client=ca-pub-1234567890"><\/script>/,
     );

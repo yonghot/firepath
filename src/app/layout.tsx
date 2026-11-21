@@ -5,6 +5,8 @@ import { Providers } from '@/components/providers';
 import { organizationJsonLd, publisherJsonLd } from '@/components/common/json-ld';
 import { resolveAdsenseClientId } from '@/lib/ads-env';
 import { ConsentDefault } from '@/components/ads/consent-default';
+import { AdLoader } from '@/components/ads/ad-loader';
+import { buildAdEligibilityRules } from '@/lib/ad-eligibility';
 import { SITE_URL } from '@/lib/site';
 
 const inter = Inter({
@@ -83,6 +85,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         <ConsentDefault />
+        {_adsenseId && <AdLoader clientId={_adsenseId} rules={buildAdEligibilityRules()} />}
       </head>
       <body className="min-h-full flex flex-col font-sans">
         <script

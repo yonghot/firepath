@@ -78,8 +78,8 @@ describe('K5/K16: the privacy page describes the consent, collection and cookie 
   it('the main layout tells the footer the consent runtime exists only when the ad loader renders it', () => {
     const layout = readFileSync(join(ROOT, 'src', 'app', '(main)', 'layout.tsx'), 'utf8');
     expect(layout).toMatch(/<SiteChrome cmpAvailable=\{adsEnabled\(\)\}>/);
-    const loader = readFileSync(join(ROOT, 'src', 'components', 'ads', 'ad-loader.tsx'), 'utf8');
-    expect(loader).toMatch(/const clientId = resolveAdsenseClientId\(\);\s*if \(!clientId\) return null;/);
+    const root = readFileSync(join(ROOT, 'src', 'app', 'layout.tsx'), 'utf8');
+    expect(root).toMatch(/_adsenseId && <AdLoader clientId={_adsenseId}/);
   });
 
   it('the banner "Learn more" anchor resolves to a heading id on the page', async () => {

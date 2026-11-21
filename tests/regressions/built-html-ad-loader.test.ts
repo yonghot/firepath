@@ -118,7 +118,10 @@ describe('built HTML: the AdSense loader sits in <head> on content routes only',
         expect(MUST_EXIST.has(route), `${file} is missing from the build`).toBe(false);
         return ctx.skip(`${file} not prerendered`);
       }
-      const scan = scanLoader(readFileSync(path, 'utf8'));
+      const built = readFileSync(path, 'utf8');
+      const scan = scanLoader(built);
+      expect(built.indexOf(DEFAULT), 'consent default precedes the loader in document order').toBeGreaterThan(-1);
+      expect(built.indexOf(DEFAULT)).toBeLessThan(built.indexOf('id="adsense-loader"'));
       expect(scan.headEnd, 'a closing </head>').toBeGreaterThan(-1);
       expect(scan.headTags, 'loader scripts inside <head>').toHaveLength(1);
       expect(scan.bodyTags, 'loader scripts after </head>').toHaveLength(0);

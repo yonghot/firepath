@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createElement } from 'react';
+let mockPath: string | null = '/about';
+vi.mock('next/navigation', () => ({ usePathname: () => mockPath }));
 import { renderToStaticMarkup } from 'react-dom/server';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -87,26 +89,25 @@ describe('K7: the ad loader is mounted only on content routes', () => {
     }
   });
 
-  it('the set of routes whose layout chain mounts <AdLoader /> equals the content-route allow-list', () => {
-    const withLoader = ENTRIES.filter(hasLoader).map((entry) => entry.route).sort();
-    expect(withLoader).toEqual([...LOADER_ROUTES].sort());
+  it('the eligibility allow-list equals the content-route list, with every guide page and no unknown guide slug', async () => {
+    const { AD_STATIC_PATHS, buildAdEligibilityRules, isAdEligiblePath } = await import('@/lib/ad-eligibility');
+    const { GUIDE_PAGES } = await import('@/lib/content-pages');
+    const rules = buildAdEligibilityRules();
+    expect([...AD_STATIC_PATHS].sort()).toEqual(LOADER_ROUTES.filter((r) => !r.includes('[')).sort());
+    for (const page of GUIDE_PAGES) expect(isAdEligiblePath(page.canonicalPath, rules), page.canonicalPath).toBe(true);
+    for (const path of ['/guide/zzz-unknown', '/embed', '/embed-this', '/login', '/signup', '/premium', '/contact', '/saved', '/result', '/_not-found', '/about/x'])
+      expect(isAdEligiblePath(path, rules), path).toBe(false);
+    expect(isAdEligiblePath('/about/', rules)).toBe(true);
   });
 
-  for (const route of NO_LOADER_ROUTES) {
-    it(`${route} has no loader in its layout chain`, () => {
-      const entries = ENTRIES.filter((entry) => entry.route === route);
-      expect(entries.length).toBeGreaterThan(0);
-      for (const entry of entries) expect(hasLoader(entry)).toBe(false);
-    });
-  }
+  it('no layout below the root mounts the loader, so presence is decided by pathname eligibility alone', () => {
+    for (const entry of ENTRIES) for (const file of entry.layouts.filter((l) => l !== join(APP, 'layout.tsx'))) expect(LOADER_MARKUP.test(read(file)), file).toBe(false);
+  });
 
-  it('the root layout carries no loader, preconnect or dns-prefetch, but keeps the publisher meta tag', () => {
+  it('the root layout mounts the loader inside <head> right after ConsentDefault, with no hardcoded ad markup, and keeps the publisher meta tag', () => {
     const root = read(join(APP, 'layout.tsx'));
-    expect(root).not.toMatch(/adsbygoogle\.js/);
-    expect(root).not.toMatch(/adsense-loader/);
-    expect(root).not.toMatch(/pagead2\.googlesyndication\.com/);
-    expect(root).not.toMatch(/googleads\.g\.doubleclick\.net/);
-    expect(root).not.toMatch(/<AdLoader\b/);
+    expect(root).toMatch(/<head>\s*<ConsentDefault\s*\/>\s*\{_adsenseId && <AdLoader\b[\s\S]*?<\/head>/);
+    expect(root).not.toMatch(/adsbygoogle\.js|adsense-loader|pagead2\.googlesyndication\.com|googleads\.g\.doubleclick\.net/);
     expect(root).toMatch(/google-adsense-account/);
   });
 
@@ -133,10 +134,19 @@ describe('K7: the ad loader is mounted only on content routes', () => {
 });
 
 describe('AdLoader output', () => {
-  async function loaderMarkup(): Promise<string> {
+  async function loaderMarkup(path: string | null = '/about'): Promise<string> {
+    mockPath = path;
     const { AdLoader } = await import('@/components/ads/ad-loader');
-    return renderToStaticMarkup(createElement(AdLoader));
+    const { buildAdEligibilityRules } = await import('@/lib/ad-eligibility');
+    const { resolveAdsenseClientId } = await import('@/lib/ads-env');
+    const clientId = resolveAdsenseClientId();
+    return clientId ? renderToStaticMarkup(createElement(AdLoader, { clientId, rules: buildAdEligibilityRules() })) : '';
   }
+
+  it('renders nothing on an ineligible or unknown pathname', async () => {
+    stubAds('ca-pub-1234567890', 'preview');
+    for (const path of ['/login', '/contact', '/guide/zzz', null]) expect(await loaderMarkup(path), String(path)).toBe('');
+  });
 
   it('emits exactly one async adsense-loader script, a preconnect and a dns-prefetch for a configured id', async () => {
     stubAds('ca-pub-1234567890', 'preview');

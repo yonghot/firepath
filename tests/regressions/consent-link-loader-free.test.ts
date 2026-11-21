@@ -125,10 +125,10 @@ describe('K14-b: only the layouts that mount the ad loader tell the footer the c
     ]);
   });
 
-  it('a layout passes cmpAvailable to the chrome exactly when it mounts the loader', () => {
+  it('a layout passes cmpAvailable to the chrome only for the (main) layout, whose routes are the loader-eligible ones', () => {
     for (const file of chromeLayouts) {
       const source = read(file);
-      const mountsLoader = /<AdLoader\b/.test(source);
+      const mountsLoader = file.includes('(main)');
       const passesFlag = /<SiteChrome\b[^>]*\bcmpAvailable\b/.test(source);
       expect(passesFlag, file).toBe(mountsLoader);
     }
