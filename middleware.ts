@@ -5,7 +5,21 @@ import { updateSession } from '@/lib/supabase/middleware';
 // dynamic. ISO-3166 alpha-2 (e.g. "US", "DE"), or "ZZ" when unknown.
 const COUNTRY_COOKIE = 'visitor_country';
 
+const ADSENSE_CRAWLER = /Mediapartners-Google|AdsBot-Google/i;
+
 export async function middleware(request: NextRequest) {
+  const ua = request.headers.get('user-agent') ?? '';
+  if (ADSENSE_CRAWLER.test(ua)) {
+    console.log(
+      'adsense-crawl ' +
+        JSON.stringify({
+          p: request.nextUrl.pathname,
+          d: process.env.VERCEL_DEPLOYMENT_ID ?? null,
+          ua: /Mediapartners-Google/i.test(ua) ? 'mp' : 'adsbot',
+        }),
+    );
+  }
+
   // Preserve the existing Supabase session-refresh response (it may carry
   // refreshed auth cookies) and attach the visitor country cookie onto it.
   const response = await updateSession(request);
